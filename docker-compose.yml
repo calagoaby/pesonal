@@ -1,0 +1,24 @@
+services:
+  api:
+    build: ./api
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./api:/app          # live-mount Laravel source → edits reflect immediately
+    environment:
+      APP_ENV: local
+
+  web:
+    build: ./web
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./web:/app          # live-mount Nuxt source
+      - /app/node_modules   # keep the image's node_modules, don't let the host shadow it
+    environment:
+      # Browser-side calls go to the host, so localhost (not the service name).
+      NUXT_PUBLIC_API_BASE: "http://localhost:8000"
+      # WSL2 file-watch fix so Vite/Nuxt hot reload actually fires on edits.
+      CHOKIDAR_USEPOLLING: "true"
+    depends_on:
+      - api

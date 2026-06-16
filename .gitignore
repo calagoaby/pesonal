@@ -1,0 +1,13 @@
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+
+# Local Claude settings (machine-specific permissions)
+.claude/settings.local.json
+
+# Local SQLite data — schema lives in migrations, not the data file
+api/database/*.sqlite
+api/database/*.sqlite-journal
