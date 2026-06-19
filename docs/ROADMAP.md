@@ -4,11 +4,11 @@ Status: `[x]` done · `[~]` in progress · `[ ]` todo. See `CLAUDE.md` for conve
 
 ## Frontend setup (once)
 
-1. `[ ]` **Install libs** — in `web/`:
+1. `[x]` **Install libs** — in `web/`:
    ```sh
    npm install primevue @primevue/nuxt-module @primeuix/themes primeicons chart.js
    ```
-2. `[ ]` **Wire PrimeVue** — set `web/nuxt.config.ts` to:
+2. `[x]` **Wire PrimeVue** — set `web/nuxt.config.ts` to:
    ```ts
    // https://nuxt.com/docs/api/configuration/nuxt-config
    import { PesonalPreset } from './app/theme/pesonal-preset'
@@ -28,8 +28,8 @@ Status: `[x]` done · `[~]` in progress · `[ ]` todo. See `CLAUDE.md` for conve
      }
    })
    ```
-   The preset already exists at `web/app/theme/pesonal-preset.ts` (brand blue baked into `primary`).
-3. `[ ]` **Smoke test** — drop `<Button label="Hi" />` in `app/app.vue`, `docker compose up`, confirm it renders in brand blue.
+   The preset already exists at `web/app/theme/pesonal-preset.ts` (stamp red baked into `primary`).
+3. `[x]` **Smoke test** — drop `<Button label="Hi" />` in `app/app.vue`, `docker compose up`, confirm it renders in stamp red.
 
 No Pinia — shared state uses provide/inject context (see `CLAUDE.md`).
 
