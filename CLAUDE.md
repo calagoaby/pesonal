@@ -1,6 +1,6 @@
 # Pesonal — project guide
 
-Personal expense tracker. Mobile-first web app, single user, no auth, runs locally. GCash-inspired look, optimistic/funny tone.
+Personal expense tracker. Mobile-first web app, single user, no auth, runs locally. Receipt/thermal-paper look, deadpan funny tone.
 
 Monorepo: `api/` (Laravel — intentionally swappable for another backend later) · `web/` (Nuxt 4 + PrimeVue) · `docs/` (contracts & roadmap) · `design/` (UI specs). Runs via Docker. DB is SQLite.
 
@@ -25,20 +25,24 @@ Design specs live in `design/`. Status and the screen order live in `docs/ROADMA
 - **No trailing newline** at the end of any file.
 - Apply personal style first, then run eslint to catch project-specific overrides.
 
-## Design tokens
+## Design tokens — Receipt Roll
+
+Theme: a deadpan thermal-paper receipt. Flat surfaces, dashed perforation dividers, mono numerals.
 
 | Role | Value |
 |---|---|
-| Brand blue / pressed / tint | `#1763D8` / `#0F4CA8` / `#E9F1FE` |
-| Ink / muted / subtle | `#0F172A` / `#5B6B82` / `#94A3B8` |
-| App bg / card / hairline | `#F3F7FC` / `#FFFFFF` / `#E8EEF6` |
-| Positive (spent less) / over | `#1D9E75` / `#D85A30` |
-| Categories | Housing `#534AB7` · Food `#D85A30` · Groceries `#1D9E75` · Transport `#378ADD` · Fun `#D4537E` · Other `#888780` |
-| Type scale | hero 34/700 · title 15/600 · body 14/500 · label 13 · caption 12 · micro 11 |
-| Radius | card 18 · icon tile 11 · pill/FAB 999 |
+| App bg (desk) / receipt paper | `#EAE5D9` / `#FBF8F1` |
+| Ink / faded / perforation | `#1C1A17` / `#8A857B` / `#D8D2C4` |
+| Accent — stamp red (CTA · FAB · over-budget) | `#C8472E` |
+| Under-budget (spent less = good) / highlighter (peak day) | `#2F7D52` / `#E8B23A` |
+| Categories | Housing `#534F8C` · Food `#C9692E` · Groceries `#5E7A3E` · Transport `#3F6F97` · Fun `#B0577B` · Other `#8A857B` |
+| Type — numbers/totals/headers | Mono (`Spline Sans Mono`), `tabular-nums`; section headers mono ALL-CAPS, letter-spacing .08em |
+| Type — body/names/notes | Sans (`Plus Jakarta Sans`) |
+| Type scale | hero 34/600 mono · section header 12 · body 14 · caption 12 · micro 11 |
+| Radius | card 6 (paper slip) · pill/FAB 999 (rubber stamp) |
 | Spacing | 4-base (4 · 8 · 12 · 16 · 20), screen gutter 16 |
 
-Font: a friendly geometric sans (`Plus Jakarta Sans` or `Inter`). Use soft shadows, not hairline borders. The PrimeVue preset at `web/app/theme/pesonal-preset.ts` bakes the brand blue into the `primary` palette.
+Signature: flat — no soft shadows; dashed perforation dividers, a torn zig-zag hero edge, barcode foot. The PrimeVue preset at `web/app/theme/pesonal-preset.ts` bakes the stamp red into the `primary` palette.
 
 ## Run
 

@@ -1,22 +1,22 @@
 import { definePreset } from '@primeuix/themes'
 import Aura from '@primeuix/themes/aura'
 
-// Pesonal brand blue (#1763D8) baked into PrimeVue's `primary` palette.
-// 500 is the brand; darker steps approach the pressed shade (#0F4CA8).
+// Pesonal accent — "stamp red" (#C8472E) baked into PrimeVue's `primary` palette.
+// 500 is the brand stamp; darker steps approach the pressed shade.
 export const PesonalPreset = definePreset(Aura, {
-  semantic: {
-    primary: {
-      50: '#e9f1fe',
-      100: '#cfe0fc',
-      200: '#a6c5fa',
-      300: '#7aa8f5',
-      400: '#4587ee',
-      500: '#1763d8',
-      600: '#1356bf',
-      700: '#0f4ca8',
-      800: '#0b3c83',
-      900: '#0a2f63',
-      950: '#071f42'
+    semantic: {
+        primary: {
+        50: '#faede9',
+        100: '#f3d2c8',
+        200: '#e9b0a0',
+        300: '#de8b74',
+        400: '#d26a4f',
+        500: '#c8472e',
+        600: '#b23c26',
+        700: '#92301e',
+        800: '#6f2417',
+        900: '#4e1a10',
+        950: '#2e0f09'
+        }
     }
-  }
 })
