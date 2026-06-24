@@ -5,7 +5,7 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
   modules: ['@primevue/nuxt-module'],
-  css: ['primeicons/primeicons.css'],
+  css: ['primeicons/primeicons.css', '~/assets/css/main.css'],
   primevue: {
     options: {
         theme: {
