@@ -8,11 +8,12 @@ Monorepo: `api/` (Laravel — intentionally swappable for another backend later)
 
 ## How we build the UI (read this first)
 
-The owner is **learning** the frontend — do NOT hand over finished screens. The loop, one screen at a time:
+The owner is **learning** the frontend — do NOT hand over finished screens. He also runs all git/PR mechanics himself (branch, commit, push, open PR, merge, cleanup) — guide and explain, don't run them for him. The loop, one screen at a time:
 
 1. Claude posts a **design spec** (an HTML mockup + the tokens below). It does NOT reveal which PrimeVue components map to each region, or the Vue file layout — the owner discovers those.
-2. The owner **implements the screen himself** in `web/`.
-3. When asked, Claude opens a **reference implementation as a PR on its own branch** (never overwriting the owner's files), annotated with the reasoning, to compare against.
+2. The owner **implements the screen himself** in `web/`, then opens a PR.
+3. Claude **reviews the owner's PR** — variable naming, folder structure, efficiency, correctness, and fit with the conventions below (inline comments via `gh`, or in chat). The owner revises, then merges.
+4. When asked, Claude opens a **reference implementation as a PR on its own branch** (never overwriting the owner's files), annotated with the reasoning, to compare against.
 
 Design specs live in `design/`. Status and the screen order live in `docs/ROADMAP.md`.
 
