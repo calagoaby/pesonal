@@ -19,11 +19,18 @@ Design specs live in `design/`. Status and the screen order live in `docs/ROADMA
 ## Frontend conventions (Nuxt 4 + PrimeVue, code in `web/app/`)
 
 - **SFC block order:** `<script>` → `<template>` → `<style>`. Always.
-- **No logic in components.** Every component with JS extracts to a composable pair: `useXxx.ts` (logic — context access, computeds) + `useXxxUI.ts` (UI state — refs like `is_open`, handlers like `handleClick`). The component only imports and destructures. `useI18n` lives in the UI composable, destructured as `{ t: translate }`. In a composable's return, list refs/computeds first, then a blank line, then functions.
+- **Keep components thin — but don't over-split.** Lift real logic into composables; the `useXxx.ts` (logic — context access, computeds) + `useXxxUI.ts` (UI state — refs like `is_open`, handlers like `handleClick`) pair is a tool you reach for when a component has genuine UI orchestration, **not** a rule for every component. Simple local UI state can just be `ref`s in `<script setup>`. When you do extract, the component only imports and destructures; `useI18n` lives in the UI composable, destructured as `{ t: translate }`. In a composable's return, list refs/computeds first, then a blank line, then functions.
 - **Shared state across a component tree = provide/inject context, not `useState`.** Wrap the composable in a `*Context.ts`: a `composable_context = ReturnType<typeof useX>` alias, a `const key = Symbol('x')`, a single `provideX()` that calls `useX()` and `provide(key, flow)` then returns it, and a `useXContext()` that injects and throws `new Error('useXContext')` if missing. Both exports are arrow functions. The composable and its `*Context.ts` live together in a `context/` folder. The parent that owns the state's lifetime calls `provideX()` once; descendants call `useXContext()`.
 - **Named functions** use `function name() {}`, not `const name = () =>`. Arrows are fine for inline callbacks (`map`, `computed`, `watch`) and for the `*Context.ts` exports. If a name must be snake_case (e.g. `open_modal`), use the arrow form — lint forces `function` declarations to camelCase.
 - **No trailing newline** at the end of any file.
 - Apply personal style first, then run eslint to catch project-specific overrides.
+
+## Folder structure & data layer
+
+- Nuxt defaults under `web/app/` (`pages/`, `components/`, `composables/`, `utils/`, `layouts/`), grouped into **feature subfolders**. The app shell (bottom nav + FAB) lives in `layouts/default.vue`, never in a page.
+- **One API wrapper** (`app/utils/api.ts`) owns the base URL, unwraps the `{ data }` envelope, and maps the contract's error shape — components never call `$fetch` raw. Thin per-resource composables (`useMonthlyStats`, `useExpenses`, `useCategories`) build on it, so swapping the backend touches one file.
+- **Contract types** (`Category`, `Expense`, `MonthlyStats`, …) live in Nuxt 4's `shared/` dir so the app and the mock `server/api/` routes share one definition; mirror `docs/api-contract.md`.
+- Pure helpers (`formatPeso`, `percent`) live in `utils/`. Graduate to `app/features/` or Nuxt Layers only if this outgrows the flat structure.
 
 ## Design tokens — Receipt Roll
 
