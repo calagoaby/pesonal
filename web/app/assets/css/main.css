@@ -1,0 +1,8 @@
+:root {
+    --desk: #EAE5D9;
+    --paper: #FBF8F1;
+}
+
+body {
+    background-color: var(--desk);
+}
