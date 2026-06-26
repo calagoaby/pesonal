@@ -1,19 +1,25 @@
 :root {
+    /* Surfaces */
     --desk: #EAE5D9;
     --paper: #FBF8F1;
 
-    /* Spacing */
-    --space-xs: 4px;
-    --space-s:  8px;
-    --space-m:  12px;
-    --space-l:  16px;
-    --space-xl: 20px;
+    /* Ink */
+    --ink: #1C1A17;
+    --faded: #8A857B;
+    --perforation: #D8D2C4;
 
-    /* Text Color */
-    --faded: #8a857b;
+    /* Spacing — 4-base scale */
+    --space-xs: 4px;
+    --space-s: 8px;
+    --space-m: 12px;
+    --space-l: 16px;
+    --space-xl: 20px;
 }
 
 body {
+    /* Desk fills the viewport edge-to-edge; each screen owns its gutter. */
+    margin: 0;
     background-color: var(--desk);
-    margin: var(--space-xl)
+    color: var(--ink);
+    font-family: "Plus Jakarta Sans", system-ui, sans-serif;
 }

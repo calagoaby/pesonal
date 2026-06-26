@@ -1,52 +1,47 @@
 <template>
-    <div class="content">
-        <div class="header">
+    <div class="screen">
+        <header class="header">
             <div>
-                <div class="hello">Kamusta, Aby</div>
-                <div class="htitle">Your money this month</div>
+                <p class="greeting">Kumusta, Aby</p>
+                <h1 class="title">Your money this month</h1>
             </div>
-            <div>
-                <Avatar label="A" class="mr-2 avatar" shape="circle" />
-            </div>
-        </div>
+            <Avatar label="A" shape="circle" class="avatar" />
+        </header>
     </div>
 </template>
 
-<style>
-.content {
-    padding: 10px 16px 0;
-    font-family: "Plus Jakarta Sans", sans-serif;
-    font-optical-sizing: auto;
-    font-weight: 300;
-    font-style: normal;
+<style scoped>
+.screen {
+    /* 16px gutter via the design token, not a body margin. */
+    padding: var(--space-m) var(--space-l) 0;
 }
 
 .header {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
+}
 
-    .hello {
-        font-size: 12px;
-        color: var(--faded)
-    }
+.greeting {
+    margin: 0;
+    font-size: 12px;
+    color: var(--faded);
+}
 
-    .htitle {
-        font-size: 18px;
-        font-weight: 700;
-        margin-top: 2px;
-    }
+.title {
+    margin: var(--space-xs) 0 0;
+    font-size: 18px;
+    font-weight: 700;
 }
 
 .avatar {
-    background-color: var(--paper);
-    font-family: "Spline Sans Mono", monospace;
-    font-optical-sizing: auto;
-    font-weight: 600;
-    font-style: normal;
-    border: 1.5px solid black;
-    font-size: 16px;
     width: 38px;
     height: 38px;
+    border: 1.5px solid var(--ink);
+    background-color: var(--paper);
+    color: var(--ink);
+    font-family: "Spline Sans Mono", monospace;
+    font-weight: 600;
+    font-size: 16px;
 }
 </style>
