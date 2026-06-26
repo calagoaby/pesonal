@@ -1,7 +1,3 @@
-<script setup lang="ts">
-import DashboardHeader from '~/components/Header.vue'
-</script>
-
 <template>
     <div class="screen">
         <DashboardHeader />
