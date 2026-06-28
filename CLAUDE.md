@@ -47,7 +47,7 @@ Theme: a deadpan thermal-paper receipt. Flat surfaces, dashed perforation divide
 | Categories | Housing `#534F8C` · Food `#C9692E` · Groceries `#5E7A3E` · Transport `#3F6F97` · Fun `#B0577B` · Other `#8A857B` |
 | Type — numbers/totals/headers | Mono (`Spline Sans Mono`), `tabular-nums`; section headers mono ALL-CAPS, letter-spacing .08em |
 | Type — body/names/notes | Sans (`Plus Jakarta Sans`) |
-| Type scale | hero 34/600 mono · section header 12 · body 14 · caption 12 · micro 11 |
+| Type scale | CSS vars in `main.css`: `--text-hero` 34 · `--text-title` 18 · `--text-body` 14 · `--text-label` 12 (section headers, captions) · `--text-micro` 11 |
 | Radius | card 6 (paper slip) · pill/FAB 999 (rubber stamp) |
 | Spacing | 4-base (4 · 8 · 12 · 16 · 20), screen gutter 16 |
 

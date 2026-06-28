@@ -17,13 +17,13 @@
 
 .greeting {
     margin: 0;
-    font-size: 12px;
+    font-size: var(--text-label);
     color: var(--faded);
 }
 
 .title {
     margin: var(--space-xs) 0 0;
-    font-size: 18px;
+    font-size: var(--text-title);
     font-weight: 700;
 }
 
@@ -32,7 +32,6 @@
     height: 38px;
     border: 1.5px solid var(--ink);
     background-color: var(--paper);
-    color: var(--ink);
     font-family: "Spline Sans Mono", monospace;
     font-weight: 600;
     font-size: 16px;

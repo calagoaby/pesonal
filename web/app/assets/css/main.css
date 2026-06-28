@@ -8,6 +8,13 @@
     --faded: #8A857B;
     --perforation: #D8D2C4;
 
+    /* Type scale */
+    --text-hero:  34px;  /* big totals (mono) */
+    --text-title: 18px;  /* screen titles — "Your money this month" */
+    --text-body:  14px;  /* body text, item names */
+    --text-label: 12px;  /* section headers, captions, the greeting */
+    --text-micro: 11px;  /* footnotes, fine print */
+
     /* Spacing — 4-base scale */
     --space-xs: 4px;
     --space-s: 8px;
