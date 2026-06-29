@@ -21,12 +21,17 @@
     --space-m: 12px;
     --space-l: 16px;
     --space-xl: 20px;
+
+    /* Font Families */
+    --mono: "Spline Sans Mono", ui-monospace, monospace;
+    --sans: "Plus Jakarta Sans", system-ui, sans-serif;
 }
 
 body {
     /* Desk fills the viewport edge-to-edge; each screen owns its gutter. */
     margin: 0;
+    box-sizing: border-box;
     background-color: var(--desk);
     color: var(--ink);
-    font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+    font-family: var(--sans)
 }

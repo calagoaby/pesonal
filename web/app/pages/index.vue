@@ -1,6 +1,7 @@
 <template>
     <div class="screen">
         <DashboardHeader />
+        <DashboardMonthSwitcher />
     </div>
 </template>
 
