@@ -2,7 +2,7 @@
     <div class="monthswitcher">
         <div class="period">
             <i class="pi pi-chevron-left"></i>
-                <span>June 2026</span>
+            <span>June 2026</span>
             <i class="pi pi-chevron-right"></i>
         </div>
         <div class="text">
@@ -34,7 +34,7 @@
 }
 
 .period i {
-    font-size: var(--space-m);
+    font-size: var(--text-label);
     color: var(--faded);
 }
 
