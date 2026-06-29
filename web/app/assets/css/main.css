@@ -21,6 +21,20 @@
     --space-m: 12px;
     --space-l: 16px;
     --space-xl: 20px;
+
+    /* Font Families */
+    --mono: "Spline Sans Mono", ui-monospace, monospace;
+    --sans: "Plus Jakarta Sans", system-ui, sans-serif;
+}
+
+html {
+  box-sizing: border-box;
+}
+
+*,
+::before,
+::after {
+  box-sizing: inherit;
 }
 
 body {
@@ -28,5 +42,5 @@ body {
     margin: 0;
     background-color: var(--desk);
     color: var(--ink);
-    font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+    font-family: var(--sans);
 }
