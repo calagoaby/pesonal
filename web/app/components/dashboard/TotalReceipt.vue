@@ -107,8 +107,8 @@ onMounted(() => {
 .receipt {
     font-family: var(--mono);
     background-color: var(--paper);
-    margin: var(--space-l) 0 var(--space-xxl);
-    padding: var(--space-xl) var(--space-xl) var(--space-xxl);
+    margin: var(--space-l) 0 var(--space-2xl);
+    padding: var(--space-xl) var(--space-xl) var(--space-2xl);
 }
 
 .title {

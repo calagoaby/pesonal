@@ -48,7 +48,7 @@ Theme: a deadpan thermal-paper receipt. Flat surfaces, dashed perforation divide
 | Type — body/names/notes | Sans (`Plus Jakarta Sans`) |
 | Type scale | CSS vars in `main.css`: `--text-hero` 34 · `--text-title` 18 · `--text-body` 14 · `--text-label` 12 (section headers, captions) · `--text-micro` 11 |
 | Radius | CSS vars: `--radius-card` 6 (paper slip) · `--radius-pill` 999 (rubber stamp · pills · FAB) |
-| Spacing | CSS vars: `--space-xs` 4 · `--space-s` 8 · `--space-m` 12 · `--space-l` 16 · `--space-xl` 20 · `--space-xxl` 24; screen gutter 16 |
+| Spacing | CSS vars: `--space-xs` 4 · `--space-s` 8 · `--space-m` 12 · `--space-l` 16 · `--space-xl` 20 · `--space-2xl` 24; screen gutter 16 |
 
 Signature: flat — no soft shadows; dashed perforation dividers, a torn zig-zag hero edge, barcode foot. The PrimeVue preset at `web/app/theme/pesonal-preset.ts` bakes the stamp red into the `primary` palette.
 
