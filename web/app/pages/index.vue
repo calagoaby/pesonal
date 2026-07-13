@@ -2,6 +2,7 @@
     <div class="screen">
         <DashboardHeader />
         <DashboardMonthSwitcher />
+        <DashboardTotalReceipt />
     </div>
 </template>
 

@@ -7,6 +7,7 @@
     --ink: #1C1A17;
     --faded: #8A857B;
     --perforation: #D8D2C4;
+    --under: #2F7D52;
 
     /* Type scale */
     --text-hero:  34px;  /* big totals (mono) */
@@ -21,6 +22,8 @@
     --space-m: 12px;
     --space-l: 16px;
     --space-xl: 20px;
+    --space-xxl: 24px;
+    --space-xxxl: 28px;
 
     /* Font Families */
     --mono: "Spline Sans Mono", ui-monospace, monospace;
@@ -28,13 +31,13 @@
 }
 
 html {
-  box-sizing: border-box;
+    box-sizing: border-box;
 }
 
 *,
 ::before,
 ::after {
-  box-sizing: inherit;
+    box-sizing: inherit;
 }
 
 body {

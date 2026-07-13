@@ -1,5 +1,5 @@
 <template>
-    <div class="monthswitcher">
+    <div class="month-switcher">
         <div class="period">
             <i class="pi pi-chevron-left"></i>
             <span>June 2026</span>
@@ -12,7 +12,7 @@
 </template>
 
 <style scoped>
-.monthswitcher {
+.month-switcher {
     margin: 14px 0 0;
     display: flex;
     justify-content: space-between;
