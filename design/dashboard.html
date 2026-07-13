@@ -9,74 +9,92 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Spline+Sans+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/primeicons/7.0.0/primeicons.min.css">
 <style>
+/*
+  Token rule: var names mirror web/app/assets/css/main.css.
+  - var(--…)  → use that token in the app.
+  - literal px → intentional one-off (icon sizes, hairlines, art) — type it literally.
+  SVG chart internals stay literal: their colors/sizes come from data in the real app.
+*/
 :root{
-  --desk:#eae5d9;--paper:#fbf8f1;
-  --ink:#1c1a17;--faded:#8a857b;--perf:#d8d2c4;
-  --stamp:#c8472e;--under:#2f7d52;--hi:#e8b23a;
-  --c-housing:#534f8c;--c-food:#c9692e;--c-groc:#5e7a3e;--c-transport:#3f6f97;--c-fun:#b0577b;--c-other:#8a857b;
+  /* Surfaces */
+  --desk:#EAE5D9;--paper:#FBF8F1;
+  /* Ink */
+  --ink:#1C1A17;--faded:#8A857B;--perforation:#D8D2C4;
+  /* Accents */
+  --stamp:#C8472E;--under:#2F7D52;--hi:#E8B23A;
+  /* Categories (from API data in the app) */
+  --c-housing:#534F8C;--c-food:#C9692E;--c-groc:#5E7A3E;--c-transport:#3F6F97;--c-fun:#B0577B;--c-other:#8A857B;
+  /* Type scale */
+  --text-hero:34px;--text-title:18px;--text-body:14px;--text-label:12px;--text-micro:11px;
+  /* Spacing — 4-base scale */
+  --space-xs:4px;--space-s:8px;--space-m:12px;--space-l:16px;--space-xl:20px;--space-xxl:24px;
+  /* Radius */
+  --radius-card:6px;--radius-pill:999px;
+  /* Fonts */
   --mono:'Spline Sans Mono',ui-monospace,monospace;
   --sans:'Plus Jakarta Sans',system-ui,sans-serif;
-  --r-card:6px;
   --shadow:0 6px 16px rgba(40,33,20,.05);
 }
 *{box-sizing:border-box;margin:0;padding:0}
+/* ── mockup chrome (phone frame + statusbar) — not part of the app, don't build ── */
 body{font-family:var(--sans);background:#d8d1c2;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:30px 16px;color:var(--ink)}
 .label{font-size:13px;color:#7c7567;margin-bottom:14px;text-align:center}
 .phone{width:390px;background:#211e19;border-radius:42px;padding:10px;box-shadow:0 30px 60px rgba(33,30,25,.35)}
 .screen{background:var(--desk);border-radius:32px;overflow:hidden}
 .statusbar{display:flex;justify-content:space-between;align-items:center;padding:11px 22px 4px;font-size:13px;font-family:var(--mono);color:var(--ink)}
 .statusbar .icons{display:flex;gap:8px;align-items:center}
-.content{padding:10px 16px 0}
+/* ── app ui — tokens mirror main.css ── */
+.content{padding:var(--space-m) var(--space-l) 0}
 .row{display:flex;align-items:center;justify-content:space-between}
-.hello{font-size:12px;color:var(--faded)}
-.htitle{font-size:18px;font-weight:700;margin-top:2px}
-.avatar{width:38px;height:38px;border-radius:50%;border:1.5px solid var(--ink);background:var(--paper);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-weight:600;font-size:15px}
-.period{display:flex;align-items:center;gap:12px;background:var(--paper);border:1px solid var(--perf);border-radius:999px;padding:6px 14px}
-.period .m{font-family:var(--mono);font-size:13px;font-weight:500}
-.period i{font-size:12px;color:var(--faded)}
-.upd{font-size:12px;color:var(--faded)}
-.shdr{font-family:var(--mono);font-size:12px;letter-spacing:.08em;color:var(--faded);text-transform:uppercase}
-.hint{font-size:11px;color:var(--faded)}
-.perf{border-top:1.5px dashed var(--perf);margin:12px 0}
-/* hero receipt */
-.receipt{background:var(--paper);padding:18px 18px 24px;margin:14px 0 28px;
+.hello{font-size:var(--text-label);color:var(--faded)}
+.htitle{font-size:var(--text-title);font-weight:700;margin-top:var(--space-xs)}
+.avatar{width:38px;height:38px;border-radius:var(--radius-pill);border:1.5px solid var(--ink);background:var(--paper);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-weight:600;font-size:16px}
+.period{display:flex;align-items:center;gap:var(--space-m);background:var(--paper);border:1px solid var(--perforation);border-radius:var(--radius-pill);padding:var(--space-s) var(--space-l)}
+.period .m{font-family:var(--mono);font-size:var(--text-body);font-weight:500}
+.period i{font-size:var(--text-label);color:var(--faded)}
+.upd{font-size:var(--text-label);color:var(--faded)}
+.shdr{font-family:var(--mono);font-size:var(--text-label);letter-spacing:.08em;color:var(--faded);text-transform:uppercase}
+.hint{font-size:var(--text-micro);color:var(--faded)}
+.perf{border-top:1.5px dashed var(--perforation);margin:var(--space-m) 0}
+/* hero receipt — bottom padding includes the 12px torn teeth the mask carves away */
+.receipt{background:var(--paper);padding:var(--space-xl) var(--space-xl) var(--space-xxl);margin:var(--space-l) 0 var(--space-xxl);
   --tooth:12px;
   -webkit-mask:linear-gradient(#000 0 0) top/100% calc(100% - var(--tooth)) no-repeat,conic-gradient(from -45deg at bottom,#0000,#000 1deg 89deg,#0000 90deg) bottom/16px var(--tooth) repeat-x;
           mask:linear-gradient(#000 0 0) top/100% calc(100% - var(--tooth)) no-repeat,conic-gradient(from -45deg at bottom,#0000,#000 1deg 89deg,#0000 90deg) bottom/16px var(--tooth) repeat-x;}
-.merchant{text-align:center;font-family:var(--mono);font-size:15px;font-weight:600;letter-spacing:3px}
-.msub{text-align:center;font-family:var(--mono);font-size:11px;color:var(--faded);margin-top:3px}
-.tlabel{text-align:center;font-family:var(--mono);font-size:11px;letter-spacing:1.5px;color:var(--faded)}
-.total{text-align:center;font-family:var(--mono);font-size:34px;font-weight:600;margin-top:4px;font-variant-numeric:tabular-nums}
-.stamp{display:inline-flex;align-items:center;gap:5px;border:2px solid var(--under);color:var(--under);font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:1px;padding:4px 9px;border-radius:4px;transform:rotate(-7deg);opacity:.92}
-.note{text-align:center;font-size:12px;color:var(--faded);margin-top:2px}
-.lrow{display:flex;align-items:baseline;gap:8px;font-family:var(--mono);font-size:12px;margin-top:7px}
+.merchant{text-align:center;font-family:var(--mono);font-size:var(--text-body);font-weight:600;letter-spacing:3px}
+.msub{text-align:center;font-family:var(--mono);font-size:var(--text-micro);color:var(--faded);margin-top:var(--space-xs)}
+.tlabel{text-align:center;font-family:var(--mono);font-size:var(--text-micro);letter-spacing:1.5px;color:var(--faded)}
+.total{text-align:center;font-family:var(--mono);font-size:var(--text-hero);font-weight:600;margin-top:var(--space-xs);font-variant-numeric:tabular-nums}
+.stamp{display:inline-flex;align-items:center;gap:var(--space-xs);border:2px solid var(--under);color:var(--under);font-family:var(--mono);font-size:var(--text-micro);font-weight:600;letter-spacing:1px;padding:var(--space-xs) var(--space-s);border-radius:var(--radius-card);transform:rotate(-7deg);opacity:.92}
+.note{text-align:center;font-size:var(--text-label);color:var(--faded);margin-top:var(--space-m)}
+.lrow{display:flex;align-items:baseline;gap:var(--space-s);font-family:var(--mono);font-size:var(--text-label);margin-top:var(--space-s)}
 .lrow .lbl{color:var(--faded);text-transform:uppercase;letter-spacing:.05em}
-.lrow .fill{flex:1;border-bottom:1px dotted var(--perf);transform:translateY(-3px)}
+.lrow .fill{flex:1;border-bottom:1px dotted var(--perforation);transform:translateY(-3px)}
 .lrow .val{font-weight:500;font-variant-numeric:tabular-nums}
-.barcode{display:flex;justify-content:center;align-items:flex-end;gap:1.5px;height:30px;margin-top:14px}
+.barcode{display:flex;justify-content:center;align-items:flex-end;gap:1.5px;height:30px;margin-top:var(--space-l)}
 .barcode span{width:2px;height:100%;background:var(--ink)}
-.ono{text-align:center;font-family:var(--mono);font-size:11px;color:var(--faded);margin-top:6px}
-.thanks{text-align:center;font-family:var(--mono);font-size:11px;color:var(--faded);margin-top:8px}
+.ono{text-align:center;font-family:var(--mono);font-size:var(--text-micro);color:var(--faded);margin-top:var(--space-xs)}
+.thanks{text-align:center;font-family:var(--mono);font-size:var(--text-micro);color:var(--faded);margin-top:var(--space-s)}
 /* cards */
-.card{background:var(--paper);border-radius:var(--r-card);padding:15px 16px;box-shadow:var(--shadow);margin-bottom:14px}
-.legend{flex:1;display:flex;flex-direction:column;gap:11px}
-.legname{display:flex;align-items:center;gap:8px;font-size:13px}
+.card{background:var(--paper);border-radius:var(--radius-card);padding:var(--space-l);box-shadow:var(--shadow);margin-bottom:var(--space-l)}
+.legend{flex:1;display:flex;flex-direction:column;gap:var(--space-m)}
+.legname{display:flex;align-items:center;gap:var(--space-s);font-size:var(--text-body)}
 .dot{width:10px;height:10px;border-radius:3px;flex:none}
-.amt{font-family:var(--mono);font-size:13px;font-weight:500;font-variant-numeric:tabular-nums}
-.pct{color:var(--faded);font-weight:400;font-size:11px}
-.seg{height:5px;border-radius:99px;background:#ece7db;overflow:hidden;margin-top:6px}
+.amt{font-family:var(--mono);font-size:var(--text-body);font-weight:500;font-variant-numeric:tabular-nums}
+.pct{color:var(--faded);font-weight:400;font-size:var(--text-micro)}
+.seg{height:5px;border-radius:var(--radius-pill);background:var(--desk);overflow:hidden;margin-top:var(--space-xs)}
 /* recent */
-.item{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-top:1.5px dashed var(--perf)}
-.iname{display:flex;align-items:center;gap:9px;font-size:14px;font-weight:500}
-.isub{font-size:12px;color:var(--faded)}
-.iamt{font-family:var(--mono);font-size:14px;font-weight:500;font-variant-numeric:tabular-nums}
-.seeall{font-size:12px;color:var(--stamp);display:flex;align-items:center;gap:3px}
+.item{display:flex;align-items:center;justify-content:space-between;padding:var(--space-m) 0;border-top:1.5px dashed var(--perforation)}
+.iname{display:flex;align-items:center;gap:var(--space-s);font-size:var(--text-body);font-weight:500}
+.isub{font-size:var(--text-label);color:var(--faded)}
+.iamt{font-family:var(--mono);font-size:var(--text-body);font-weight:500;font-variant-numeric:tabular-nums}
+.seeall{font-size:var(--text-label);color:var(--stamp);display:flex;align-items:center;gap:var(--space-xs)}
 /* nav */
-.nav{display:flex;align-items:center;justify-content:space-between;background:var(--paper);border-top:1.5px dashed var(--perf);padding:10px 18px 14px}
-.navitem{display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;font-size:11px;color:var(--faded);font-weight:500}
+.nav{display:flex;align-items:center;justify-content:space-between;background:var(--paper);border-top:1.5px dashed var(--perforation);padding:var(--space-m) var(--space-l) var(--space-l)}
+.navitem{display:flex;flex-direction:column;align-items:center;gap:var(--space-xs);flex:1;font-size:var(--text-micro);color:var(--faded);font-weight:500}
 .navitem.active{color:var(--ink);font-weight:600}
 .navitem i{font-size:20px}
-.fab{width:54px;height:54px;border-radius:50%;background:var(--stamp);color:#fff;display:flex;align-items:center;justify-content:center;margin-top:-26px;border:3px solid var(--paper);box-shadow:0 8px 18px rgba(200,71,46,.32);font-size:24px}
+.fab{width:54px;height:54px;border-radius:var(--radius-pill);background:var(--stamp);color:#fff;display:flex;align-items:center;justify-content:center;margin-top:-26px;border:3px solid var(--paper);box-shadow:0 8px 18px rgba(200,71,46,.32);font-size:24px}
 </style>
 </head>
 <body>
@@ -88,7 +106,7 @@ body{font-family:var(--sans);background:#d8d1c2;min-height:100vh;display:flex;fl
 
 <div class="content">
 
-<div class="row" style="padding-top:8px">
+<div class="row" style="padding-top:var(--space-s)">
 <div>
 <div class="hello">Kumusta, Aby</div>
 <div class="htitle">Your money this month</div>
@@ -96,7 +114,7 @@ body{font-family:var(--sans);background:#d8d1c2;min-height:100vh;display:flex;fl
 <div class="avatar">A</div>
 </div>
 
-<div class="row" style="margin:14px 0 0">
+<div class="row" style="margin:var(--space-l) 0 0">
 <div class="period">
 <i class="pi pi-chevron-left"></i>
 <span class="m">June 2026</span>
@@ -111,8 +129,8 @@ body{font-family:var(--sans);background:#d8d1c2;min-height:100vh;display:flex;fl
 <div class="perf"></div>
 <div class="tlabel">TOTAL DAMAGE</div>
 <div class="total">₱43,210</div>
-<div style="text-align:center;margin-top:10px"><span class="stamp"><i class="pi pi-arrow-down-right" style="font-size:11px"></i>12% VS MAY</span></div>
-<div class="note" style="margin-top:12px">Petsa de peligro? Hindi today.</div>
+<div style="text-align:center;margin-top:var(--space-m)"><span class="stamp"><i class="pi pi-arrow-down-right" style="font-size:var(--text-micro)"></i>12% VS MAY</span></div>
+<div class="note">Petsa de peligro? Hindi today.</div>
 <div class="perf"></div>
 <div class="lrow"><span class="lbl">Daily avg</span><span class="fill"></span><span class="val">₱2,540</span></div>
 <div class="lrow"><span class="lbl">Transactions</span><span class="fill"></span><span class="val">38</span></div>
@@ -122,8 +140,8 @@ body{font-family:var(--sans);background:#d8d1c2;min-height:100vh;display:flex;fl
 </div>
 
 <div class="card">
-<div class="row" style="margin-bottom:12px"><span class="shdr">Where it went</span><span class="hint">tap a row to filter</span></div>
-<div style="display:flex;align-items:center;gap:16px">
+<div class="row" style="margin-bottom:var(--space-m)"><span class="shdr">Where it went</span><span class="hint">tap a row to filter</span></div>
+<div style="display:flex;align-items:center;gap:var(--space-l)">
 <svg viewBox="0 0 120 120" width="116" height="116" style="flex:none">
 <circle cx="60" cy="60" r="46" fill="none" stroke="#ece7db" stroke-width="16"/>
 <g transform="rotate(-90 60 60)" fill="none" stroke-width="16">
@@ -137,17 +155,17 @@ body{font-family:var(--sans);background:#d8d1c2;min-height:100vh;display:flex;fl
 <text x="60" y="73" text-anchor="middle" font-family="'Spline Sans Mono',monospace" font-size="10" fill="#8a857b">total</text>
 </svg>
 <div class="legend">
-<div><div class="row"><span class="legname"><span class="dot" style="background:#534f8c"></span>Housing</span><span class="amt">₱15,000 <span class="pct">35%</span></span></div><div class="seg"><div style="width:35%;height:100%;background:#534f8c;border-radius:99px"></div></div></div>
-<div><div class="row"><span class="legname"><span class="dot" style="background:#c9692e"></span>Food</span><span class="amt">₱9,800 <span class="pct">23%</span></span></div><div class="seg"><div style="width:23%;height:100%;background:#c9692e;border-radius:99px"></div></div></div>
-<div><div class="row"><span class="legname"><span class="dot" style="background:#5e7a3e"></span>Groceries</span><span class="amt">₱6,400 <span class="pct">15%</span></span></div><div class="seg"><div style="width:15%;height:100%;background:#5e7a3e;border-radius:99px"></div></div></div>
-<div><div class="row"><span class="legname"><span class="dot" style="background:#3f6f97"></span>Transport</span><span class="amt">₱4,200 <span class="pct">10%</span></span></div><div class="seg"><div style="width:10%;height:100%;background:#3f6f97;border-radius:99px"></div></div></div>
-<div><div class="row"><span class="legname"><span class="dot" style="background:#8a857b"></span>Others</span><span class="amt">₱7,810 <span class="pct">18%</span></span></div><div class="seg"><div style="width:18%;height:100%;background:#8a857b;border-radius:99px"></div></div></div>
+<div><div class="row"><span class="legname"><span class="dot" style="background:var(--c-housing)"></span>Housing</span><span class="amt">₱15,000 <span class="pct">35%</span></span></div><div class="seg"><div style="width:35%;height:100%;background:var(--c-housing);border-radius:var(--radius-pill)"></div></div></div>
+<div><div class="row"><span class="legname"><span class="dot" style="background:var(--c-food)"></span>Food</span><span class="amt">₱9,800 <span class="pct">23%</span></span></div><div class="seg"><div style="width:23%;height:100%;background:var(--c-food);border-radius:var(--radius-pill)"></div></div></div>
+<div><div class="row"><span class="legname"><span class="dot" style="background:var(--c-groc)"></span>Groceries</span><span class="amt">₱6,400 <span class="pct">15%</span></span></div><div class="seg"><div style="width:15%;height:100%;background:var(--c-groc);border-radius:var(--radius-pill)"></div></div></div>
+<div><div class="row"><span class="legname"><span class="dot" style="background:var(--c-transport)"></span>Transport</span><span class="amt">₱4,200 <span class="pct">10%</span></span></div><div class="seg"><div style="width:10%;height:100%;background:var(--c-transport);border-radius:var(--radius-pill)"></div></div></div>
+<div><div class="row"><span class="legname"><span class="dot" style="background:var(--c-other)"></span>Others</span><span class="amt">₱7,810 <span class="pct">18%</span></span></div><div class="seg"><div style="width:18%;height:100%;background:var(--c-other);border-radius:var(--radius-pill)"></div></div></div>
 </div>
 </div>
 </div>
 
 <div class="card">
-<div class="row" style="margin-bottom:12px"><span class="shdr">Daily damage</span><span class="hint">biggest: Jun 1</span></div>
+<div class="row" style="margin-bottom:var(--space-m)"><span class="shdr">Daily damage</span><span class="hint">biggest: Jun 1</span></div>
 <svg viewBox="0 0 320 112" width="100%" height="98">
 <line x1="0" y1="92" x2="320" y2="92" stroke="#d8d2c4" stroke-width="1" stroke-dasharray="3 3"/>
 <rect x="6" y="4" width="11" height="88" rx="2" fill="#c8472e"/>
@@ -174,18 +192,18 @@ body{font-family:var(--sans);background:#d8d1c2;min-height:100vh;display:flex;fl
 </svg>
 </div>
 
-<div class="card" style="margin-bottom:16px">
-<div class="row" style="margin-bottom:4px"><span class="shdr">Recent items</span><span class="seeall">See all <i class="pi pi-chevron-right" style="font-size:11px"></i></span></div>
+<div class="card" style="margin-bottom:var(--space-l)">
+<div class="row" style="margin-bottom:var(--space-xs)"><span class="shdr">Recent items</span><span class="seeall">See all <i class="pi pi-chevron-right" style="font-size:var(--text-micro)"></i></span></div>
 <div class="item">
-<span class="iname"><span class="dot" style="background:#c9692e"></span><span style="display:flex;flex-direction:column"><span>Lunch with team</span><span class="isub">Food · Jun 17</span></span></span>
+<span class="iname"><span class="dot" style="background:var(--c-food)"></span><span style="display:flex;flex-direction:column"><span>Lunch with team</span><span class="isub">Food · Jun 17</span></span></span>
 <span class="iamt">₱680</span>
 </div>
 <div class="item">
-<span class="iname"><span class="dot" style="background:#3f6f97"></span><span style="display:flex;flex-direction:column"><span>Grab to office</span><span class="isub">Transport · Jun 17</span></span></span>
+<span class="iname"><span class="dot" style="background:var(--c-transport)"></span><span style="display:flex;flex-direction:column"><span>Grab to office</span><span class="isub">Transport · Jun 17</span></span></span>
 <span class="iamt">₱240</span>
 </div>
 <div class="item">
-<span class="iname"><span class="dot" style="background:#5e7a3e"></span><span style="display:flex;flex-direction:column"><span>SM Groceries</span><span class="isub">Groceries · Jun 16</span></span></span>
+<span class="iname"><span class="dot" style="background:var(--c-groc)"></span><span style="display:flex;flex-direction:column"><span>SM Groceries</span><span class="isub">Groceries · Jun 16</span></span></span>
 <span class="iamt">₱2,150</span>
 </div>
 </div>
