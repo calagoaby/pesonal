@@ -140,7 +140,7 @@ onMounted(() => {
 
 .total {
     text-align: center;
-    font-weight: bold;
+    font-weight: 600;
     font-size: var(--text-hero);
     margin-top: var(--space-xs);
     font-variant-numeric: tabular-nums;
@@ -153,7 +153,7 @@ onMounted(() => {
     border: 2px solid var(--under);
     color: var(--under);
     font-size: var(--text-micro);
-    font-weight: bold;
+    font-weight: 600;
     letter-spacing: 1px;
     padding: 4px 9px;
     border-radius: 4px;
