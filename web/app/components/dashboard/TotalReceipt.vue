@@ -1,21 +1,40 @@
-<script setup>
-function barcode_style () {
-  const darkWidth = Math.floor(Math.random() * 3) + 1
+<script setup lang="ts">
+
+
+/** Types */
+type BarcodeStyle = {
+    height: string,
+    width: string,
+    background: string,
+}
+
+
+/** States */
+const barcode_styles = ref<BarcodeStyle[]>([])
+
+
+/** Computed */
+const clip_path = computed(() => createReceiptClip(2.5, 3))
+
+
+/** Functions */
+function barcodeStyle (): BarcodeStyle {
+  const dark_width = Math.floor(Math.random() * 3) + 1
 
   const background = `linear-gradient(
     90deg,
-    var(--ink) 0 ${darkWidth}px,
-    transparent ${darkWidth}px 1px
+    var(--ink) 0 ${dark_width}px,
+    transparent ${dark_width}px 1px
   )`
 
   return {
     height: 'inherit',
-    width: `${darkWidth + 1}px`,
+    width: `${dark_width + 1}px`,
     background: background
   }
 }
 
-function createReceiptClip(step = 5, depth = 5) {
+function createReceiptClip(step = 5, depth = 5): string {
     const points = [
         '0% 0%',
         '100% 0%',
@@ -40,7 +59,11 @@ function createReceiptClip(step = 5, depth = 5) {
     return `polygon(${points.join(', ')})`
 }
 
-const clip_path = computed(() => createReceiptClip(2.5, 3))
+
+/** Lifecycle */
+onMounted(() => {
+    barcode_styles.value = Array.from({ length: 22 }, () => barcodeStyle())
+})
 </script>
 
 <template>
@@ -70,8 +93,8 @@ const clip_path = computed(() => createReceiptClip(2.5, 3))
         </div>
         <div class="barcode">
             <div 
-                v-for="n in 22" 
-                :style="barcode_style()"
+                v-for="style in barcode_styles" 
+                :style="style"
             ></div>
         </div>
         <div class="ono">NO. 0617-2026</div>
