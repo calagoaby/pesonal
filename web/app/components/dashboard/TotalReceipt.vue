@@ -1,6 +1,4 @@
 <script setup lang="ts">
-
-
 /** Types */
 type BarcodeStyle = {
     height: string,
@@ -10,26 +8,25 @@ type BarcodeStyle = {
 
 
 /** States */
-const barcode_styles = ref<BarcodeStyle[]>([])
-
-
-/** Computed */
-const clip_path = computed(() => createReceiptClip(2.5, 3))
+const clip_path = createReceiptClip(2.5, 3)
+const widths = [1, 1, 3, 3, 1, 1, 1, 3, 2, 2, 1, 2, 2, 1, 1, 1, 1, 3, 2, 1, 3, 1]
+const barcode_styles = Array.from(
+    { length: 22 }, (_, i) => barcodeStyle({index: i})
+)
 
 
 /** Functions */
-function barcodeStyle (): BarcodeStyle {
-  const dark_width = Math.floor(Math.random() * 3) + 1
+function barcodeStyle ( { index }: { index: number }): BarcodeStyle {
+  const width = widths[index] ?? 0;
 
   const background = `linear-gradient(
     90deg,
-    var(--ink) 0 ${dark_width}px,
-    transparent ${dark_width}px 1px
+    var(--ink) 0 ${width}px
   )`
 
   return {
     height: 'inherit',
-    width: `${dark_width + 1}px`,
+    width: `${width}px`,
     background: background
   }
 }
@@ -58,29 +55,23 @@ function createReceiptClip(step = 5, depth = 5): string {
 
     return `polygon(${points.join(', ')})`
 }
-
-
-/** Lifecycle */
-onMounted(() => {
-    barcode_styles.value = Array.from({ length: 22 }, () => barcodeStyle())
-})
 </script>
 
 <template>
     <div class="receipt" :style="{ clipPath: clip_path }">
         <div class="merchant">PESONAL</div>
-        <div class="tsub">OFFICIAL RECEIPT - JUNE 2026</div>
-        <div class="dashed-underline"></div>
+        <div class="tsub">OFFICIAL RECEIPT — JUNE 2026</div>
+        <div class="perf"></div>
         <div class="tlabel">TOTAL DAMAGE</div>
         <div class="total">₱43,210</div>
-        <div style="text-align: center; margin-top: 10px;">
+        <div style="text-align: center; margin-top: var(--space-m);">
             <span class="stamp"> 
-                <i class="pi pi-arrow-down-right" style="font-size: 11px;"></i>
+                <i class="pi pi-arrow-down-right" style="font-size: var(--text-micro);"></i>
                  12% VS MAY
             </span>
         </div>
         <div class="note">Petsa de peligro? Hindi today.</div>
-        <div class="dashed-underline"></div>
+        <div class="perf"></div>
         <div class="lrow">
             <div class="label">DAILY AVG</div>
             <div class="fill"></div>
@@ -93,7 +84,8 @@ onMounted(() => {
         </div>
         <div class="barcode">
             <div 
-                v-for="style in barcode_styles" 
+                v-for="(style, index) in barcode_styles"
+                :key="index" 
                 :style="style"
             ></div>
         </div>
@@ -112,9 +104,9 @@ onMounted(() => {
 }
 
 .merchant {
-    font-size: var(--text-title);
+    font-size: var(--text-body);
     text-align: center;
-    font-weight: bold;
+    font-weight: 600;
     letter-spacing: 3px;
 }
 
@@ -126,7 +118,7 @@ onMounted(() => {
     margin-top: var(--space-xs);
 }
 
-.dashed-underline {
+.perf {
     border-top: 1.5px dashed var(--perforation);
     margin: var(--space-m) 0;
 }
@@ -193,6 +185,7 @@ onMounted(() => {
     display: flex;
     justify-content: center;
     align-items: center;
+    gap: 1.5px;
 }
 
 .ono {
