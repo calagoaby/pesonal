@@ -1,7 +1,7 @@
 <template>
     <header class="header">
         <div>
-            <p class="greeting">Kumusta, Aby</p>
+            <p class="greeting">Kumusta, User</p>
             <h1 class="title">Your money this month</h1>
         </div>
         <Avatar label="A" shape="circle" class="avatar" />

@@ -1,5 +1,5 @@
 <template>
-    <div class="monthswitcher">
+    <div class="month-switcher">
         <div class="period">
             <i class="pi pi-chevron-left"></i>
             <span>June 2026</span>
@@ -12,8 +12,8 @@
 </template>
 
 <style scoped>
-.monthswitcher {
-    margin: 14px 0 0;
+.month-switcher {
+    margin: var(--space-l) 0 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -23,14 +23,14 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 13px;
+    font-size: var(--text-body);
     font-family: var(--mono);
     font-weight: 500;
     gap: var(--space-m);
     background-color: var(--paper);
-    padding: 6px 14px;
+    padding: var(--space-s) var(--space-l);
     border: 1px solid var(--perforation);
-    border-radius: 999px;
+    border-radius: var(--radius-pill);
 }
 
 .period i {

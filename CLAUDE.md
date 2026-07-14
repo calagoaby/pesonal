@@ -12,8 +12,7 @@ The owner is **learning** the frontend — do NOT hand over finished screens. He
 
 1. Claude posts a **design spec** (an HTML mockup + the tokens below). It does NOT reveal which PrimeVue components map to each region, or the Vue file layout — the owner discovers those.
 2. The owner **implements the screen himself** in `web/`, then opens a PR.
-3. Claude **reviews the owner's PR** — variable naming, folder structure, efficiency, correctness, and fit with the conventions below (inline comments via `gh`, or in chat). The owner revises, then merges.
-4. When asked, Claude opens a **reference implementation as a PR on its own branch** (never overwriting the owner's files), annotated with the reasoning, to compare against.
+3. Claude **reviews the owner's PR in chat** — what to change and why (naming, structure, efficiency, correctness, fit with the conventions below), but no paste-ready code and no reference implementations: the owner writes all app code himself. He revises, then merges.
 
 Design specs live in `design/`. Status and the screen order live in `docs/ROADMAP.md`.
 
@@ -48,10 +47,12 @@ Theme: a deadpan thermal-paper receipt. Flat surfaces, dashed perforation divide
 | Type — numbers/totals/headers | Mono (`Spline Sans Mono`), `tabular-nums`; section headers mono ALL-CAPS, letter-spacing .08em |
 | Type — body/names/notes | Sans (`Plus Jakarta Sans`) |
 | Type scale | CSS vars in `main.css`: `--text-hero` 34 · `--text-title` 18 · `--text-body` 14 · `--text-label` 12 (section headers, captions) · `--text-micro` 11 |
-| Radius | card 6 (paper slip) · pill/FAB 999 (rubber stamp) |
-| Spacing | 4-base (4 · 8 · 12 · 16 · 20), screen gutter 16 |
+| Radius | CSS vars: `--radius-card` 6 (paper slip) · `--radius-pill` 999 (rubber stamp · pills · FAB) |
+| Spacing | CSS vars: `--space-xs` 4 · `--space-s` 8 · `--space-m` 12 · `--space-l` 16 · `--space-xl` 20 · `--space-2xl` 24; screen gutter 16 |
 
 Signature: flat — no soft shadows; dashed perforation dividers, a torn zig-zag hero edge, barcode foot. The PrimeVue preset at `web/app/theme/pesonal-preset.ts` bakes the stamp red into the `primary` palette.
+
+The mockups in `design/` read in these var names — anything still literal px there (icon sizes, hairlines, barcode art) is an intentional one-off. Snap off-scale values to the nearest step; never mint a token per pixel.
 
 ## Run
 
