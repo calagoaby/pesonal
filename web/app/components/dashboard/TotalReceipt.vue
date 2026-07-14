@@ -68,7 +68,7 @@ onMounted(() => {
 
 <template>
     <div class="receipt" :style="{ clipPath: clip_path }">
-        <div class="title">PESONAL</div>
+        <div class="merchant">PESONAL</div>
         <div class="tsub">OFFICIAL RECEIPT - JUNE 2026</div>
         <div class="dashed-underline"></div>
         <div class="tlabel">TOTAL DAMAGE</div>
@@ -111,10 +111,10 @@ onMounted(() => {
     padding: var(--space-xl) var(--space-xl) var(--space-2xl);
 }
 
-.title {
+.merchant {
     font-size: var(--text-title);
     text-align: center;
-    font-weight: 600;
+    font-weight: bold;
     letter-spacing: 3px;
 }
 
@@ -149,14 +149,14 @@ onMounted(() => {
 .stamp {
     display: inline-flex;
     align-items: center;
-    gap: 5px;
+    gap: var(--space-xs);
     border: 2px solid var(--under);
     color: var(--under);
     font-size: var(--text-micro);
     font-weight: 600;
     letter-spacing: 1px;
-    padding: 4px 9px;
-    border-radius: 4px;
+    padding: var(--space-xs) var(--space-s);
+    border-radius: var(--radius-card);
     transform: rotate(-7deg);
     opacity: 0.92;
 }
@@ -173,7 +173,7 @@ onMounted(() => {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 8px;
+    gap: var(--space-s);
     font-size: var(--text-label);
     margin-top: var(--space-s);
     
@@ -188,7 +188,7 @@ onMounted(() => {
 }
 
 .barcode {
-    margin-top: var(--space-m);
+    margin-top: var(--space-l);
     height: 30px;
     display: flex;
     justify-content: center;

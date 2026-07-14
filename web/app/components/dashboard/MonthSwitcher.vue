@@ -13,7 +13,7 @@
 
 <style scoped>
 .month-switcher {
-    margin: 14px 0 0;
+    margin: var(--space-l) 0 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -23,14 +23,14 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 13px;
+    font-size: var(--text-body);
     font-family: var(--mono);
     font-weight: 500;
     gap: var(--space-m);
     background-color: var(--paper);
-    padding: 6px 14px;
+    padding: var(--space-s) var(--space-l);
     border: 1px solid var(--perforation);
-    border-radius: 999px;
+    border-radius: var(--radius-pill);
 }
 
 .period i {

@@ -7,6 +7,8 @@
     --ink: #1C1A17;
     --faded: #8A857B;
     --perforation: #D8D2C4;
+    
+    /* Accents */
     --under: #2F7D52;
 
     /* Type scale */
@@ -23,6 +25,13 @@
     --space-l: 16px;
     --space-xl: 20px;
     --space-2xl: 24px;
+
+    /* Radius */
+    --radius-card: 6px;
+    --radius-pill: 999px;
+
+    /* Card shadow */
+    --shadow: 0 6px 16px rgba(40, 33, 20, .05);
 
     /* Font Families */
     --mono: "Spline Sans Mono", ui-monospace, monospace;
