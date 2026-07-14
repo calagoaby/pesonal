@@ -17,7 +17,7 @@ const barcode_styles = Array.from(
 
 /** Functions */
 function barcodeStyle ( { index }: { index: number }): BarcodeStyle {
-  const width = widths[index] ?? 0;
+  const width = widths[index] ?? 0
 
   const background = `linear-gradient(
     90deg,
