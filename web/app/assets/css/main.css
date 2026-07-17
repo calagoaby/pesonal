@@ -33,6 +33,13 @@
     /* Card shadow */
     --shadow: 0 6px 16px rgba(40, 33, 20, .05);
 
+    --c-housing: #534F8C;
+    --c-food: #C9692E;
+    --c-groc: #5E7A3E;
+    --c-transport: #3F6F97;
+    --c-fun: #B0577B;
+    --c-other: #8A857B;
+
     /* Font Families */
     --mono: "Spline Sans Mono", ui-monospace, monospace;
     --sans: "Plus Jakarta Sans", system-ui, sans-serif;
