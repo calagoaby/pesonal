@@ -14,7 +14,7 @@ const {
             <span class="hint">tap a row to filter</span>
         </div>
         <div class="body-row">
-            <div class="svg">
+            <div class="doughnut">
                 <Chart type="doughnut" :data="chart_data"/>
                 <div class="inside-text">
                     <div class="total">₱43.2k</div>
@@ -75,7 +75,7 @@ const {
     gap: var(--space-l);
 }
 
-.svg {
+.doughnut {
     width: 116px;
     height: 116px;
     position: relative;
@@ -94,7 +94,6 @@ const {
     }
 
     .text {
-        font-size: 10px;
         font-size: var(--text-label);
         text-align: center;
         color: var(--faded);

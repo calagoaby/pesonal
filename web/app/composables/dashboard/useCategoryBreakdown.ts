@@ -41,7 +41,7 @@ export function useCategoryBreakdown() {
 
 
     /** Functions */
-    function setChartData() {
+    function buildChartData() {
         const percentages = updated_categories.value.map(category => category.percentage)
         const colors =  updated_categories.value.map(category => category.color)
 
@@ -68,7 +68,7 @@ export function useCategoryBreakdown() {
 
     function populateChart() {
         calculateCategoriesPercentages()
-        chart_data.value = setChartData()
+        chart_data.value = buildChartData()
     }
 
 
