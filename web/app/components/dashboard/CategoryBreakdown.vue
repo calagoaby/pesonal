@@ -1,43 +1,10 @@
 <script setup lang="ts">
-const chart_data = ref()
-const chart_options = ref()
+import { useCategoryBreakdown } from '~/composables/dashboard/useCategoryBreakdown';
 
-
-/** Functions */
-function setChartData() {
-    const document_style = getComputedStyle(document.body)
-
-    return {
-        datasets: [
-            {
-                data: [35, 20, 15, 10, 18],
-                backgroundColor: ['#534F8C', '#C9692E', '#5E7A3E', '#3F6F97', '#8A857B']
-            }
-        ]
-    }
-}
-
-function setChartOptions() {
-    const document_style = getComputedStyle(document.documentElement)
-
-    const textColor = '#C9692E'
-    return {
-        plugins: {
-            legend: {
-                labels: {
-                    cutout: '60%',
-                    color: textColor
-                }
-            }
-        }
-    }
-}
-
-
-onMounted(() => {
-    chart_data.value = setChartData()
-    chart_options.value = setChartOptions()
-})
+const {
+    chart_data,
+    updated_categories
+} = useCategoryBreakdown()
 </script>
 
 <template>
@@ -48,86 +15,29 @@ onMounted(() => {
         </div>
         <div class="body-row">
             <div class="svg">
-                <Chart type="doughnut" :data="chart_data" :options="chart_options"/>
+                <Chart type="doughnut" :data="chart_data"/>
                 <div class="inside-text">
                     <div class="total">₱43.2k</div>
                     <div class="text">total</div>
                 </div>
             </div>
             <div class="legend">
-                <div>
+                <div v-for="(category, index) in updated_categories" :key="index">
                     <div class="leg-row">
                         <div class="leg-name">
-                            <span class="dot" style="background-color: var(--c-housing);"></span>
-                            <span>Housing</span>
+                            <span class="dot" :style="{ backgroundColor: category.color }"></span>
+                            <span>{{ category.name }}</span>
                         </div>
                         <div class="numbers">
-                            <span class="amount">₱15,000 </span>
-                            <span class="percent">35%</span>
+                            <span class="amount">₱{{ category.amount }}&nbsp;</span>
+                            <span class="percent">{{ Math.floor(category.percentage) }}%</span>
                         </div>
                     </div>
                     <div class="seg">
-                        <div class="fill" style="width: 35%; background-color: var(--c-housing);"></div>
-                    </div>
-                </div>
-                <div>
-                    <div class="leg-row">
-                        <div class="leg-name">
-                            <span class="dot" style="background-color: var(--c-food);"></span>
-                            <span>Food</span>
-                        </div>
-                        <div class="numbers">
-                            <span class="amount">₱5,000 </span>
-                            <span class="percent">20%</span>
-                        </div>
-                    </div>
-                    <div class="seg">
-                        <div class="fill" style="width: 20%; background-color: var(--c-food);"></div>
-                    </div>
-                </div>
-                <div>
-                    <div class="leg-row">
-                        <div class="leg-name">
-                            <span class="dot" style="background-color: var(--c-groc);"></span>
-                            <span>Groceries</span>
-                        </div>
-                        <div class="numbers">
-                            <span class="amount">₱6,400 </span>
-                            <span class="percent">15%</span>
-                        </div>
-                    </div>
-                    <div class="seg">
-                        <div class="fill" style="width: 15%; background-color: var(--c-groc);"></div>
-                    </div>
-                </div>
-                <div>
-                    <div class="leg-row">
-                        <div class="leg-name">
-                            <span class="dot" style="background-color: var(--c-transport);"></span>
-                            <span>Transport</span>
-                        </div>
-                        <div class="numbers">
-                            <span class="amount">₱4,200 </span>
-                            <span class="percent">10%</span>
-                        </div>
-                    </div>
-                    <div class="seg">
-                        <div class="fill" style="width: 10%; background-color: var(--c-transport);"></div>
-                    </div>
-                </div>
-                <div>
-                    <div class="leg-row">
-                        <div class="leg-name">
-                            <span class="dot" style="background-color: var(--c-other);"></span>
-                            <span>Others</span>
-                        </div>
-                        <div class="numbers">
-                            <span class="amount">₱7,810 </span>
-                            <span class="percent">18%</span>
-                        </div>
-                    </div>
-                    <div class="seg">
-                        <div class="fill" style="width: 18%; background-color: var(--c-other);"></div>
+                        <div class="fill" :style="{ 
+                            backgroundColor: category.color, 
+                            width: Math.floor(category.percentage) + '%' 
+                        }"></div>
                     </div>
                 </div>
             </div>
