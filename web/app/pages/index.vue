@@ -3,6 +3,7 @@
         <DashboardHeader />
         <DashboardMonthSwitcher />
         <DashboardTotalReceipt />
+        <DashboardCategoryBreakdown />
     </div>
 </template>
 
