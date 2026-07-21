@@ -3,6 +3,7 @@ import { useCategoryBreakdown } from '~/composables/dashboard/useCategoryBreakdo
 
 const {
     chart_data,
+    chart_options,
     category_rows
 } = useCategoryBreakdown()
 </script>
@@ -15,7 +16,7 @@ const {
         </div>
         <div class="body-row">
             <div class="doughnut">
-                <Chart type="doughnut" :data="chart_data"/>
+                <Chart type="doughnut" :data="chart_data" :options="chart_options"/>
                 <div class="inside-text">
                     <div class="total">₱43.2k</div>
                     <div class="text">total</div>

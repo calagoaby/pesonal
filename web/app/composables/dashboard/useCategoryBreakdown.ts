@@ -1,8 +1,9 @@
-import type { CategoryRows } from "~/types/Categories"
+import type { CategoryRow } from "~/types/Categories"
 
 export function useCategoryBreakdown() {
     /** States */
     const chart_data = ref()
+    const chart_options = ref()
     const categories = [
         {
             name: 'Housing',
@@ -30,7 +31,7 @@ export function useCategoryBreakdown() {
             amount: 7810,
         }
     ]
-    const category_rows = ref<CategoryRows[]>([])
+    const category_rows = ref<CategoryRow[]>([])
 
 
     /** Functions */
@@ -48,6 +49,12 @@ export function useCategoryBreakdown() {
         }
     }
 
+    function buildChartOptions() {
+        return {
+            cutout: '65%'
+        }
+    }
+
     function calculateCategoriesPercentages() {
         let total = categories.reduce((sum, category) => { 
             return sum + category.amount 
@@ -62,6 +69,7 @@ export function useCategoryBreakdown() {
     function populateChart() {
         calculateCategoriesPercentages()
         chart_data.value = buildChartData()
+        chart_options.value = buildChartOptions()
     }
 
 
@@ -70,6 +78,7 @@ export function useCategoryBreakdown() {
 
     return {
         chart_data,
+        chart_options,
         category_rows
     }
 }
