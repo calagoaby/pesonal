@@ -3,7 +3,7 @@ import { useCategoryBreakdown } from '~/composables/dashboard/useCategoryBreakdo
 
 const {
     chart_data,
-    updated_categories
+    category_rows
 } = useCategoryBreakdown()
 </script>
 
@@ -22,21 +22,21 @@ const {
                 </div>
             </div>
             <div class="legend">
-                <div v-for="(category, index) in updated_categories" :key="index">
+                <div v-for="(category, index) in category_rows" :key="index">
                     <div class="leg-row">
                         <div class="leg-name">
                             <span class="dot" :style="{ backgroundColor: category.color }"></span>
                             <span>{{ category.name }}</span>
                         </div>
                         <div class="numbers">
-                            <span class="amount">₱{{ category.amount }}&nbsp;</span>
-                            <span class="percent">{{ Math.floor(category.percentage) }}%</span>
+                            <span class="amount">₱{{ formatAmount(category.amount) }}&nbsp;</span>
+                            <span class="percent">{{ category.percentage }}%</span>
                         </div>
                     </div>
                     <div class="seg">
                         <div class="fill" :style="{ 
                             backgroundColor: category.color, 
-                            width: Math.floor(category.percentage) + '%' 
+                            width: category.percentage + '%' 
                         }"></div>
                     </div>
                 </div>

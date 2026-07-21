@@ -1,16 +1,9 @@
+import type { CategoryRows } from "~/types/Categories"
+
 export function useCategoryBreakdown() {
-    /** Types */
-    interface UpdatedCategory {
-        name: string,
-        color: string,
-        amount: number
-        percentage: number
-    }
-
-
     /** States */
     const chart_data = ref()
-    const categories = ([
+    const categories = [
         {
             name: 'Housing',
             color: '#534F8C',
@@ -36,14 +29,14 @@ export function useCategoryBreakdown() {
             color: '#8A857B',
             amount: 7810,
         }
-    ])
-    const updated_categories = ref<UpdatedCategory[]>([])
+    ]
+    const category_rows = ref<CategoryRows[]>([])
 
 
     /** Functions */
     function buildChartData() {
-        const percentages = updated_categories.value.map(category => category.percentage)
-        const colors =  updated_categories.value.map(category => category.color)
+        const percentages = category_rows.value.map(category => category.percentage)
+        const colors =  category_rows.value.map(category => category.color)
 
         return {
             datasets: [
@@ -60,9 +53,9 @@ export function useCategoryBreakdown() {
             return sum + category.amount 
         }, 0)
 
-        updated_categories.value = categories.map(category => ({
+        category_rows.value = categories.map(category => ({
             ...category,
-            percentage: (category.amount / total) * 100
+            percentage: Math.round((category.amount / total) * 100)
         }))
     }
 
@@ -72,13 +65,11 @@ export function useCategoryBreakdown() {
     }
 
 
-    onMounted(() => {
-        populateChart()
-    })
+    populateChart()
 
 
     return {
         chart_data,
-        updated_categories
+        category_rows
     }
 }
