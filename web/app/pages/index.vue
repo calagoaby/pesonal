@@ -4,6 +4,7 @@
         <DashboardMonthSwitcher />
         <DashboardTotalReceipt />
         <DashboardCategoryBreakdown />
+        <DashboardDailySpending />
     </div>
 </template>
 

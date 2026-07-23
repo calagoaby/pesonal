@@ -9,9 +9,9 @@ const {
 </script>
 
 <template>
-    <div class="category-breakdown">
+    <div class="card">
         <div class="header-row">
-            <span class="where">WHERE IT WENT</span>
+            <span class="shdr">WHERE IT WENT</span>
             <span class="hint">tap a row to filter</span>
         </div>
         <div class="body-row">
@@ -47,10 +47,11 @@ const {
 </template>
 
 <style scoped>
-.category-breakdown {
+.card {
     background-color: var(--paper);
     border-radius: var(--radius-card);
     padding: var(--space-l);
+    margin-bottom: var(--space-l);
 }
 
 .header-row {
@@ -58,16 +59,16 @@ const {
     justify-content: space-between;
     color: var(--faded);
     margin-bottom: var(--space-m);
-}
 
-.where {
-    font-family: var(--mono);
-    font-size: var(--text-label);
-    letter-spacing: .08em;
-}
+    .shdr {
+        font-family: var(--mono);
+        font-size: var(--text-label);
+        letter-spacing: .08em;
+    }
 
-.hint {
-    font-size: var(--text-micro);
+    .hint {
+        font-size: var(--text-micro);
+    }
 }
 
 .body-row {
