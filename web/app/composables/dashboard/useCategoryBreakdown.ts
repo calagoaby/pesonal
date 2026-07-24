@@ -8,27 +8,27 @@ export function useCategoryBreakdown() {
         {
             name: 'Housing',
             color: '#534F8C',
-            amount: 15000,
+            amount: 1500000,
         },
         {
             name: 'Food',
             color: '#C9692E',
-            amount: 9800,
+            amount: 980000,
         },
         {
             name: 'Groceries',
             color: '#5E7A3E',
-            amount: 6400,
+            amount: 640000,
         },
         {
             name: 'Transport',
             color: '#3F6F97',
-            amount: 4200,
+            amount: 420000,
         },
         {
             name: 'Others',
             color: '#8A857B',
-            amount: 7810,
+            amount: 781000,
         }
     ]
     const category_rows = ref<CategoryRow[]>([])
