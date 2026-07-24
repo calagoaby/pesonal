@@ -1,9 +1,14 @@
+<script setup lang="ts">
+import ChevronLeft from '@primeicons/vue/chevron-left';
+import ChevronRight from '@primeicons/vue/chevron-right';
+</script>
+
 <template>
     <div class="month-switcher">
         <div class="period">
-            <i class="pi pi-chevron-left"></i>
+            <ChevronLeft class="chevron" />
             <span>June 2026</span>
-            <i class="pi pi-chevron-right"></i>
+            <ChevronRight class="chevron" />
         </div>
         <div class="text">
             printed just now
@@ -33,7 +38,7 @@
     border-radius: var(--radius-pill);
 }
 
-.period i {
+.chevron {
     font-size: var(--text-label);
     color: var(--faded);
 }

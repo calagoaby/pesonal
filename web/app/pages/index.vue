@@ -5,6 +5,7 @@
         <DashboardTotalReceipt />
         <DashboardCategoryBreakdown />
         <DashboardDailySpending />
+        <DashboardRecentItems />
     </div>
 </template>
 
