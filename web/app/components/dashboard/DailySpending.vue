@@ -8,11 +8,10 @@ const {
 </script>
 
 <template>
-    <div class="card">
-        <div class="header-row">
-            <span class="shdr">DAILY DAMAGE</span>
-            <span class="hint">biggest: Jun 1</span>
-        </div>
+    <DashboardSharedDashboardCard
+        header='DAILY DAMAGE'
+        hint="biggest: Jun 1"
+    >
         <div class="bars">
             <div v-for="(daily, index) in spending_percentages" 
                 :key="index" 
@@ -26,33 +25,10 @@ const {
                 {{ (index === 1 || index % 5 === 0) ? index : '' }}
             </div>
         </div>
-    </div>
+    </DashboardSharedDashboardCard>
 </template>
 
 <style scoped>
-.card {
-    background-color: var(--paper);
-    border-radius: var(--radius-card);
-    padding: var(--space-l);
-}
-
-.header-row {
-    display: flex;
-    justify-content: space-between;
-    color: var(--faded);
-    margin-bottom: var(--space-m);
-
-    .shdr {
-        font-family: var(--mono);
-        font-size: var(--text-label);
-        letter-spacing: .08em;
-    }
-
-    .hint {
-        font-size: var(--text-micro);
-    }
-}
-
 .bars {
     display: flex;
     justify-content: center;
