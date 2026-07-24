@@ -9,11 +9,10 @@ const {
 </script>
 
 <template>
-    <div class="category-breakdown">
-        <div class="header-row">
-            <span class="where">WHERE IT WENT</span>
-            <span class="hint">tap a row to filter</span>
-        </div>
+    <DashboardCard
+        header='WHERE IT WENT'
+        hint="tap a row to filter"
+    >
         <div class="body-row">
             <div class="doughnut">
                 <Chart type="doughnut" :data="chart_data" :options="chart_options"/>
@@ -43,33 +42,10 @@ const {
                 </div>
             </div>
         </div>
-    </div>
+    </DashboardCard>
 </template>
 
 <style scoped>
-.category-breakdown {
-    background-color: var(--paper);
-    border-radius: var(--radius-card);
-    padding: var(--space-l);
-}
-
-.header-row {
-    display: flex;
-    justify-content: space-between;
-    color: var(--faded);
-    margin-bottom: var(--space-m);
-}
-
-.where {
-    font-family: var(--mono);
-    font-size: var(--text-label);
-    letter-spacing: .08em;
-}
-
-.hint {
-    font-size: var(--text-micro);
-}
-
 .body-row {
     display: flex;
     align-items: center;
