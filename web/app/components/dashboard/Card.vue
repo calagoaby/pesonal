@@ -1,7 +1,7 @@
 <script setup lang="ts">
 interface Props {
     header: string;
-    hint: string;
+    hint?: string;
 }
 
 defineProps<Props>()
@@ -11,7 +11,9 @@ defineProps<Props>()
     <div class="card">
         <div class="header-row">
             <div class="shdr">{{ header }}</div>
-            <div class="hint">{{ hint }}</div>
+            <div class="hint">
+                <slot name="hint">{{ hint }}</slot>
+            </div>
         </div>
         <slot />
     </div>
@@ -35,6 +37,7 @@ defineProps<Props>()
         font-family: var(--mono);
         font-size: var(--text-label);
         letter-spacing: .08em;
+        text-transform: uppercase;
     }
 
     .hint {

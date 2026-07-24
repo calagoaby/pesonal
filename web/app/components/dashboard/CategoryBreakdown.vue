@@ -9,7 +9,7 @@ const {
 </script>
 
 <template>
-    <DashboardSharedDashboardCard
+    <DashboardCard
         header='WHERE IT WENT'
         hint="tap a row to filter"
     >
@@ -42,7 +42,7 @@ const {
                 </div>
             </div>
         </div>
-    </DashboardSharedDashboardCard>
+    </DashboardCard>
 </template>
 
 <style scoped>

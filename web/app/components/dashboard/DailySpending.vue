@@ -8,7 +8,7 @@ const {
 </script>
 
 <template>
-    <DashboardSharedDashboardCard
+    <DashboardCard
         header='DAILY DAMAGE'
         hint="biggest: Jun 1"
     >
@@ -25,7 +25,7 @@ const {
                 {{ (index === 1 || index % 5 === 0) ? index : '' }}
             </div>
         </div>
-    </DashboardSharedDashboardCard>
+    </DashboardCard>
 </template>
 
 <style scoped>
