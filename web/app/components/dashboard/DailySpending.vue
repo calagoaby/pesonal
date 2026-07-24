@@ -9,7 +9,7 @@ const {
 
 <template>
     <DashboardCard
-        header='DAILY DAMAGE'
+        header='Daily Damage'
         hint="biggest: Jun 1"
     >
         <div class="bars">

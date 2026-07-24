@@ -17,7 +17,7 @@ export function useRecentItems() {
         },
         {
             text: 'SM Groceries',
-            category: 'Groceries ',
+            category: 'Groceries',
             category_color: '#5E7A3E',
             date_created: 'Jun 16',
             amount: 2150,

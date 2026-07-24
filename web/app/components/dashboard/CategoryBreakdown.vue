@@ -10,7 +10,7 @@ const {
 
 <template>
     <DashboardCard
-        header='WHERE IT WENT'
+        header='Where it went'
         hint="tap a row to filter"
     >
         <div class="body-row">

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import ArrowDownRight from '@primeicons/vue/arrow-down-right';
+
 /** Types */
 type BarcodeStyle = {
     height: string,
@@ -66,7 +68,7 @@ function createReceiptClip(step = 5, depth = 5): string {
         <div class="total">₱43,210</div>
         <div style="text-align: center; margin-top: var(--space-m);">
             <span class="stamp"> 
-                <i class="pi pi-arrow-down-right" style="font-size: var(--text-micro);"></i>
+                <ArrowDownRight />
                  12% VS MAY
             </span>
         </div>
