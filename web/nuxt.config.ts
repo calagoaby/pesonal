@@ -5,7 +5,7 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
   modules: ['@primevue/nuxt-module'],
-  css: ['primeicons/primeicons.css', '~/assets/css/main.css'],
+  css: ['~/assets/css/main.css'],
   // Fonts via <head> links (with preconnect) instead of a CSS @import.
   // @import forces: fetch CSS -> parse -> discover font -> fetch — a render-blocking
   // waterfall. Head links start the font download immediately and in parallel.

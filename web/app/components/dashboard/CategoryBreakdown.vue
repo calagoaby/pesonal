@@ -29,7 +29,7 @@ const {
                             <span>{{ category.name }}</span>
                         </div>
                         <div class="numbers">
-                            <span class="amount">₱{{ formatAmount(category.amount) }}&nbsp;</span>
+                            <span class="amount">{{ formatAmountWithCurrency(category.amount) }}&nbsp;</span>
                             <span class="percent">{{ category.percentage }}%</span>
                         </div>
                     </div>
