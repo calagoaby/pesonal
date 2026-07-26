@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pesonal — Expenses (Receipt Roll · design reference)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Spline+Sans+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/primeicons/7.0.0/primeicons.min.css">
+<style>
+/*
+  Token rule: var names mirror web/app/assets/css/main.css.
+  - var(--…)  → use that token in the app.
+  - literal px → intentional one-off (icon sizes, hairlines) — type it literally.
+  Category colors (--c-*) are stand-ins here; in the app they come from each expense's category.color.
+*/
+:root{
+  --desk:#EAE5D9;--paper:#FBF8F1;
+  --ink:#1C1A17;--faded:#8A857B;--perforation:#D8D2C4;
+  --stamp:#C8472E;--under:#2F7D52;--hi:#E8B23A;
+  --c-housing:#534F8C;--c-food:#C9692E;--c-groc:#5E7A3E;--c-transport:#3F6F97;--c-fun:#B0577B;--c-other:#8A857B;
+  --text-hero:34px;--text-title:18px;--text-body:14px;--text-label:12px;--text-micro:11px;
+  --space-xs:4px;--space-s:8px;--space-m:12px;--space-l:16px;--space-xl:20px;--space-2xl:24px;
+  --radius-card:6px;--radius-pill:999px;
+  --mono:'Spline Sans Mono',ui-monospace,monospace;
+  --sans:'Plus Jakarta Sans',system-ui,sans-serif;
+  --shadow:0 6px 16px rgba(40,33,20,.05);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+/* ── mockup chrome (phone frame + statusbar) — not part of the app, don't build ── */
+body{font-family:var(--sans);background:#d8d1c2;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:30px 16px;color:var(--ink)}
+.label{font-size:13px;color:#7c7567;margin-bottom:14px;text-align:center}
+.phone{width:390px;background:#211e19;border-radius:42px;padding:10px;box-shadow:0 30px 60px rgba(33,30,25,.35)}
+.screen{background:var(--desk);border-radius:32px;overflow:hidden;display:flex;flex-direction:column;height:760px}
+.statusbar{display:flex;justify-content:space-between;align-items:center;padding:11px 22px 4px;font-size:13px;font-family:var(--mono);color:var(--ink)}
+.statusbar .icons{display:flex;gap:8px;align-items:center}
+/* ── app ui — tokens mirror main.css ── */
+.content{padding:var(--space-m) var(--space-l) 0;flex:1;overflow-y:auto}
+.row{display:flex;align-items:center;justify-content:space-between}
+.ptitle{font-size:var(--text-title);font-weight:700}
+.period{display:flex;align-items:center;gap:var(--space-s);background:var(--paper);border:1px solid var(--perforation);border-radius:var(--radius-pill);padding:var(--space-xs) var(--space-m)}
+.period .m{font-family:var(--mono);font-size:var(--text-label);font-weight:500}
+.period i{font-size:var(--text-label);color:var(--faded)}
+/* category filter chips (horizontal scroll) */
+.chips{display:flex;gap:var(--space-s);overflow-x:auto;margin-top:var(--space-m);padding-bottom:var(--space-xs)}
+.chip{flex:none;display:flex;align-items:center;gap:var(--space-xs);background:var(--paper);border:1px solid var(--perforation);border-radius:var(--radius-pill);padding:var(--space-xs) var(--space-m);font-size:var(--text-label);color:var(--faded);white-space:nowrap}
+.chip.active{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.cdot{width:8px;height:8px;border-radius:2px;flex:none}
+/* date group header */
+.dayhdr{font-family:var(--mono);font-size:var(--text-micro);letter-spacing:.08em;color:var(--faded);text-transform:uppercase;margin:var(--space-l) 0 var(--space-xs)}
+/* expense row (same shape as the dashboard's Recent item, date lifted to the group header) */
+.item{display:flex;align-items:center;justify-content:space-between;padding:var(--space-m) 0;border-top:1.5px dashed var(--perforation)}
+.iname{display:flex;align-items:center;gap:var(--space-s)}
+.itext{display:flex;flex-direction:column}
+.itext>span:first-child{font-size:var(--text-body);font-weight:500}
+.isub{font-size:var(--text-label);color:var(--faded)}
+.dot{width:10px;height:10px;border-radius:3px;flex:none}
+.iamt{font-family:var(--mono);font-size:var(--text-body);font-weight:500;font-variant-numeric:tabular-nums}
+/* pager */
+.pager{display:flex;align-items:center;justify-content:space-between;font-family:var(--mono);font-size:var(--text-label);color:var(--faded);padding:var(--space-l) 0}
+.pager .arrows{display:flex;align-items:center;gap:var(--space-m)}
+.pager i{color:var(--ink)}
+.pager .disabled{color:var(--perforation)}
+/* nav (shared app shell — lives in layouts/default.vue, not this page) */
+.nav{display:flex;align-items:center;justify-content:space-between;background:var(--paper);border-top:1.5px dashed var(--perforation);padding:var(--space-m) var(--space-l) var(--space-l)}
+.navitem{display:flex;flex-direction:column;align-items:center;gap:var(--space-xs);flex:1;font-size:var(--text-micro);color:var(--faded);font-weight:500}
+.navitem.active{color:var(--ink);font-weight:600}
+.navitem i{font-size:20px}
+.fab{width:54px;height:54px;border-radius:var(--radius-pill);background:var(--stamp);color:#fff;display:flex;align-items:center;justify-content:center;margin-top:-26px;border:3px solid var(--paper);box-shadow:0 8px 18px rgba(200,71,46,.32);font-size:24px}
+</style>
+</head>
+<body>
+<div class="label">Pesonal — Expenses · Receipt Roll · design reference (don't import — rebuild it yourself in web/)</div>
+<div class="phone">
+<div class="screen">
+
+<div class="statusbar"><span>9:41</span><span class="icons"><i class="pi pi-wifi"></i><span>100%</span></span></div>
+
+<div class="content">
+
+<div class="row" style="padding-top:var(--space-s)">
+<div class="ptitle">Expenses</div>
+<div class="period">
+<i class="pi pi-chevron-left"></i>
+<span class="m">June 2026</span>
+<i class="pi pi-chevron-right"></i>
+</div>
+</div>
+
+<div class="chips">
+<div class="chip active">All</div>
+<div class="chip"><span class="cdot" style="background:var(--c-housing)"></span>Housing</div>
+<div class="chip"><span class="cdot" style="background:var(--c-food)"></span>Food</div>
+<div class="chip"><span class="cdot" style="background:var(--c-groc)"></span>Groceries</div>
+<div class="chip"><span class="cdot" style="background:var(--c-transport)"></span>Transport</div>
+<div class="chip"><span class="cdot" style="background:var(--c-fun)"></span>Fun</div>
+</div>
+
+<div class="dayhdr">Tue · Jun 17</div>
+<div class="item">
+<span class="iname"><span class="dot" style="background:var(--c-food)"></span><span class="itext"><span>Lunch with team</span><span class="isub">Food</span></span></span>
+<span class="iamt">₱680.00</span>
+</div>
+<div class="item">
+<span class="iname"><span class="dot" style="background:var(--c-transport)"></span><span class="itext"><span>Grab to office</span><span class="isub">Transport</span></span></span>
+<span class="iamt">₱240.00</span>
+</div>
+<div class="item">
+<span class="iname"><span class="dot" style="background:var(--c-food)"></span><span class="itext"><span>Kape sa umaga</span><span class="isub">Food</span></span></span>
+<span class="iamt">₱150.00</span>
+</div>
+
+<div class="dayhdr">Mon · Jun 16</div>
+<div class="item">
+<span class="iname"><span class="dot" style="background:var(--c-groc)"></span><span class="itext"><span>SM Groceries</span><span class="isub">Groceries</span></span></span>
+<span class="iamt">₱2,150.00</span>
+</div>
+<div class="item">
+<span class="iname"><span class="dot" style="background:var(--c-other)"></span><span class="itext"><span>Load</span><span class="isub">Other</span></span></span>
+<span class="iamt">₱300.00</span>
+</div>
+
+<div class="dayhdr">Sun · Jun 15</div>
+<div class="item">
+<span class="iname"><span class="dot" style="background:var(--c-housing)"></span><span class="itext"><span>Rent share</span><span class="isub">Housing · recurring</span></span></span>
+<span class="iamt">₱15,000.00</span>
+</div>
+<div class="item">
+<span class="iname"><span class="dot" style="background:var(--c-fun)"></span><span class="itext"><span>Milk tea run</span><span class="isub">Fun</span></span></span>
+<span class="iamt">₱180.00</span>
+</div>
+
+<div class="pager">
+<span>138 expenses</span>
+<span class="arrows"><i class="pi pi-chevron-left disabled"></i><span>Page 1 / 7</span><i class="pi pi-chevron-right"></i></span>
+</div>
+
+</div>
+
+<div class="nav">
+<div class="navitem"><i class="pi pi-home"></i>Home</div>
+<div class="navitem active"><i class="pi pi-receipt"></i>Expenses</div>
+<div style="flex:1;display:flex;justify-content:center"><div class="fab"><i class="pi pi-plus"></i></div></div>
+<div class="navitem"><i class="pi pi-sync"></i>Recurring</div>
+<div class="navitem"><i class="pi pi-ellipsis-h"></i>More</div>
+</div>
+
+</div>
+</div>
+</body>
+</html>
