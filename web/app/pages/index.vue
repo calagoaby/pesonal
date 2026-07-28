@@ -11,7 +11,9 @@
 
 <style scoped>
 .screen {
-    /* 16px gutter via the design token, not a body margin. */
     padding: var(--space-m) var(--space-l) 0;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
 }
 </style>
