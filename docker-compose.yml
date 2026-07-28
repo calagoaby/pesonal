@@ -18,7 +18,5 @@ services:
     environment:
       # Browser-side calls go to the host, so localhost (not the service name).
       NUXT_PUBLIC_API_BASE: "http://localhost:8000"
-      # WSL2 file-watch fix so Vite/Nuxt hot reload actually fires on edits.
-      CHOKIDAR_USEPOLLING: "true"
     depends_on:
       - api
