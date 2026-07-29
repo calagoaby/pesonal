@@ -8,25 +8,25 @@ import EllipsisH from '@primeicons/vue/ellipsis-h';
 
 <template>
     <div class="navbar">
-        <div class="nav-item active">
+        <NuxtLink to="/" class="nav-item" active-class="active">
             <Home />
             Home
-        </div>
-        <div class="nav-item">
+        </NuxtLink>
+        <NuxtLink to="/expenses" class="nav-item" active-class="active">
             <Receipt />
             Expenses
-        </div>
+        </NuxtLink>
         <div class="add-icon">
             <Plus />
         </div>
-        <div class="nav-item">
+        <NuxtLink to="/recurring" class="nav-item" active-class="active">
             <Sync />
             Recurring
-        </div>
-        <div class="nav-item">
+        </NuxtLink>
+        <NuxtLink to="/more" class="nav-item" active-class="active">
             <EllipsisH />
             More
-        </div>
+        </NuxtLink>
     </div>
 </template>
 
@@ -50,6 +50,7 @@ import EllipsisH from '@primeicons/vue/ellipsis-h';
     color: var(--faded);
     font-weight: 500;
     flex: 1;
+    text-decoration: none;
 }
 
 .nav-item.active {
