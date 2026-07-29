@@ -16,10 +16,8 @@ import EllipsisH from '@primeicons/vue/ellipsis-h';
             <Receipt />
             Expenses
         </div>
-        <div class="nav-item">
-            <div class="add-icon">
-                <Plus />
-            </div>
+        <div class="add-icon">
+            <Plus />
         </div>
         <div class="nav-item">
             <Sync />
@@ -40,10 +38,6 @@ import EllipsisH from '@primeicons/vue/ellipsis-h';
     display: flex;
     align-items: center;
     justify-content: space-between;
-
-    .active {
-        color: var(--ink)
-    }
 }
 
 .nav-item {
@@ -55,6 +49,11 @@ import EllipsisH from '@primeicons/vue/ellipsis-h';
     color: var(--faded);
     font-weight: 500;
     flex: 1;
+}
+
+.nav-item.active {
+    color: var(--ink);
+    font-weight: 600;
 }
 
 .nav-item :deep(.p-icon) {
