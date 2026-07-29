@@ -38,6 +38,7 @@ import EllipsisH from '@primeicons/vue/ellipsis-h';
     display: flex;
     align-items: center;
     justify-content: space-between;
+    flex: none;
 }
 
 .nav-item {
