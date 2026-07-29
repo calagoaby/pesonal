@@ -10,10 +10,13 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/primeicons/7.0.0/primeicons.min.css">
 <style>
 /*
-  Token rule: var names mirror web/app/assets/css/main.css.
-  - var(--…)  → use that token in the app.
-  - literal px → intentional one-off (icon sizes, hairlines) — type it literally.
-  Category colors (--c-*) are stand-ins here; in the app they come from each expense's category.color.
+  Expenses — FINAL spec. Receipt Roll, continuous slip, tear-to-load foot.
+  Category filter is a bottom SHEET (tap the CATEGORY field). Scales to any number of
+  categories via a vertical, scrollable list — no horizontal swiping.
+  Data note: the per-category counts in the sheet come from the monthly stats'
+  by_category block, NOT the expenses list — so surfacing them means this screen also
+  reads stats/monthly for the selected month. Drop the counts if you don't want that call.
+  Token rule: var(--…) → use that token in the app; literal px → intentional one-off.
 */
 :root{
   --desk:#EAE5D9;--paper:#FBF8F1;
@@ -28,116 +31,96 @@
   --shadow:0 6px 16px rgba(40,33,20,.05);
 }
 *{box-sizing:border-box;margin:0;padding:0}
-/* ── mockup chrome (phone frame + statusbar) — not part of the app, don't build ── */
 body{font-family:var(--sans);background:#d8d1c2;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:30px 16px;color:var(--ink)}
-.label{font-size:13px;color:#7c7567;margin-bottom:14px;text-align:center}
+.label{font-size:13px;color:#7c7567;margin-bottom:14px;text-align:center;max-width:360px;line-height:1.5}
+.label b{color:var(--ink)}
 .phone{width:390px;background:#211e19;border-radius:42px;padding:10px;box-shadow:0 30px 60px rgba(33,30,25,.35)}
-.screen{background:var(--desk);border-radius:32px;overflow:hidden;display:flex;flex-direction:column;height:760px}
+.screen{position:relative;background:var(--desk);border-radius:32px;overflow:hidden;display:flex;flex-direction:column;height:760px}
 .statusbar{display:flex;justify-content:space-between;align-items:center;padding:11px 22px 4px;font-size:13px;font-family:var(--mono);color:var(--ink)}
 .statusbar .icons{display:flex;gap:8px;align-items:center}
-/* ── app ui — tokens mirror main.css ── */
-.content{padding:var(--space-m) var(--space-l) 0;flex:1;overflow-y:auto}
-.row{display:flex;align-items:center;justify-content:space-between}
-.ptitle{font-size:var(--text-title);font-weight:700}
-.period{display:flex;align-items:center;gap:var(--space-s);background:var(--paper);border:1px solid var(--perforation);border-radius:var(--radius-pill);padding:var(--space-xs) var(--space-m)}
-.period .m{font-family:var(--mono);font-size:var(--text-label);font-weight:500}
-.period i{font-size:var(--text-label);color:var(--faded)}
-/* category filter chips (horizontal scroll) */
-.chips{display:flex;gap:var(--space-s);overflow-x:auto;margin-top:var(--space-m);padding-bottom:var(--space-xs)}
-.chip{flex:none;display:flex;align-items:center;gap:var(--space-xs);background:var(--paper);border:1px solid var(--perforation);border-radius:var(--radius-pill);padding:var(--space-xs) var(--space-m);font-size:var(--text-label);color:var(--faded);white-space:nowrap}
-.chip.active{background:var(--ink);color:var(--paper);border-color:var(--ink)}
-.cdot{width:8px;height:8px;border-radius:2px;flex:none}
-/* date group header */
-.dayhdr{font-family:var(--mono);font-size:var(--text-micro);letter-spacing:.08em;color:var(--faded);text-transform:uppercase;margin:var(--space-l) 0 var(--space-xs)}
-/* expense row (same shape as the dashboard's Recent item, date lifted to the group header) */
-.item{display:flex;align-items:center;justify-content:space-between;padding:var(--space-m) 0;border-top:1.5px dashed var(--perforation)}
-.iname{display:flex;align-items:center;gap:var(--space-s)}
-.itext{display:flex;flex-direction:column}
-.itext>span:first-child{font-size:var(--text-body);font-weight:500}
-.isub{font-size:var(--text-label);color:var(--faded)}
-.dot{width:10px;height:10px;border-radius:3px;flex:none}
-.iamt{font-family:var(--mono);font-size:var(--text-body);font-weight:500;font-variant-numeric:tabular-nums}
-/* pager */
-.pager{display:flex;align-items:center;justify-content:space-between;font-family:var(--mono);font-size:var(--text-label);color:var(--faded);padding:var(--space-l) 0}
-.pager .arrows{display:flex;align-items:center;gap:var(--space-m)}
-.pager i{color:var(--ink)}
-.pager .disabled{color:var(--perforation)}
-/* nav (shared app shell — lives in layouts/default.vue, not this page) */
+.content{padding:var(--space-l) var(--space-l) 0;flex:1;overflow-y:auto}
+.torn{height:12px;background:var(--paper);clip-path:polygon(0% 100%,0% 55%,4% 0%,8% 55%,12% 0%,16% 55%,20% 0%,24% 55%,28% 0%,32% 55%,36% 0%,40% 55%,44% 0%,48% 55%,52% 0%,56% 55%,60% 0%,64% 55%,68% 0%,72% 55%,76% 0%,80% 55%,84% 0%,88% 55%,92% 0%,96% 55%,100% 0%,100% 100%)}
+.roll{background:var(--paper);padding:var(--space-m) var(--space-l) var(--space-l)}
+.rhead{text-align:center;font-family:var(--mono)}
+.rhead .brand{font-size:var(--text-label);letter-spacing:.28em;text-transform:uppercase;font-weight:600}
+.rhead .sub{font-size:var(--text-micro);letter-spacing:.16em;text-transform:uppercase;color:var(--faded);margin-top:2px}
+.rule{border:0;border-top:1.5px dashed var(--perforation);margin:var(--space-m) 0}
+.periodline{display:flex;align-items:center;justify-content:center;gap:var(--space-xl);font-family:var(--mono);font-size:var(--text-label)}
+.periodline i{color:var(--faded)}
+.field{width:100%;display:flex;align-items:center;justify-content:space-between;background:transparent;border:0;border-bottom:1.5px dashed var(--perforation);padding:var(--space-s) 2px;font-family:var(--mono);font-size:var(--text-label);letter-spacing:.08em;text-transform:uppercase;color:var(--ink);cursor:pointer}
+.field .lbl{color:var(--faded)}
+.field .val{display:flex;align-items:center;gap:var(--space-s)}
+.field .val i{color:var(--faded);font-size:var(--text-label)}
+.daydiv{display:flex;align-items:center;gap:var(--space-s);font-family:var(--mono);font-size:var(--text-micro);letter-spacing:.1em;text-transform:uppercase;color:var(--faded);margin:var(--space-l) 0 var(--space-xs)}
+.daydiv::before,.daydiv::after{content:"";flex:1;border-top:1.5px dashed var(--perforation)}
+.line{display:flex;align-items:baseline;padding:var(--space-xs) 0}
+.line .desc{font-size:var(--text-body)}
+.line .tag{font-family:var(--mono);font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--faded);margin-left:var(--space-s)}
+.line .lead{flex:1;border-bottom:1.5px dotted var(--perforation);margin:0 var(--space-s);transform:translateY(-3px)}
+.line .amt{font-family:var(--mono);font-size:var(--text-body);font-variant-numeric:tabular-nums;white-space:nowrap}
+.tearzone{margin-top:var(--space-l);border-top:1.5px dashed var(--perforation);padding-top:var(--space-m);text-align:center}
+.tearzone .more{font-family:var(--mono);font-size:var(--text-label);letter-spacing:.14em;text-transform:uppercase;color:var(--stamp)}
+.foot{text-align:center;font-family:var(--mono);margin-top:var(--space-l)}
+.barcode{height:36px;width:72%;margin:var(--space-s) auto;background:repeating-linear-gradient(90deg,var(--ink) 0 2px,transparent 2px 5px,var(--ink) 5px 6px,transparent 6px 11px)}
+.foot .count{font-size:var(--text-micro);letter-spacing:.14em;text-transform:uppercase;color:var(--faded)}
+.foot .quip{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--perforation);margin-top:var(--space-s)}
 .nav{display:flex;align-items:center;justify-content:space-between;background:var(--paper);border-top:1.5px dashed var(--perforation);padding:var(--space-m) var(--space-l) var(--space-l)}
 .navitem{display:flex;flex-direction:column;align-items:center;gap:var(--space-xs);flex:1;font-size:var(--text-micro);color:var(--faded);font-weight:500}
 .navitem.active{color:var(--ink);font-weight:600}
 .navitem i{font-size:20px}
 .fab{width:54px;height:54px;border-radius:var(--radius-pill);background:var(--stamp);color:#fff;display:flex;align-items:center;justify-content:center;margin-top:-26px;border:3px solid var(--paper);box-shadow:0 8px 18px rgba(200,71,46,.32);font-size:24px}
+.scrim{position:absolute;inset:0;background:rgba(28,26,23,.45);opacity:0;pointer-events:none;transition:opacity .25s}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:var(--paper);border-top:2px solid var(--ink);border-radius:18px 18px 0 0;transform:translateY(110%);transition:transform .28s ease;padding:0 var(--space-l) var(--space-l)}
+.screen.sheet-open .scrim{opacity:1;pointer-events:auto}
+.screen.sheet-open .sheet{transform:translateY(0)}
+.grab{width:40px;height:4px;border-radius:var(--radius-pill);background:var(--perforation);margin:var(--space-m) auto var(--space-s)}
+.shead{display:flex;align-items:center;justify-content:space-between;font-family:var(--mono);font-size:var(--text-micro);letter-spacing:.1em;text-transform:uppercase;color:var(--faded);padding:2px 2px var(--space-s);border-bottom:1.5px dashed var(--perforation)}
+.shead button{background:transparent;border:0;color:var(--ink);cursor:pointer;font-size:18px;line-height:1;display:flex}
+.list{max-height:300px;overflow-y:auto}
+.opt{display:flex;align-items:center;gap:var(--space-m);padding:var(--space-m) var(--space-xs);border-bottom:1px dashed var(--perforation);cursor:pointer;color:var(--ink);font-size:var(--text-body)}
+.opt:last-child{border-bottom:0}
+.opt .dot{width:10px;height:10px;border-radius:3px;flex:none}
+.opt .nm{flex:1}
+.opt .ct{font-family:var(--mono);font-size:var(--text-label);color:var(--faded);font-variant-numeric:tabular-nums}
+.opt .chk{color:var(--stamp);font-size:16px;visibility:hidden}
+.opt.sel .chk{visibility:visible}
+.opt.sel .nm{font-weight:600}
 </style>
 </head>
 <body>
-<div class="label">Pesonal — Expenses · Receipt Roll · design reference (don't import — rebuild it yourself in web/)</div>
+<div class="label"><b>Expenses — final.</b> Receipt Roll, tear-to-load. Category filter is a <b>bottom sheet</b> — tap the <b>CATEGORY</b> field to open it; tap a row or the dimmed area to close.</div>
 <div class="phone">
-<div class="screen">
-
+<div class="screen" id="screen">
 <div class="statusbar"><span>9:41</span><span class="icons"><i class="pi pi-wifi"></i><span>100%</span></span></div>
-
 <div class="content">
-
-<div class="row" style="padding-top:var(--space-s)">
-<div class="ptitle">Expenses</div>
-<div class="period">
-<i class="pi pi-chevron-left"></i>
-<span class="m">June 2026</span>
-<i class="pi pi-chevron-right"></i>
+<div class="torn"></div>
+<div class="roll">
+<div class="rhead"><div class="brand">Pesonal</div><div class="sub">· expense receipt ·</div></div>
+<hr class="rule">
+<div class="periodline"><i class="pi pi-chevron-left"></i><span>PERIOD 2026-06</span><i class="pi pi-chevron-right"></i></div>
+<hr class="rule">
+<button class="field" id="catTrigger" aria-haspopup="dialog" aria-expanded="false">
+<span class="lbl">Category</span>
+<span class="val"><span id="catVal">All</span><i class="pi pi-chevron-down"></i></span>
+</button>
+<div class="daydiv">Tue Jun 17</div>
+<div class="line"><span class="desc">Lunch with team<span class="tag">Food</span></span><span class="lead"></span><span class="amt">₱680.00</span></div>
+<div class="line"><span class="desc">Grab to office<span class="tag">Transport</span></span><span class="lead"></span><span class="amt">₱240.00</span></div>
+<div class="line"><span class="desc">Kape sa umaga<span class="tag">Food</span></span><span class="lead"></span><span class="amt">₱150.00</span></div>
+<div class="daydiv">Mon Jun 16</div>
+<div class="line"><span class="desc">SM Groceries<span class="tag">Groceries</span></span><span class="lead"></span><span class="amt">₱2,150.00</span></div>
+<div class="line"><span class="desc">Load<span class="tag">Other</span></span><span class="lead"></span><span class="amt">₱300.00</span></div>
+<div class="daydiv">Sun Jun 15</div>
+<div class="line"><span class="desc">Rent share<span class="tag">Housing</span></span><span class="lead"></span><span class="amt">₱15,000.00</span></div>
+<div class="line"><span class="desc">Milk tea run<span class="tag">Fun</span></span><span class="lead"></span><span class="amt">₱180.00</span></div>
+<div class="tearzone"><div class="more">✂ &nbsp; pull for more &nbsp; ✂</div></div>
+<div class="foot">
+<div class="barcode"></div>
+<div class="count">138 items · June 2026</div>
+<div class="quip">* thank you, come again *</div>
 </div>
 </div>
-
-<div class="chips">
-<div class="chip active">All</div>
-<div class="chip"><span class="cdot" style="background:var(--c-housing)"></span>Housing</div>
-<div class="chip"><span class="cdot" style="background:var(--c-food)"></span>Food</div>
-<div class="chip"><span class="cdot" style="background:var(--c-groc)"></span>Groceries</div>
-<div class="chip"><span class="cdot" style="background:var(--c-transport)"></span>Transport</div>
-<div class="chip"><span class="cdot" style="background:var(--c-fun)"></span>Fun</div>
 </div>
-
-<div class="dayhdr">Tue · Jun 17</div>
-<div class="item">
-<span class="iname"><span class="dot" style="background:var(--c-food)"></span><span class="itext"><span>Lunch with team</span><span class="isub">Food</span></span></span>
-<span class="iamt">₱680.00</span>
-</div>
-<div class="item">
-<span class="iname"><span class="dot" style="background:var(--c-transport)"></span><span class="itext"><span>Grab to office</span><span class="isub">Transport</span></span></span>
-<span class="iamt">₱240.00</span>
-</div>
-<div class="item">
-<span class="iname"><span class="dot" style="background:var(--c-food)"></span><span class="itext"><span>Kape sa umaga</span><span class="isub">Food</span></span></span>
-<span class="iamt">₱150.00</span>
-</div>
-
-<div class="dayhdr">Mon · Jun 16</div>
-<div class="item">
-<span class="iname"><span class="dot" style="background:var(--c-groc)"></span><span class="itext"><span>SM Groceries</span><span class="isub">Groceries</span></span></span>
-<span class="iamt">₱2,150.00</span>
-</div>
-<div class="item">
-<span class="iname"><span class="dot" style="background:var(--c-other)"></span><span class="itext"><span>Load</span><span class="isub">Other</span></span></span>
-<span class="iamt">₱300.00</span>
-</div>
-
-<div class="dayhdr">Sun · Jun 15</div>
-<div class="item">
-<span class="iname"><span class="dot" style="background:var(--c-housing)"></span><span class="itext"><span>Rent share</span><span class="isub">Housing · recurring</span></span></span>
-<span class="iamt">₱15,000.00</span>
-</div>
-<div class="item">
-<span class="iname"><span class="dot" style="background:var(--c-fun)"></span><span class="itext"><span>Milk tea run</span><span class="isub">Fun</span></span></span>
-<span class="iamt">₱180.00</span>
-</div>
-
-<div class="pager">
-<span>138 expenses</span>
-<span class="arrows"><i class="pi pi-chevron-left disabled"></i><span>Page 1 / 7</span><i class="pi pi-chevron-right"></i></span>
-</div>
-
-</div>
-
 <div class="nav">
 <div class="navitem"><i class="pi pi-home"></i>Home</div>
 <div class="navitem active"><i class="pi pi-receipt"></i>Expenses</div>
@@ -145,8 +128,42 @@ body{font-family:var(--sans);background:#d8d1c2;min-height:100vh;display:flex;fl
 <div class="navitem"><i class="pi pi-sync"></i>Recurring</div>
 <div class="navitem"><i class="pi pi-ellipsis-h"></i>More</div>
 </div>
-
+<div class="scrim" id="catScrim"></div>
+<div class="sheet" id="catSheet" role="dialog" aria-label="Filter by category">
+<div class="grab"></div>
+<div class="shead"><span>Filter by category</span><button id="catClose" aria-label="Close"><i class="pi pi-times"></i></button></div>
+<div class="list">
+<div class="opt sel" data-name="All"><span class="dot" style="background:var(--faded)"></span><span class="nm">All</span><span class="ct">138</span><i class="pi pi-check chk"></i></div>
+<div class="opt" data-name="Food"><span class="dot" style="background:var(--c-food)"></span><span class="nm">Food</span><span class="ct">42</span><i class="pi pi-check chk"></i></div>
+<div class="opt" data-name="Groceries"><span class="dot" style="background:var(--c-groc)"></span><span class="nm">Groceries</span><span class="ct">18</span><i class="pi pi-check chk"></i></div>
+<div class="opt" data-name="Transport"><span class="dot" style="background:var(--c-transport)"></span><span class="nm">Transport</span><span class="ct">24</span><i class="pi pi-check chk"></i></div>
+<div class="opt" data-name="Fun"><span class="dot" style="background:var(--c-fun)"></span><span class="nm">Fun</span><span class="ct">14</span><i class="pi pi-check chk"></i></div>
+<div class="opt" data-name="Housing"><span class="dot" style="background:var(--c-housing)"></span><span class="nm">Housing</span><span class="ct">6</span><i class="pi pi-check chk"></i></div>
+<div class="opt" data-name="Utilities"><span class="dot" style="background:#7A6A3E"></span><span class="nm">Utilities</span><span class="ct">9</span><i class="pi pi-check chk"></i></div>
+<div class="opt" data-name="Health"><span class="dot" style="background:var(--under)"></span><span class="nm">Health</span><span class="ct">5</span><i class="pi pi-check chk"></i></div>
+<div class="opt" data-name="Travel"><span class="dot" style="background:#3F6F97"></span><span class="nm">Travel</span><span class="ct">4</span><i class="pi pi-check chk"></i></div>
+<div class="opt" data-name="Savings"><span class="dot" style="background:#2F7D52"></span><span class="nm">Savings</span><span class="ct">3</span><i class="pi pi-check chk"></i></div>
+<div class="opt" data-name="Gifts"><span class="dot" style="background:#B0577B"></span><span class="nm">Gifts</span><span class="ct">2</span><i class="pi pi-check chk"></i></div>
+<div class="opt" data-name="Other"><span class="dot" style="background:var(--c-other)"></span><span class="nm">Other</span><span class="ct">11</span><i class="pi pi-check chk"></i></div>
 </div>
 </div>
+</div>
+</div>
+<script>
+(function(){
+var screen=document.getElementById('screen'),trigger=document.getElementById('catTrigger'),scrim=document.getElementById('catScrim'),closeBtn=document.getElementById('catClose'),val=document.getElementById('catVal');
+function open(){screen.classList.add('sheet-open');trigger.setAttribute('aria-expanded','true');}
+function shut(){screen.classList.remove('sheet-open');trigger.setAttribute('aria-expanded','false');}
+trigger.addEventListener('click',open);
+scrim.addEventListener('click',shut);
+closeBtn.addEventListener('click',shut);
+document.querySelectorAll('.opt').forEach(function(o){o.addEventListener('click',function(){
+document.querySelectorAll('.opt').forEach(function(x){x.classList.remove('sel');});
+o.classList.add('sel');
+val.textContent=o.getAttribute('data-name');
+shut();
+});});
+})();
+</script>
 </body>
 </html>
