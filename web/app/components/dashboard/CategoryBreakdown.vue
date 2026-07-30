@@ -12,6 +12,7 @@ const {
     <DashboardCard
         header='Where it went'
         hint="tap a row to filter"
+        style="margin-top: var(--space-2xl);"
     >
         <div class="body-row">
             <div class="doughnut">

@@ -18,7 +18,7 @@ import ChevronRight from '@primeicons/vue/chevron-right';
 
 <style scoped>
 .month-switcher {
-    margin: var(--space-l) 0 0;
+    margin: var(--space-l) 0 var(--space-l);
     display: flex;
     justify-content: space-between;
     align-items: center;

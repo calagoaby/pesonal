@@ -46,10 +46,6 @@ function createReceiptClip(
 </template>
 
 <style scoped>
-.receipt-container {
-    margin: var(--space-l) 0 var(--space-2xl)
-}
-
 .roll {
     font-family: var(--mono);
     background-color: var(--paper);
@@ -62,10 +58,10 @@ function createReceiptClip(
 }
 
 .torn-top {
-    border-bottom: 1px solid  rgb(0 0 0 / 6%);
+    border-bottom: 1px solid var(--perforation);
 }
 
 .torn-bottom {
-    border-top: 1px solid  rgb(0 0 0 / 6%);
+    border-top: 1px solid var(--perforation);
 }
 </style>

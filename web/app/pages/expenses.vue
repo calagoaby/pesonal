@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <SharedReceipt torn-position="top">
         Expenses
-    </div>
+    </SharedReceipt>
 </template>
