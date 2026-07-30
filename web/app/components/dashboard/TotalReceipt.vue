@@ -35,7 +35,7 @@ function barcodeStyle ( { index }: { index: number }): BarcodeStyle {
 
 <template>
     <SharedReceipt torn-position="bottom" sub-text="Offical Receipt — JUNE 2026">
-        <div class="perf"></div>
+        <SharedPerf />
         <div class="tlabel">TOTAL DAMAGE</div>
         <div class="total">₱43,210</div>
         <div style="text-align: center; margin-top: var(--space-m);">
@@ -45,7 +45,7 @@ function barcodeStyle ( { index }: { index: number }): BarcodeStyle {
             </span>
         </div>
         <div class="note">Petsa de peligro? Hindi today.</div>
-        <div class="perf"></div>
+        <SharedPerf />
         <div class="lrow">
             <div class="label">DAILY AVG</div>
             <div class="fill"></div>
@@ -82,11 +82,6 @@ function barcodeStyle ( { index }: { index: number }): BarcodeStyle {
     text-align: center;
     color: var(--faded);
     margin-top: var(--space-xs);
-}
-
-.perf {
-    border-top: 1.5px dashed var(--perforation);
-    margin: var(--space-m) 0;
 }
 
 .tlabel {
