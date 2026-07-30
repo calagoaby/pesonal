@@ -34,7 +34,7 @@ function barcodeStyle ( { index }: { index: number }): BarcodeStyle {
 </script>
 
 <template>
-    <SharedReceipt torn-position="top">
+    <SharedReceipt torn-position="bottom">
         <div class="merchant">PESONAL</div>
         <div class="tsub">OFFICIAL RECEIPT — JUNE 2026</div>
         <div class="perf"></div>

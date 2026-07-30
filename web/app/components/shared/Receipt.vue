@@ -4,18 +4,15 @@ const props = defineProps<{
 }>()
 
 
-/** States */
-const clip_path = ref<string>('')
-
-
 /** Computed */
 const is_bottom = computed(() => props.tornPosition === 'bottom')
+const clip_path = computed(() => createReceiptClip())
 
 
 /** Functions */
 function createReceiptClip(
-  step = 5,
-  depth = 5,
+  step = 3.5,
+  depth = 55,
 ): string {
   const y = is_bottom.value ? 100 : 0
   const notch = is_bottom.value ? y - depth : y + depth
@@ -36,11 +33,6 @@ function createReceiptClip(
 
   return `polygon(${points.join(', ')})`
 }
-
-
-onMounted(() => {
-    clip_path.value = createReceiptClip(3.5, 55)
-})
 </script>
 
 <template>
