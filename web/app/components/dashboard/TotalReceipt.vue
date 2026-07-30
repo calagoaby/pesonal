@@ -10,7 +10,6 @@ type BarcodeStyle = {
 
 
 /** States */
-const clip_path = createReceiptClip(2.5, 3)
 const widths = [1, 1, 3, 3, 1, 1, 1, 3, 2, 2, 1, 2, 2, 1, 1, 1, 1, 3, 2, 1, 3, 1]
 const barcode_styles = Array.from(
     { length: 22 }, (_, i) => barcodeStyle({index: i})
@@ -32,37 +31,10 @@ function barcodeStyle ( { index }: { index: number }): BarcodeStyle {
     background: background
   }
 }
-
-function createReceiptClip(step = 5, depth = 5): string {
-    const points = [
-        '0% 0%',
-        '100% 0%',
-
-        `100% ${100 - depth}%`,
-    ]
-
-    let x = 100 - step
-
-    while(x >= 0) {
-        points.push(`${x}% 100%`)
-        x -= step
-
-        if (x >= 0) {
-            points.push(`${x}% ${100 - depth}%`)
-            x -= step
-        }
-    }
-
-    points.push('0% 100%')
-
-    return `polygon(${points.join(', ')})`
-}
 </script>
 
 <template>
-    <div class="receipt" :style="{ clipPath: clip_path }">
-        <div class="merchant">PESONAL</div>
-        <div class="tsub">OFFICIAL RECEIPT — JUNE 2026</div>
+    <SharedReceipt torn-position="bottom" sub-text="Offical Receipt — JUNE 2026">
         <div class="perf"></div>
         <div class="tlabel">TOTAL DAMAGE</div>
         <div class="total">₱43,210</div>
@@ -93,18 +65,10 @@ function createReceiptClip(step = 5, depth = 5): string {
         </div>
         <div class="ono">NO. 0617-2026</div>
         <div class="thanks">*** salamat — come again ***</div>
-    </div>
+    </SharedReceipt>
 </template>
 
 <style scoped>
-
-.receipt {
-    font-family: var(--mono);
-    background-color: var(--paper);
-    margin: var(--space-l) 0 var(--space-2xl);
-    padding: var(--space-xl) var(--space-xl) var(--space-2xl);
-}
-
 .merchant {
     font-size: var(--text-body);
     text-align: center;

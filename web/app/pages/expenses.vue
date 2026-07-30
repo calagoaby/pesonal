@@ -1,5 +1,3 @@
 <template>
-    <div>
-        Expenses
-    </div>
+    <ExpensesMonthExpense />
 </template>
