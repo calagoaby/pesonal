@@ -38,7 +38,7 @@ function createReceiptClip(
 <template>
     <div class="receipt-container">
         <div class="torn-top" v-if="!is_bottom" :style="{ clipPath: clip_path }"></div>
-        <div class="receipt">
+        <div class="roll">
             <slot />
         </div>
         <div class="torn-bottom" v-if="is_bottom" :style="{ clipPath: clip_path }"></div>
@@ -50,16 +50,22 @@ function createReceiptClip(
     margin: var(--space-l) 0 var(--space-2xl)
 }
 
-.receipt {
+.roll {
     font-family: var(--mono);
     background-color: var(--paper);
     padding: var(--space-xl) var(--space-xl) var(--space-m);
-    border-top: 1px solid var(--desk);
-    border-bottom: 1px solid var(--desk);
 }
 
 .torn-top, .torn-bottom {
     height: 12px;
     background-color: var(--paper);
+}
+
+.torn-top {
+    border-bottom: 1px solid  rgb(0 0 0 / 6%);
+}
+
+.torn-bottom {
+    border-top: 1px solid  rgb(0 0 0 / 6%);
 }
 </style>
