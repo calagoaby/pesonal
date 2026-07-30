@@ -1,7 +1,11 @@
 <script setup lang="ts">
-const props = defineProps<{
+const props = withDefaults(defineProps<{
     tornPosition: 'top' | 'bottom'
-}>()
+    merchant?: string
+    subText: string
+}>(), {
+    merchant: 'Pesonal'
+})
 
 
 /** Computed */
@@ -39,6 +43,10 @@ function createReceiptClip(
     <div class="receipt-container">
         <div class="torn-top" v-if="!is_bottom" :style="{ clipPath: clip_path }"></div>
         <div class="roll">
+            <div class="header">
+                <div class="merchant">{{ merchant }}</div>
+                <div class="tsub">{{ subText }}</div>
+            </div>
             <slot />
         </div>
         <div class="torn-bottom" v-if="is_bottom" :style="{ clipPath: clip_path }"></div>
@@ -46,6 +54,26 @@ function createReceiptClip(
 </template>
 
 <style scoped>
+.header {
+    text-transform: uppercase;
+}
+
+.merchant {
+    font-size: var(--text-body);
+    text-align: center;
+    font-weight: 600;
+    letter-spacing: 3px;
+}
+
+.tsub {
+    font-family: var(--mono);
+    font-size: var(--text-micro);
+    text-align: center;
+    color: var(--faded);
+    margin-top: var(--space-xs);
+    letter-spacing: .16em;
+}
+
 .roll {
     font-family: var(--mono);
     background-color: var(--paper);

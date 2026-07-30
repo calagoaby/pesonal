@@ -1,5 +1,3 @@
 <template>
-    <SharedReceipt torn-position="top">
-        Expenses
-    </SharedReceipt>
+    <ExpensesMonthExpense />
 </template>
