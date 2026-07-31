@@ -1,36 +1,5 @@
 <script setup lang="ts">
 import ArrowDownRight from '@primeicons/vue/arrow-down-right';
-
-/** Types */
-type BarcodeStyle = {
-    height: string,
-    width: string,
-    background: string,
-}
-
-
-/** States */
-const widths = [1, 1, 3, 3, 1, 1, 1, 3, 2, 2, 1, 2, 2, 1, 1, 1, 1, 3, 2, 1, 3, 1]
-const barcode_styles = Array.from(
-    { length: 22 }, (_, i) => barcodeStyle({index: i})
-)
-
-
-/** Functions */
-function barcodeStyle ( { index }: { index: number }): BarcodeStyle {
-  const width = widths[index] ?? 0
-
-  const background = `linear-gradient(
-    90deg,
-    var(--ink) 0 ${width}px
-  )`
-
-  return {
-    height: 'inherit',
-    width: `${width}px`,
-    background: background
-  }
-}
 </script>
 
 <template>
@@ -55,13 +24,9 @@ function barcodeStyle ( { index }: { index: number }): BarcodeStyle {
             <div class="fill"></div>
             <div class="val">38</div>
         </div>
-        <div class="barcode">
-            <div 
-                v-for="(style, index) in barcode_styles"
-                :key="index" 
-                :style="style"
-            ></div>
-        </div>
+        
+        <SharedBarcode :length="22" style="margin-top: var(--space-l);" />
+
         <div class="ono">NO. 0617-2026</div>
         <div class="thanks">*** salamat — come again ***</div>
     </SharedReceipt>
@@ -137,15 +102,6 @@ function barcodeStyle ( { index }: { index: number }): BarcodeStyle {
         flex: 1;
         border-bottom: 1px dotted var(--perforation);
     }
-}
-
-.barcode {
-    margin-top: var(--space-l);
-    height: 30px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 1.5px;
 }
 
 .ono {

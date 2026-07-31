@@ -10,13 +10,16 @@ const {
 </script>
 
 <template>
-    <SharedReceipt torn-position="top" sub-text="· expense receipt ·">
+    <SharedReceipt torn-position="top" sub-text="· expense receipt ·" style="margin-bottom: var(--space-l);">
+
         <div class="period-switcher">
             <ChevronLeft />
             PERIOD {{ month_expenses.month  }}
             <ChevronRight />
         </div>
+
         <SharedPerf />
+
         <div class="category-switcher">
             <span class="label">Category</span>
             <span class="value">
@@ -41,6 +44,16 @@ const {
                     <div class="amount">{{ formatAmountWithCurrency(expense.amount) }}</div>
                 </div>
             </div>
+        </div>
+
+        <SharedPerf />
+
+        <div class="more">✂ &nbsp; pull for more &nbsp; ✂</div>
+
+        <div class="foot">
+            <SharedBarcode gap="5px" height="36px" style="margin: var(--space-s) 0;" />
+            <div class="count">138 items · June 2026</div>
+            <div class="quip">* thank you, come again *</div>
         </div>
     </SharedReceipt>
 </template>
@@ -112,5 +125,31 @@ const {
 .lead {
     flex: 1;
     border-bottom: 1.5px dotted var(--perforation);
+}
+
+.more {
+    text-align: center;
+    text-transform: uppercase;
+    color: var(--stamp);
+    font-size: var(--text-label);
+    letter-spacing: .14em;
+}
+
+.foot {
+    text-align: center;
+    text-transform: uppercase;
+}
+
+.count {
+    color: var(--faded);
+    letter-spacing: .14em;
+    font-size: var(--text-micro);
+}
+
+.quip {
+    color: var(--perforation);
+    letter-spacing: .18em;
+    font-size: 9px;
+    margin-top: var(--space-s);
 }
 </style>
