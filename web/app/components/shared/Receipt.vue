@@ -47,6 +47,7 @@ function createReceiptClip(
                 <div class="merchant">{{ merchant }}</div>
                 <div class="tsub">{{ subText }}</div>
             </div>
+            <SharedPerf />
             <slot />
         </div>
         <div class="torn-bottom" v-if="is_bottom" :style="{ clipPath: clip_path }"></div>

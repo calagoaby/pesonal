@@ -35,7 +35,6 @@ function barcodeStyle ( { index }: { index: number }): BarcodeStyle {
 
 <template>
     <SharedReceipt torn-position="bottom" sub-text="Offical Receipt — JUNE 2026">
-        <SharedPerf />
         <div class="tlabel">TOTAL DAMAGE</div>
         <div class="total">₱43,210</div>
         <div style="text-align: center; margin-top: var(--space-m);">
