@@ -24,11 +24,24 @@ const {
                 <ChevronDown color="var(--faded)" />
             </span>
         </div>
-        <ExpensesDateExpenses 
-            v-for="(daily_expense, index) in month_expenses.days" 
-            :daily_expense="daily_expense" 
-            :key="index"
-        />
+        
+        <div class="daily-expenses" v-for="(daily_expense, index) in month_expenses.days" :key="index">
+            <div class="date">
+                <SharedPerf style="flex: 1;" />
+                {{ daily_expense.date }}
+                <SharedPerf style="flex: 1;" />
+            </div>
+            <div class="expenses">
+                <div class="row" v-for="(expense, index) in daily_expense.items" :key="index">
+                    <div class="desc">
+                        {{ expense.description }}
+                        <span class="cat">{{ expense.category }}</span>
+                    </div>
+                    <div class="lead"></div>
+                    <div class="amount">{{ formatAmountWithCurrency(expense.amount) }}</div>
+                </div>
+            </div>
+        </div>
     </SharedReceipt>
 </template>
 
@@ -60,5 +73,44 @@ const {
     display: flex;
     align-items: center;
     gap: var(--space-s);
+}
+
+.date {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: var(--space-s);
+    font-size: var(--text-micro);
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--faded);
+    margin: var(--space-l) 0 var(--space-xs);
+}
+
+.row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: var(--text-body);
+    gap: var(--space-s);
+    padding: var(--space-xs) 0;
+}
+
+.desc {
+    font-family: var(--sans);
+}
+
+.cat {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--faded);
+    text-transform: uppercase;
+    margin-left: var(--space-s);
+    letter-spacing: .06em;
+}
+
+.lead {
+    flex: 1;
+    border-bottom: 1.5px dotted var(--perforation);
 }
 </style>
