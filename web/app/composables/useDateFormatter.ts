@@ -11,9 +11,14 @@ export function useDateFormatter() {
         return formatMonthYear(month, config.locale)
     }
 
+    function formatFieldDate(date: string) {
+        return formatFullDate(date, config.locale).replace(',', ' ·')
+    }
+
 
     return {
         formatDailyDate,
-        formatMonthLabel
+        formatMonthLabel,
+        formatFieldDate
     }
 }

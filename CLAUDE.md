@@ -21,6 +21,8 @@ The loop:
 
 Commit format: a `[feat]` / `[fix]` tag alone on the first line, then brief lowercase `- bullet` lines. **No co-author trailer** (this overrides the default).
 
+PR format: the title is the same one-liner in that style — `[feat] - navbar route aware active`. **Leave the body empty.** The title and the commits say it; a written-up description is noise. Explain the reasoning in chat instead.
+
 Design specs live in `design/`. Status and the screen order live in `docs/ROADMAP.md`.
 
 ## Frontend conventions (Nuxt 4 + PrimeVue, code in `web/app/`)

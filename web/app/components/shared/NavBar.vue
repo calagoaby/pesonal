@@ -16,9 +16,9 @@ import EllipsisH from '@primeicons/vue/ellipsis-h';
             <Receipt />
             Expenses
         </NuxtLink>
-        <div class="add-icon">
+        <NuxtLink to="/add-expense" class="add-icon" aria-label="Add expense">
             <Plus />
-        </div>
+        </NuxtLink>
         <NuxtLink to="/recurring" class="nav-item" active-class="active">
             <Sync />
             Recurring
