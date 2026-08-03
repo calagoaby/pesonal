@@ -5,20 +5,24 @@ import ChevronDown from '@primeicons/vue/chevron-down';
 import { useMonthExpense } from '~/composables/expenses/useMonthExpense';
 
 const {
-    month_expenses
+    month,
+    meta,
+    daily_expenses
 } = useMonthExpense()
 
 const {
-    formatDailyDate
+    formatDailyDate,
+    formatMonthLabel
 } = useDateFormatter()
 </script>
 
 <template>
-    <SharedReceipt torn-position="top" sub-text="· expense receipt ·" style="margin-bottom: var(--space-l);">
+    <SharedReceipt class="expense-roll" torn-position="top" sub-text="· expense receipt ·">
+        <SharedPerf />
 
         <div class="period-switcher">
             <ChevronLeft />
-            PERIOD {{ month_expenses.month  }}
+            PERIOD {{ month }}
             <ChevronRight />
         </div>
 
@@ -31,18 +35,16 @@ const {
                 <ChevronDown color="var(--faded)" />
             </span>
         </div>
-        
-        <div class="daily-expenses" v-for="(daily_expense, index) in month_expenses.days" :key="index">
+
+        <div class="daily-expenses" v-for="daily_expense in daily_expenses" :key="daily_expense.date">
             <div class="date">
-                <SharedPerf style="flex: 1;" />
                 {{ formatDailyDate(daily_expense.date) }}
-                <SharedPerf style="flex: 1;" />
             </div>
             <div class="expenses">
-                <div class="row" v-for="(expense, index) in daily_expense.items" :key="index">
+                <div class="row" v-for="expense in daily_expense.items" :key="expense.id">
                     <div class="desc">
-                        {{ expense.description }}
-                        <span class="cat">{{ expense.category }}</span>
+                        {{ expense.note }}
+                        <span class="cat">{{ expense.category.name }}</span>
                     </div>
                     <div class="lead"></div>
                     <div class="amount">{{ formatAmountWithCurrency(expense.amount) }}</div>
@@ -55,14 +57,18 @@ const {
         <div class="more">✂ &nbsp; pull for more &nbsp; ✂</div>
 
         <div class="foot">
-            <SharedBarcode gap="5px" height="36px" style="margin: var(--space-s) 0;" />
-            <div class="count">138 items · June 2026</div>
+            <SharedBarcode class="roll-barcode" gap="5px" height="36px" />
+            <div class="count">{{ meta.total }} items · {{ formatMonthLabel(month) }}</div>
             <div class="quip">* thank you, come again *</div>
         </div>
     </SharedReceipt>
 </template>
 
 <style scoped>
+.expense-roll {
+    margin-bottom: var(--space-l);
+}
+
 .period-switcher {
     display: flex;
     justify-content: center;
@@ -94,7 +100,6 @@ const {
 
 .date {
     display: flex;
-    justify-content: center;
     align-items: center;
     gap: var(--space-s);
     font-size: var(--text-micro);
@@ -102,6 +107,12 @@ const {
     letter-spacing: .1em;
     color: var(--faded);
     margin: var(--space-l) 0 var(--space-xs);
+}
+
+.date::after, .date::before {
+    content: '';
+    border-top: 1.5px dashed var(--perforation);
+    flex: 1;
 }
 
 .row {
@@ -142,6 +153,10 @@ const {
 .foot {
     text-align: center;
     text-transform: uppercase;
+}
+
+.roll-barcode {
+    margin: var(--space-s) 0;
 }
 
 .count {

@@ -1,15 +1,10 @@
-export interface Expenses {
-    description: string
-    category: string
-    amount: number    
-}
+import type { Expense } from '#shared/types/Expense'
 
-export interface DailyExpenses {
+/**
+ * View model — not a contract shape. The API returns a flat, date-desc list;
+ * the receipt roll groups it by day for display only.
+ */
+export interface DailyExpense {
     date: string
-    items: Expenses[]
-}
-
-export interface MonthlyExpenses {
-    month: string
-    days: DailyExpenses[]
+    items: Expense[]
 }

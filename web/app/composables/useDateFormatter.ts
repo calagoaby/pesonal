@@ -4,11 +4,16 @@ export function useDateFormatter() {
 
     /** Functions */
     function formatDailyDate(date: string) {
-        return formatWeekdayDate(date, config.locale, config.timezone).replaceAll(',', '')
+        return formatWeekdayDate(date, config.locale).replaceAll(',', '')
+    }
+
+    function formatMonthLabel(month: string) {
+        return formatMonthYear(month, config.locale)
     }
 
 
     return {
-        formatDailyDate
+        formatDailyDate,
+        formatMonthLabel
     }
 }
