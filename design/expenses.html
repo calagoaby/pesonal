@@ -53,7 +53,7 @@ body{font-family:var(--sans);background:#d8d1c2;min-height:100vh;display:flex;fl
 .field .val i{color:var(--faded);font-size:var(--text-label)}
 .daydiv{display:flex;align-items:center;gap:var(--space-s);font-family:var(--mono);font-size:var(--text-micro);letter-spacing:.1em;text-transform:uppercase;color:var(--faded);margin:var(--space-l) 0 var(--space-xs)}
 .daydiv::before,.daydiv::after{content:"";flex:1;border-top:1.5px dashed var(--perforation)}
-.line{display:flex;align-items:baseline;padding:var(--space-xs) 0}
+.line{display:flex;align-items:baseline;padding:var(--space-xs) 0;color:var(--ink);text-decoration:none}
 .line .desc{font-size:var(--text-body)}
 .line .tag{font-family:var(--mono);font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--faded);margin-left:var(--space-s)}
 .line .lead{flex:1;border-bottom:1.5px dotted var(--perforation);margin:0 var(--space-s);transform:translateY(-3px)}
@@ -68,7 +68,7 @@ body{font-family:var(--sans);background:#d8d1c2;min-height:100vh;display:flex;fl
 .navitem{display:flex;flex-direction:column;align-items:center;gap:var(--space-xs);flex:1;font-size:var(--text-micro);color:var(--faded);font-weight:500;text-decoration:none}
 .navitem.active{color:var(--ink);font-weight:600}
 .navitem i{font-size:20px}
-.fab{width:54px;height:54px;border-radius:var(--radius-pill);background:var(--stamp);color:#fff;display:flex;align-items:center;justify-content:center;margin-top:-26px;border:3px solid var(--paper);box-shadow:0 8px 18px rgba(200,71,46,.32);font-size:24px}
+.fab{width:54px;height:54px;border-radius:var(--radius-pill);background:var(--stamp);color:#fff;display:flex;align-items:center;justify-content:center;margin-top:-26px;border:3px solid var(--paper);box-shadow:0 8px 18px rgba(200,71,46,.32);font-size:24px;text-decoration:none}
 .scrim{position:absolute;inset:0;background:rgba(28,26,23,.45);opacity:0;pointer-events:none;transition:opacity .25s}
 .sheet{position:absolute;left:0;right:0;bottom:0;background:var(--paper);border-top:2px solid var(--ink);border-radius:18px 18px 0 0;transform:translateY(110%);transition:transform .28s ease;padding:0 var(--space-l) var(--space-l)}
 .screen.sheet-open .scrim{opacity:1;pointer-events:auto}
@@ -104,15 +104,15 @@ body{font-family:var(--sans);background:#d8d1c2;min-height:100vh;display:flex;fl
 <span class="val"><span id="catVal">All</span><i class="pi pi-chevron-down"></i></span>
 </button>
 <div class="daydiv">Wed Jun 17</div>
-<div class="line"><span class="desc">Lunch with team<span class="tag">Food</span></span><span class="lead"></span><span class="amt">₱680.00</span></div>
-<div class="line"><span class="desc">Grab to office<span class="tag">Transport</span></span><span class="lead"></span><span class="amt">₱240.00</span></div>
-<div class="line"><span class="desc">Kape sa umaga<span class="tag">Food</span></span><span class="lead"></span><span class="amt">₱150.00</span></div>
+<a class="line" href="edit-expense.html"><span class="desc">Lunch with team<span class="tag">Food</span></span><span class="lead"></span><span class="amt">₱680.00</span></a>
+<a class="line" href="edit-expense.html"><span class="desc">Grab to office<span class="tag">Transport</span></span><span class="lead"></span><span class="amt">₱240.00</span></a>
+<a class="line" href="edit-expense.html"><span class="desc">Kape sa umaga<span class="tag">Food</span></span><span class="lead"></span><span class="amt">₱150.00</span></a>
 <div class="daydiv">Tue Jun 16</div>
-<div class="line"><span class="desc">SM Groceries<span class="tag">Groceries</span></span><span class="lead"></span><span class="amt">₱2,150.00</span></div>
-<div class="line"><span class="desc">Load<span class="tag">Other</span></span><span class="lead"></span><span class="amt">₱300.00</span></div>
+<a class="line" href="edit-expense.html"><span class="desc">SM Groceries<span class="tag">Groceries</span></span><span class="lead"></span><span class="amt">₱2,150.00</span></a>
+<a class="line" href="edit-expense.html"><span class="desc">Load<span class="tag">Other</span></span><span class="lead"></span><span class="amt">₱300.00</span></a>
 <div class="daydiv">Mon Jun 15</div>
-<div class="line"><span class="desc">Rent share<span class="tag">Housing</span></span><span class="lead"></span><span class="amt">₱15,000.00</span></div>
-<div class="line"><span class="desc">Milk tea run<span class="tag">Fun</span></span><span class="lead"></span><span class="amt">₱180.00</span></div>
+<a class="line" href="edit-expense.html"><span class="desc">Rent share<span class="tag">Housing</span></span><span class="lead"></span><span class="amt">₱15,000.00</span></a>
+<a class="line" href="edit-expense.html"><span class="desc">Milk tea run<span class="tag">Fun</span></span><span class="lead"></span><span class="amt">₱180.00</span></a>
 <div class="tearzone"><div class="more">✂ &nbsp; pull for more &nbsp; ✂</div></div>
 <div class="foot">
 <div class="barcode"></div>
@@ -124,9 +124,9 @@ body{font-family:var(--sans);background:#d8d1c2;min-height:100vh;display:flex;fl
 <div class="nav">
 <a class="navitem" href="dashboard.html"><i class="pi pi-home"></i>Home</a>
 <a class="navitem active" href="expenses.html"><i class="pi pi-receipt"></i>Expenses</a>
-<div style="flex:1;display:flex;justify-content:center"><div class="fab"><i class="pi pi-plus"></i></div></div>
-<div class="navitem"><i class="pi pi-sync"></i>Recurring</div>
-<div class="navitem"><i class="pi pi-ellipsis-h"></i>More</div>
+<div style="flex:1;display:flex;justify-content:center"><a class="fab" href="add-expense.html"><i class="pi pi-plus"></i></a></div>
+<a class="navitem" href="recurring.html"><i class="pi pi-sync"></i>Recurring</a>
+<a class="navitem" href="more.html"><i class="pi pi-ellipsis-h"></i>More</a>
 </div>
 <div class="scrim" id="catScrim"></div>
 <div class="sheet" id="catSheet" role="dialog" aria-label="Filter by category">

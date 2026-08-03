@@ -94,7 +94,7 @@ body{font-family:var(--sans);background:#d8d1c2;min-height:100vh;display:flex;fl
 .navitem{display:flex;flex-direction:column;align-items:center;gap:var(--space-xs);flex:1;font-size:var(--text-micro);color:var(--faded);font-weight:500;text-decoration:none}
 .navitem.active{color:var(--ink);font-weight:600}
 .navitem i{font-size:20px}
-.fab{width:54px;height:54px;border-radius:var(--radius-pill);background:var(--stamp);color:#fff;display:flex;align-items:center;justify-content:center;margin-top:-26px;border:3px solid var(--paper);box-shadow:0 8px 18px rgba(200,71,46,.32);font-size:24px}
+.fab{width:54px;height:54px;border-radius:var(--radius-pill);background:var(--stamp);color:#fff;display:flex;align-items:center;justify-content:center;margin-top:-26px;border:3px solid var(--paper);box-shadow:0 8px 18px rgba(200,71,46,.32);font-size:24px;text-decoration:none}
 </style>
 </head>
 <body>
@@ -155,11 +155,11 @@ body{font-family:var(--sans);background:#d8d1c2;min-height:100vh;display:flex;fl
 <text x="60" y="73" text-anchor="middle" font-family="'Spline Sans Mono',monospace" font-size="10" fill="#8a857b">total</text>
 </svg>
 <div class="legend">
-<div><div class="row"><span class="legname"><span class="dot" style="background:var(--c-housing)"></span>Housing</span><span class="amt">₱15,000 <span class="pct">35%</span></span></div><div class="seg"><div style="width:35%;height:100%;background:var(--c-housing);border-radius:var(--radius-pill)"></div></div></div>
-<div><div class="row"><span class="legname"><span class="dot" style="background:var(--c-food)"></span>Food</span><span class="amt">₱9,800 <span class="pct">23%</span></span></div><div class="seg"><div style="width:23%;height:100%;background:var(--c-food);border-radius:var(--radius-pill)"></div></div></div>
-<div><div class="row"><span class="legname"><span class="dot" style="background:var(--c-groc)"></span>Groceries</span><span class="amt">₱6,400 <span class="pct">15%</span></span></div><div class="seg"><div style="width:15%;height:100%;background:var(--c-groc);border-radius:var(--radius-pill)"></div></div></div>
-<div><div class="row"><span class="legname"><span class="dot" style="background:var(--c-transport)"></span>Transport</span><span class="amt">₱4,200 <span class="pct">10%</span></span></div><div class="seg"><div style="width:10%;height:100%;background:var(--c-transport);border-radius:var(--radius-pill)"></div></div></div>
-<div><div class="row"><span class="legname"><span class="dot" style="background:var(--c-other)"></span>Others</span><span class="amt">₱7,810 <span class="pct">18%</span></span></div><div class="seg"><div style="width:18%;height:100%;background:var(--c-other);border-radius:var(--radius-pill)"></div></div></div>
+<a href="expenses.html" style="text-decoration:none;color:var(--ink)"><div class="row"><span class="legname"><span class="dot" style="background:var(--c-housing)"></span>Housing</span><span class="amt">₱15,000 <span class="pct">35%</span></span></div><div class="seg"><div style="width:35%;height:100%;background:var(--c-housing);border-radius:var(--radius-pill)"></div></div></a>
+<a href="expenses.html" style="text-decoration:none;color:var(--ink)"><div class="row"><span class="legname"><span class="dot" style="background:var(--c-food)"></span>Food</span><span class="amt">₱9,800 <span class="pct">23%</span></span></div><div class="seg"><div style="width:23%;height:100%;background:var(--c-food);border-radius:var(--radius-pill)"></div></div></a>
+<a href="expenses.html" style="text-decoration:none;color:var(--ink)"><div class="row"><span class="legname"><span class="dot" style="background:var(--c-groc)"></span>Groceries</span><span class="amt">₱6,400 <span class="pct">15%</span></span></div><div class="seg"><div style="width:15%;height:100%;background:var(--c-groc);border-radius:var(--radius-pill)"></div></div></a>
+<a href="expenses.html" style="text-decoration:none;color:var(--ink)"><div class="row"><span class="legname"><span class="dot" style="background:var(--c-transport)"></span>Transport</span><span class="amt">₱4,200 <span class="pct">10%</span></span></div><div class="seg"><div style="width:10%;height:100%;background:var(--c-transport);border-radius:var(--radius-pill)"></div></div></a>
+<a href="expenses.html" style="text-decoration:none;color:var(--ink)"><div class="row"><span class="legname"><span class="dot" style="background:var(--c-other)"></span>Others</span><span class="amt">₱7,810 <span class="pct">18%</span></span></div><div class="seg"><div style="width:18%;height:100%;background:var(--c-other);border-radius:var(--radius-pill)"></div></div></a>
 </div>
 </div>
 </div>
@@ -192,20 +192,36 @@ body{font-family:var(--sans);background:#d8d1c2;min-height:100vh;display:flex;fl
 </svg>
 </div>
 
+<a class="card" href="trend.html" style="display:block;text-decoration:none;color:var(--ink)">
+<div class="row" style="margin-bottom:var(--space-m)"><span class="shdr">Six month trend</span><span class="hint">avg ₱42,252</span></div>
+<svg viewBox="0 0 320 76" width="100%" height="68">
+<line x1="0" y1="56" x2="320" y2="56" stroke="#d8d2c4" stroke-width="1" stroke-dasharray="3 3"/>
+<polyline points="12,21.7 71.2,19.3 130.4,23.2 189.6,15.9 248.8,12.2 308,17.4" fill="none" stroke="#1c1a17" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="248.8" cy="12.2" r="3.5" fill="#e8b23a" stroke="#1c1a17" stroke-width="2"/>
+<circle cx="308" cy="17.4" r="3.5" fill="#c8472e" stroke="#c8472e" stroke-width="2"/>
+<text x="12" y="72" text-anchor="middle" font-family="'Spline Sans Mono',monospace" font-size="11" fill="#8a857b">Jan</text>
+<text x="71.2" y="72" text-anchor="middle" font-family="'Spline Sans Mono',monospace" font-size="11" fill="#8a857b">Feb</text>
+<text x="130.4" y="72" text-anchor="middle" font-family="'Spline Sans Mono',monospace" font-size="11" fill="#8a857b">Mar</text>
+<text x="189.6" y="72" text-anchor="middle" font-family="'Spline Sans Mono',monospace" font-size="11" fill="#8a857b">Apr</text>
+<text x="248.8" y="72" text-anchor="middle" font-family="'Spline Sans Mono',monospace" font-size="11" fill="#8a857b">May</text>
+<text x="308" y="72" text-anchor="middle" font-family="'Spline Sans Mono',monospace" font-size="11" fill="#1c1a17">Jun</text>
+</svg>
+</a>
+
 <div class="card" style="margin-bottom:var(--space-l)">
-<div class="row" style="margin-bottom:var(--space-xs)"><span class="shdr">Recent items</span><span class="seeall">See all <i class="pi pi-chevron-right" style="font-size:var(--text-micro)"></i></span></div>
-<div class="item">
+<div class="row" style="margin-bottom:var(--space-xs)"><span class="shdr">Recent items</span><a class="seeall" href="expenses.html" style="text-decoration:none">See all <i class="pi pi-chevron-right" style="font-size:var(--text-micro)"></i></a></div>
+<a class="item" href="edit-expense.html" style="text-decoration:none;color:var(--ink)">
 <span class="iname"><span class="dot" style="background:var(--c-food)"></span><span style="display:flex;flex-direction:column"><span>Lunch with team</span><span class="isub">Food · Jun 17</span></span></span>
 <span class="iamt">₱680</span>
-</div>
-<div class="item">
+</a>
+<a class="item" href="edit-expense.html" style="text-decoration:none;color:var(--ink)">
 <span class="iname"><span class="dot" style="background:var(--c-transport)"></span><span style="display:flex;flex-direction:column"><span>Grab to office</span><span class="isub">Transport · Jun 17</span></span></span>
 <span class="iamt">₱240</span>
-</div>
-<div class="item">
+</a>
+<a class="item" href="edit-expense.html" style="text-decoration:none;color:var(--ink)">
 <span class="iname"><span class="dot" style="background:var(--c-groc)"></span><span style="display:flex;flex-direction:column"><span>SM Groceries</span><span class="isub">Groceries · Jun 16</span></span></span>
 <span class="iamt">₱2,150</span>
-</div>
+</a>
 </div>
 
 </div>
@@ -213,9 +229,9 @@ body{font-family:var(--sans);background:#d8d1c2;min-height:100vh;display:flex;fl
 <div class="nav">
 <a class="navitem active" href="dashboard.html"><i class="pi pi-home"></i>Home</a>
 <a class="navitem" href="expenses.html"><i class="pi pi-receipt"></i>Expenses</a>
-<div style="flex:1;display:flex;justify-content:center"><div class="fab"><i class="pi pi-plus"></i></div></div>
-<div class="navitem"><i class="pi pi-sync"></i>Recurring</div>
-<div class="navitem"><i class="pi pi-ellipsis-h"></i>More</div>
+<div style="flex:1;display:flex;justify-content:center"><a class="fab" href="add-expense.html"><i class="pi pi-plus"></i></a></div>
+<a class="navitem" href="recurring.html"><i class="pi pi-sync"></i>Recurring</a>
+<a class="navitem" href="more.html"><i class="pi pi-ellipsis-h"></i>More</a>
 </div>
 
 </div>
