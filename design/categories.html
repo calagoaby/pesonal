@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pesonal — Categories (Receipt Roll · design reference)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Spline+Sans+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/primeicons/7.0.0/primeicons.min.css">
+<style>
+/*
+  Categories — GET/POST/PATCH/DELETE /api/categories.
+  Reached from More (it doesn't earn a nav slot). Two frames: the list, and the
+  add/edit sheet with the color + emoji pickers.
+  DATA HONESTY: the Category resource carries no usage count, so the per-row
+  count is sourced from stats/monthly by_category and is therefore labelled
+  "this month" — not an all-time total we can't back. Drop it to avoid that call.
+  Delete → the shared VOID slip; a category still in use returns 409, which is
+  the "Can't void that" variant in components.html.
+  Token rule: var(--…) → use that token in the app; literal px → intentional one-off.
+*/
+:root{
+  --desk:#EAE5D9;--paper:#FBF8F1;
+  --ink:#1C1A17;--faded:#8A857B;--perforation:#D8D2C4;
+  --stamp:#C8472E;--under:#2F7D52;--hi:#E8B23A;
+  --c-housing:#534F8C;--c-food:#C9692E;--c-groc:#5E7A3E;--c-transport:#3F6F97;--c-fun:#B0577B;--c-other:#8A857B;
+  --text-hero:34px;--text-title:18px;--text-body:14px;--text-label:12px;--text-micro:11px;
+  --space-xs:4px;--space-s:8px;--space-m:12px;--space-l:16px;--space-xl:20px;--space-2xl:24px;
+  --radius-card:6px;--radius-pill:999px;
+  --mono:'Spline Sans Mono',ui-monospace,monospace;
+  --sans:'Plus Jakarta Sans',system-ui,sans-serif;
+  --shadow:0 6px 16px rgba(40,33,20,.05);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:#d8d1c2;min-height:100vh;padding:30px 16px;color:var(--ink)}
+.pagehead{text-align:center;max-width:520px;margin:0 auto 22px}
+.pagehead h1{font-family:var(--mono);font-size:var(--text-title);letter-spacing:.1em;text-transform:uppercase;font-weight:600}
+.pagehead p{font-size:13px;color:#7c7567;margin-top:var(--space-s);line-height:1.5}
+.grid{display:flex;flex-wrap:wrap;gap:28px;justify-content:center}
+.cell{width:390px}
+.cap{font-family:var(--mono);font-size:var(--text-micro);letter-spacing:.1em;text-transform:uppercase;color:#7c7567;margin-bottom:var(--space-s);text-align:center}
+.cap b{color:var(--ink)}
+.phone{background:#211e19;border-radius:42px;padding:10px;box-shadow:0 30px 60px rgba(33,30,25,.35)}
+.screen{position:relative;background:var(--desk);border-radius:32px;overflow:hidden;height:700px;display:flex;flex-direction:column}
+.statusbar{display:flex;justify-content:space-between;align-items:center;padding:11px 22px 4px;font-size:13px;font-family:var(--mono);color:var(--ink)}
+.statusbar .icons{display:flex;gap:8px;align-items:center}
+.content{padding:var(--space-l) var(--space-l) 0;flex:1;overflow-y:auto}
+.backbar{display:flex;align-items:center;gap:var(--space-s);padding:0 var(--space-xs) var(--space-s);font-family:var(--mono);font-size:var(--text-label);letter-spacing:.14em;text-transform:uppercase;color:var(--faded);text-decoration:none}
+.backbar i{color:var(--ink);font-size:var(--text-label)}
+.torn{height:12px;background:var(--paper);border-bottom:1px solid var(--perforation);clip-path:polygon(0% 100%,0% 55%,4% 0%,8% 55%,12% 0%,16% 55%,20% 0%,24% 55%,28% 0%,32% 55%,36% 0%,40% 55%,44% 0%,48% 55%,52% 0%,56% 55%,60% 0%,64% 55%,68% 0%,72% 55%,76% 0%,80% 55%,84% 0%,88% 55%,92% 0%,96% 55%,100% 0%,100% 100%)}
+.roll{background:var(--paper);padding:var(--space-m) var(--space-l) var(--space-l);font-family:var(--mono)}
+.rhead{text-align:center;text-transform:uppercase}
+.rhead .brand{font-size:var(--text-body);letter-spacing:3px;font-weight:600}
+.rhead .sub{font-size:var(--text-micro);letter-spacing:.16em;color:var(--faded);margin-top:var(--space-xs)}
+.perf{border-top:1.5px dashed var(--perforation);margin:var(--space-m) 0}
+/* category row */
+.cat{display:flex;align-items:center;gap:var(--space-m);padding:var(--space-m) 2px;border-top:1.5px dashed var(--perforation);color:var(--ink);text-decoration:none}
+.cat .dot{width:10px;height:10px;border-radius:3px;flex:none}
+.cat .em{font-size:var(--text-body)}
+.cat .nm{flex:1;font-family:var(--sans);font-size:var(--text-body)}
+.cat .ct{font-size:var(--text-micro);color:var(--faded);letter-spacing:.04em}
+.cat i{font-size:var(--text-label);color:var(--perforation)}
+.addnew{margin-top:var(--space-l);border-top:1.5px dashed var(--perforation);padding-top:var(--space-m);text-align:center}
+.addnew span{font-size:var(--text-label);letter-spacing:.14em;text-transform:uppercase;color:var(--stamp)}
+.foot{text-align:center;margin-top:var(--space-l)}
+.barcode{height:36px;width:72%;margin:var(--space-s) auto;background:repeating-linear-gradient(90deg,var(--ink) 0 2px,transparent 2px 5px,var(--ink) 5px 6px,transparent 6px 11px)}
+.foot .count{font-size:var(--text-micro);letter-spacing:.14em;text-transform:uppercase;color:var(--faded)}
+.foot .quip{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--perforation);margin-top:var(--space-s)}
+/* sheet */
+.scrim{position:absolute;inset:0;background:rgba(28,26,23,.45)}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:var(--paper);border-top:2px solid var(--ink);border-radius:18px 18px 0 0;padding:0 var(--space-l) var(--space-l)}
+.grab{width:40px;height:4px;border-radius:var(--radius-pill);background:var(--perforation);margin:var(--space-m) auto var(--space-s)}
+.shead{display:flex;align-items:center;justify-content:space-between;font-family:var(--mono);font-size:var(--text-micro);letter-spacing:.1em;text-transform:uppercase;color:var(--faded);padding:2px 2px var(--space-s);border-bottom:1.5px dashed var(--perforation)}
+.shead i{color:var(--ink);font-size:16px}
+.slabel{font-family:var(--mono);font-size:var(--text-micro);letter-spacing:.1em;text-transform:uppercase;color:var(--faded);margin:var(--space-l) 0 var(--space-s)}
+.namefield{display:flex;align-items:center;gap:var(--space-m);border-bottom:1.5px dashed var(--perforation);padding:var(--space-s) 2px}
+.namefield .dot{width:12px;height:12px;border-radius:3px;flex:none}
+.namefield .em{font-size:var(--text-title)}
+.namefield input{flex:1;border:0;background:transparent;font-family:var(--sans);font-size:var(--text-body);color:var(--ink);outline:none}
+.swatches{display:grid;grid-template-columns:repeat(8,1fr);gap:var(--space-s)}
+.sw{aspect-ratio:1;border-radius:var(--radius-card);position:relative}
+.sw.on::after{content:"";position:absolute;inset:-3px;border:1.5px solid var(--ink);border-radius:var(--radius-card)}
+.emojis{display:grid;grid-template-columns:repeat(8,1fr);gap:var(--space-s)}
+.emo{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:var(--text-body);border:1px solid var(--perforation);border-radius:var(--radius-card)}
+.emo.on{border-color:var(--ink);background:var(--desk)}
+.acts{display:flex;gap:var(--space-s);margin-top:var(--space-l)}
+.btn{border:0;border-radius:var(--radius-pill);padding:var(--space-m);font-family:var(--mono);font-size:var(--text-label);font-weight:600;letter-spacing:.12em;text-transform:uppercase;cursor:pointer}
+.btn.save{flex:1;background:var(--stamp);color:#fff}
+.btn.del{flex:none;background:transparent;color:var(--stamp);border:1px solid var(--perforation);padding:var(--space-m) var(--space-l)}
+</style>
+</head>
+<body>
+<div class="pagehead">
+<h1>Categories</h1>
+<p>Reached from More. Tap a row to edit it — delete lives inside the sheet, same rule as every other list. Counts say "this month" because the categories endpoint doesn't carry an all-time total.</p>
+</div>
+
+<div class="grid">
+
+<div class="cell">
+<div class="cap"><b>1 · The list</b> — tap a row to edit</div>
+<div class="phone"><div class="screen">
+<div class="statusbar"><span>9:41</span><span class="icons"><i class="pi pi-wifi"></i><span>100%</span></span></div>
+<div class="content">
+<a class="backbar" href="more.html"><i class="pi pi-chevron-left"></i>More</a>
+<div class="torn"></div>
+<div class="roll">
+<div class="rhead"><div class="brand">Pesonal</div><div class="sub">· category list ·</div></div>
+<div class="perf"></div>
+<a class="cat" href="#"><span class="dot" style="background:var(--c-housing)"></span><span class="em">🏠</span><span class="nm">Housing</span><span class="ct">1 this month</span><i class="pi pi-chevron-right"></i></a>
+<a class="cat" href="#"><span class="dot" style="background:var(--c-food)"></span><span class="em">🍔</span><span class="nm">Food</span><span class="ct">42 this month</span><i class="pi pi-chevron-right"></i></a>
+<a class="cat" href="#"><span class="dot" style="background:var(--c-groc)"></span><span class="em">🛒</span><span class="nm">Groceries</span><span class="ct">18 this month</span><i class="pi pi-chevron-right"></i></a>
+<a class="cat" href="#"><span class="dot" style="background:var(--c-transport)"></span><span class="em">🚗</span><span class="nm">Transport</span><span class="ct">24 this month</span><i class="pi pi-chevron-right"></i></a>
+<a class="cat" href="#"><span class="dot" style="background:var(--c-fun)"></span><span class="em">🎉</span><span class="nm">Fun</span><span class="ct">14 this month</span><i class="pi pi-chevron-right"></i></a>
+<a class="cat" href="#"><span class="dot" style="background:#7A6A3E"></span><span class="em">💡</span><span class="nm">Utilities</span><span class="ct">9 this month</span><i class="pi pi-chevron-right"></i></a>
+<a class="cat" href="#"><span class="dot" style="background:var(--under)"></span><span class="em">💊</span><span class="nm">Health</span><span class="ct">5 this month</span><i class="pi pi-chevron-right"></i></a>
+<a class="cat" href="#"><span class="dot" style="background:var(--c-other)"></span><span class="em">🧾</span><span class="nm">Other</span><span class="ct">11 this month</span><i class="pi pi-chevron-right"></i></a>
+<div class="addnew"><span>+ &nbsp; new category</span></div>
+<div class="foot">
+<div class="barcode"></div>
+<div class="count">8 categories</div>
+<div class="quip">* every peso needs a home *</div>
+</div>
+</div>
+</div>
+</div></div>
+</div>
+
+<div class="cell">
+<div class="cap"><b>2 · Add / edit sheet</b> — name, color, emoji</div>
+<div class="phone"><div class="screen">
+<div class="statusbar"><span>9:41</span><span class="icons"><i class="pi pi-wifi"></i><span>100%</span></span></div>
+<div class="content" style="opacity:.5">
+<a class="backbar" href="more.html"><i class="pi pi-chevron-left"></i>More</a>
+<div class="torn"></div>
+<div class="roll">
+<div class="rhead"><div class="brand">Pesonal</div><div class="sub">· category list ·</div></div>
+<div class="perf"></div>
+<a class="cat" href="#"><span class="dot" style="background:var(--c-housing)"></span><span class="em">🏠</span><span class="nm">Housing</span><span class="ct">1 this month</span><i class="pi pi-chevron-right"></i></a>
+<a class="cat" href="#"><span class="dot" style="background:var(--c-food)"></span><span class="em">🍔</span><span class="nm">Food</span><span class="ct">42 this month</span><i class="pi pi-chevron-right"></i></a>
+<a class="cat" href="#"><span class="dot" style="background:var(--c-groc)"></span><span class="em">🛒</span><span class="nm">Groceries</span><span class="ct">18 this month</span><i class="pi pi-chevron-right"></i></a>
+</div>
+</div>
+<div class="scrim"></div>
+<div class="sheet">
+<div class="grab"></div>
+<div class="shead"><span>Edit category</span><i class="pi pi-times"></i></div>
+
+<div class="slabel">Name</div>
+<div class="namefield">
+<span class="dot" style="background:var(--c-food)"></span>
+<span class="em">🍔</span>
+<input value="Food" readonly>
+</div>
+
+<div class="slabel">Color</div>
+<div class="swatches">
+<div class="sw on" style="background:var(--c-food)"></div>
+<div class="sw" style="background:var(--c-housing)"></div>
+<div class="sw" style="background:var(--c-groc)"></div>
+<div class="sw" style="background:var(--c-transport)"></div>
+<div class="sw" style="background:var(--c-fun)"></div>
+<div class="sw" style="background:#7A6A3E"></div>
+<div class="sw" style="background:var(--under)"></div>
+<div class="sw" style="background:var(--c-other)"></div>
+<div class="sw" style="background:var(--stamp)"></div>
+<div class="sw" style="background:var(--hi)"></div>
+<div class="sw" style="background:#8A6D3B"></div>
+<div class="sw" style="background:#4A6E8A"></div>
+<div class="sw" style="background:#6E4A8A"></div>
+<div class="sw" style="background:#8A4A5E"></div>
+<div class="sw" style="background:#3E7A6E"></div>
+<div class="sw" style="background:var(--ink)"></div>
+</div>
+
+<div class="slabel">Emoji</div>
+<div class="emojis">
+<div class="emo on">🍔</div><div class="emo">🛒</div><div class="emo">🚗</div><div class="emo">🏠</div>
+<div class="emo">🎉</div><div class="emo">💡</div><div class="emo">💊</div><div class="emo">🧾</div>
+<div class="emo">☕</div><div class="emo">✈️</div><div class="emo">🎁</div><div class="emo">🐶</div>
+<div class="emo">📚</div><div class="emo">💰</div><div class="emo">🎬</div><div class="emo">⚽</div>
+</div>
+
+<div class="acts">
+<button class="btn del"><i class="pi pi-trash"></i></button>
+<button class="btn save">Save</button>
+</div>
+</div>
+</div></div>
+</div>
+
+</div>
+</body>
+</html>

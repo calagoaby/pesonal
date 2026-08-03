@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pesonal — Trend (Receipt Roll · design reference)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Spline+Sans+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/primeicons/7.0.0/primeicons.min.css">
+<style>
+/*
+  Trend — GET /api/stats/trend?months=6
+  A drill-down: reached from the dashboard's sparkline card and from More, so it
+  carries a back bar and NO bottom nav (same rule as categories.html).
+  Nav model across the app:
+    primary screens (dashboard/expenses/recurring/more) → bottom nav
+    drill-downs (categories/trend)                     → back bar, no nav
+    modals (add/edit forms)                            → close X + commit bar
+  The y-axis is anchored at zero, not at the minimum: money charts that float the
+  baseline exaggerate ordinary variation into drama.
+  SVG internals stay literal — in the app those coordinates come from data.
+  Token rule: var(--…) → use that token in the app; literal px → intentional one-off.
+*/
+:root{
+  --desk:#EAE5D9;--paper:#FBF8F1;
+  --ink:#1C1A17;--faded:#8A857B;--perforation:#D8D2C4;
+  --stamp:#C8472E;--under:#2F7D52;--hi:#E8B23A;
+  --c-housing:#534F8C;--c-food:#C9692E;--c-groc:#5E7A3E;--c-transport:#3F6F97;--c-fun:#B0577B;--c-other:#8A857B;
+  --text-hero:34px;--text-title:18px;--text-body:14px;--text-label:12px;--text-micro:11px;
+  --space-xs:4px;--space-s:8px;--space-m:12px;--space-l:16px;--space-xl:20px;--space-2xl:24px;
+  --radius-card:6px;--radius-pill:999px;
+  --mono:'Spline Sans Mono',ui-monospace,monospace;
+  --sans:'Plus Jakarta Sans',system-ui,sans-serif;
+  --shadow:0 6px 16px rgba(40,33,20,.05);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:#d8d1c2;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:30px 16px;color:var(--ink)}
+.label{font-size:13px;color:#7c7567;margin-bottom:14px;text-align:center;max-width:360px;line-height:1.5}
+.label b{color:var(--ink)}
+.phone{width:390px;background:#211e19;border-radius:42px;padding:10px;box-shadow:0 30px 60px rgba(33,30,25,.35)}
+.screen{position:relative;background:var(--desk);border-radius:32px;overflow:hidden;display:flex;flex-direction:column;height:760px}
+.statusbar{display:flex;justify-content:space-between;align-items:center;padding:11px 22px 4px;font-size:13px;font-family:var(--mono);color:var(--ink)}
+.statusbar .icons{display:flex;gap:8px;align-items:center}
+.content{padding:var(--space-l) var(--space-l) 0;flex:1;overflow-y:auto}
+.backbar{display:flex;align-items:center;gap:var(--space-s);padding:0 var(--space-xs) var(--space-s);font-family:var(--mono);font-size:var(--text-label);letter-spacing:.14em;text-transform:uppercase;color:var(--faded);text-decoration:none}
+.backbar i{color:var(--ink);font-size:var(--text-label)}
+.torn{height:12px;background:var(--paper);border-bottom:1px solid var(--perforation);clip-path:polygon(0% 100%,0% 55%,4% 0%,8% 55%,12% 0%,16% 55%,20% 0%,24% 55%,28% 0%,32% 55%,36% 0%,40% 55%,44% 0%,48% 55%,52% 0%,56% 55%,60% 0%,64% 55%,68% 0%,72% 55%,76% 0%,80% 55%,84% 0%,88% 55%,92% 0%,96% 55%,100% 0%,100% 100%)}
+.roll{background:var(--paper);padding:var(--space-m) var(--space-l) var(--space-l);font-family:var(--mono)}
+.rhead{text-align:center;text-transform:uppercase}
+.rhead .brand{font-size:var(--text-body);letter-spacing:3px;font-weight:600}
+.rhead .sub{font-size:var(--text-micro);letter-spacing:.16em;color:var(--faded);margin-top:var(--space-xs)}
+.perf{border-top:1.5px dashed var(--perforation);margin:var(--space-m) 0}
+.avg{text-align:center}
+.avg .lbl{font-size:var(--text-micro);letter-spacing:1.5px;text-transform:uppercase;color:var(--faded)}
+.avg .val{font-size:var(--text-hero);font-weight:600;font-variant-numeric:tabular-nums;margin-top:var(--space-xs)}
+.avg .cap{font-family:var(--sans);font-size:var(--text-label);color:var(--faded);margin-top:var(--space-s)}
+.shdr{font-size:var(--text-micro);letter-spacing:.1em;text-transform:uppercase;color:var(--faded);margin-bottom:var(--space-s)}
+.mrow{display:flex;align-items:baseline;padding:var(--space-s) 0;border-top:1.5px dashed var(--perforation)}
+.mrow .m{font-family:var(--sans);font-size:var(--text-body)}
+.mrow .now{font-family:var(--mono);font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--stamp);margin-left:var(--space-s)}
+.mrow .lead{flex:1;border-bottom:1.5px dotted var(--perforation);margin:0 var(--space-s);transform:translateY(-3px)}
+.mrow .amt{font-size:var(--text-body);font-variant-numeric:tabular-nums;white-space:nowrap}
+.mrow .delta{font-size:var(--text-micro);width:52px;text-align:right;font-variant-numeric:tabular-nums}
+.up{color:var(--stamp)}
+.down{color:var(--under)}
+.flat{color:var(--faded)}
+.foot{text-align:center;margin-top:var(--space-l)}
+.barcode{height:36px;width:72%;margin:var(--space-s) auto;background:repeating-linear-gradient(90deg,var(--ink) 0 2px,transparent 2px 5px,var(--ink) 5px 6px,transparent 6px 11px)}
+.foot .count{font-size:var(--text-micro);letter-spacing:.14em;text-transform:uppercase;color:var(--faded)}
+.foot .quip{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--perforation);margin-top:var(--space-s)}
+</style>
+</head>
+<body>
+<div class="label"><b>Trend</b> — six months, one line. A drill-down from the dashboard card or More, so it has a back bar and no bottom nav. The axis starts at zero: a floating baseline turns normal months into a crisis.</div>
+<div class="phone">
+<div class="screen">
+<div class="statusbar"><span>9:41</span><span class="icons"><i class="pi pi-wifi"></i><span>100%</span></span></div>
+<div class="content">
+<a class="backbar" href="dashboard.html"><i class="pi pi-chevron-left"></i>Back</a>
+<div class="torn"></div>
+<div class="roll">
+<div class="rhead"><div class="brand">Pesonal</div><div class="sub">· six month trend ·</div></div>
+<div class="perf"></div>
+
+<div class="avg">
+<div class="lbl">Monthly average</div>
+<div class="val">₱42,251.67</div>
+<div class="cap">Jan – Jun 2026. Steadier than it feels.</div>
+</div>
+
+<div class="perf"></div>
+
+<svg viewBox="0 0 320 132" width="100%" height="118">
+<line x1="0" y1="100" x2="320" y2="100" stroke="#d8d2c4" stroke-width="1" stroke-dasharray="3 3"/>
+<line x1="0" y1="55" x2="320" y2="55" stroke="#ece7db" stroke-width="1" stroke-dasharray="3 3"/>
+<polyline points="26,33 79.6,28.3 133.2,35.8 186.8,21.6 240.4,14.3 294,24.6" fill="none" stroke="#1c1a17" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="26" cy="33" r="3" fill="#fbf8f1" stroke="#1c1a17" stroke-width="2"/>
+<circle cx="79.6" cy="28.3" r="3" fill="#fbf8f1" stroke="#1c1a17" stroke-width="2"/>
+<circle cx="133.2" cy="35.8" r="3" fill="#fbf8f1" stroke="#1c1a17" stroke-width="2"/>
+<circle cx="186.8" cy="21.6" r="3" fill="#fbf8f1" stroke="#1c1a17" stroke-width="2"/>
+<circle cx="240.4" cy="14.3" r="4" fill="#e8b23a" stroke="#1c1a17" stroke-width="2"/>
+<circle cx="294" cy="24.6" r="4" fill="#c8472e" stroke="#c8472e" stroke-width="2"/>
+<text x="26" y="118" text-anchor="middle" font-family="'Spline Sans Mono',monospace" font-size="11" fill="#8a857b">Jan</text>
+<text x="79.6" y="118" text-anchor="middle" font-family="'Spline Sans Mono',monospace" font-size="11" fill="#8a857b">Feb</text>
+<text x="133.2" y="118" text-anchor="middle" font-family="'Spline Sans Mono',monospace" font-size="11" fill="#8a857b">Mar</text>
+<text x="186.8" y="118" text-anchor="middle" font-family="'Spline Sans Mono',monospace" font-size="11" fill="#8a857b">Apr</text>
+<text x="240.4" y="118" text-anchor="middle" font-family="'Spline Sans Mono',monospace" font-size="11" fill="#8a857b">May</text>
+<text x="294" y="118" text-anchor="middle" font-family="'Spline Sans Mono',monospace" font-size="11" fill="#1c1a17">Jun</text>
+<text x="294" y="130" text-anchor="middle" font-family="'Spline Sans Mono',monospace" font-size="9" fill="#c8472e">now</text>
+<text x="240.4" y="130" text-anchor="middle" font-family="'Spline Sans Mono',monospace" font-size="9" fill="#8a857b">peak</text>
+</svg>
+
+<div class="perf"></div>
+
+<div class="shdr">Month by month</div>
+<div class="mrow"><span class="m">June<span class="now">this month</span></span><span class="lead"></span><span class="amt">₱43,210.00</span><span class="delta down">−12%</span></div>
+<div class="mrow"><span class="m">May</span><span class="lead"></span><span class="amt">₱49,100.00</span><span class="delta up">+9%</span></div>
+<div class="mrow"><span class="m">April</span><span class="lead"></span><span class="amt">₱44,900.00</span><span class="delta up">+22%</span></div>
+<div class="mrow"><span class="m">March</span><span class="lead"></span><span class="amt">₱36,800.00</span><span class="delta down">−10%</span></div>
+<div class="mrow"><span class="m">February</span><span class="lead"></span><span class="amt">₱41,100.00</span><span class="delta up">+7%</span></div>
+<div class="mrow"><span class="m">January</span><span class="lead"></span><span class="amt">₱38,400.00</span><span class="delta flat">—</span></div>
+
+<div class="foot">
+<div class="barcode"></div>
+<div class="count">6 months · ₱253,510.00 total</div>
+<div class="quip">* the line only goes one way *</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</body>
+</html>

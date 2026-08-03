@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pesonal — Screen states (Receipt Roll · design reference)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Spline+Sans+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/primeicons/7.0.0/primeicons.min.css">
+<style>
+/*
+  Screen states — what a list renders when it has no rows to render.
+  1 Loading   → SharedSkeleton : the printer feeding blank paper
+  2 Empty     → SharedEmpty    : first run, nothing recorded ever
+  3 Filtered  → SharedEmpty    : same component, different copy + a way out
+  4 Error     → SharedError    : the request failed; offer a retry, blame nobody
+  Rule: never show a spinner on paper. A receipt printer prints blank lines, so
+  the loading state is grey line-items in the exact geometry of the real rows —
+  the layout never jumps when data lands.
+  Token rule: var(--…) → use that token in the app; literal px → intentional one-off.
+*/
+:root{
+  --desk:#EAE5D9;--paper:#FBF8F1;
+  --ink:#1C1A17;--faded:#8A857B;--perforation:#D8D2C4;
+  --stamp:#C8472E;--under:#2F7D52;--hi:#E8B23A;
+  --c-housing:#534F8C;--c-food:#C9692E;--c-groc:#5E7A3E;--c-transport:#3F6F97;--c-fun:#B0577B;--c-other:#8A857B;
+  --text-hero:34px;--text-title:18px;--text-body:14px;--text-label:12px;--text-micro:11px;
+  --space-xs:4px;--space-s:8px;--space-m:12px;--space-l:16px;--space-xl:20px;--space-2xl:24px;
+  --radius-card:6px;--radius-pill:999px;
+  --mono:'Spline Sans Mono',ui-monospace,monospace;
+  --sans:'Plus Jakarta Sans',system-ui,sans-serif;
+  --shadow:0 6px 16px rgba(40,33,20,.05);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:#d8d1c2;min-height:100vh;padding:30px 16px;color:var(--ink)}
+.pagehead{text-align:center;max-width:520px;margin:0 auto 22px}
+.pagehead h1{font-family:var(--mono);font-size:var(--text-title);letter-spacing:.1em;text-transform:uppercase;font-weight:600}
+.pagehead p{font-size:13px;color:#7c7567;margin-top:var(--space-s);line-height:1.5}
+.grid{display:flex;flex-wrap:wrap;gap:28px;justify-content:center}
+.cell{width:390px}
+.cap{font-family:var(--mono);font-size:var(--text-micro);letter-spacing:.1em;text-transform:uppercase;color:#7c7567;margin-bottom:var(--space-s);text-align:center}
+.cap b{color:var(--ink)}
+.phone{background:#211e19;border-radius:42px;padding:10px;box-shadow:0 30px 60px rgba(33,30,25,.35)}
+.screen{position:relative;background:var(--desk);border-radius:32px;overflow:hidden;height:640px;display:flex;flex-direction:column}
+.content{padding:var(--space-l) var(--space-l) 0;flex:1;overflow:hidden}
+.torn{height:12px;background:var(--paper);border-bottom:1px solid var(--perforation);clip-path:polygon(0% 100%,0% 55%,4% 0%,8% 55%,12% 0%,16% 55%,20% 0%,24% 55%,28% 0%,32% 55%,36% 0%,40% 55%,44% 0%,48% 55%,52% 0%,56% 55%,60% 0%,64% 55%,68% 0%,72% 55%,76% 0%,80% 55%,84% 0%,88% 55%,92% 0%,96% 55%,100% 0%,100% 100%)}
+.roll{background:var(--paper);padding:var(--space-m) var(--space-l) var(--space-l);font-family:var(--mono);height:100%}
+.rhead{text-align:center;text-transform:uppercase}
+.rhead .brand{font-size:var(--text-body);letter-spacing:3px;font-weight:600}
+.rhead .sub{font-size:var(--text-micro);letter-spacing:.16em;color:var(--faded);margin-top:var(--space-xs)}
+.perf{border-top:1.5px dashed var(--perforation);margin:var(--space-m) 0}
+.periodline{display:flex;align-items:center;justify-content:center;gap:var(--space-xl);font-size:var(--text-label)}
+.periodline i{color:var(--faded)}
+.field{display:flex;align-items:center;justify-content:space-between;border-bottom:1.5px dashed var(--perforation);padding:var(--space-s) 2px;font-size:var(--text-label);letter-spacing:.08em;text-transform:uppercase}
+.field .lbl{color:var(--faded)}
+.field .val{display:flex;align-items:center;gap:var(--space-s)}
+.field .val i{color:var(--faded);font-size:var(--text-label)}
+/* ── 1 skeleton ── */
+@keyframes feed{0%,100%{opacity:.55}50%{opacity:.95}}
+.sk{background:var(--perforation);border-radius:2px;animation:feed 1.4s ease-in-out infinite}
+.skday{height:9px;width:38%;margin:var(--space-l) auto var(--space-m)}
+.skrow{display:flex;align-items:center;justify-content:space-between;padding:var(--space-s) 0}
+.skrow .a{height:11px}
+.skrow .b{height:11px;width:64px}
+/* ── 2+3 empty ── */
+.empty{border:1.5px dashed var(--perforation);border-radius:var(--radius-card);padding:var(--space-2xl) var(--space-l);text-align:center;margin-top:var(--space-l)}
+.empty .mark{font-size:26px;color:var(--perforation)}
+.empty .ttl{font-family:var(--mono);font-size:var(--text-label);letter-spacing:.14em;text-transform:uppercase;margin-top:var(--space-m);font-weight:600}
+.empty .msg{font-family:var(--sans);font-size:var(--text-label);color:var(--faded);margin-top:var(--space-s);line-height:1.6}
+.empty .act{display:inline-block;margin-top:var(--space-l);background:var(--stamp);color:#fff;border-radius:var(--radius-pill);padding:var(--space-s) var(--space-l);font-family:var(--mono);font-size:var(--text-label);font-weight:600;letter-spacing:.12em;text-transform:uppercase}
+.empty .act.quiet{background:transparent;color:var(--ink);border:1px solid var(--perforation)}
+/* ── 4 error ── */
+.err .mark{color:var(--stamp)}
+.foot{text-align:center;margin-top:var(--space-l)}
+.foot .quip{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--perforation)}
+/* nav */
+.nav{display:flex;align-items:center;justify-content:space-between;background:var(--paper);border-top:1.5px dashed var(--perforation);padding:var(--space-m) var(--space-l) var(--space-l)}
+.navitem{display:flex;flex-direction:column;align-items:center;gap:var(--space-xs);flex:1;font-size:var(--text-micro);color:var(--faded);font-weight:500;text-decoration:none}
+.navitem.active{color:var(--ink);font-weight:600}
+.navitem i{font-size:20px}
+.fab{width:54px;height:54px;border-radius:var(--radius-pill);background:var(--stamp);color:#fff;display:flex;align-items:center;justify-content:center;margin-top:-26px;border:3px solid var(--paper);box-shadow:0 8px 18px rgba(200,71,46,.32);font-size:24px;text-decoration:none}
+</style>
+</head>
+<body>
+<div class="pagehead">
+<h1>Screen states</h1>
+<p>What a list shows when it has no rows. Never a spinner on paper — a receipt printer feeds blank lines, so loading is grey rows in the real geometry and the layout never jumps when data lands.</p>
+</div>
+
+<div class="grid">
+
+<div class="cell">
+<div class="cap"><b>1 · Loading</b> — same geometry, no content</div>
+<div class="phone"><div class="screen">
+<div class="content">
+<div class="torn"></div>
+<div class="roll">
+<div class="rhead"><div class="brand">Pesonal</div><div class="sub">· expense receipt ·</div></div>
+<div class="perf"></div>
+<div class="periodline"><i class="pi pi-chevron-left"></i><span>PERIOD 2026-06</span><i class="pi pi-chevron-right"></i></div>
+<div class="perf"></div>
+<div class="field"><span class="lbl">Category</span><span class="val">All <i class="pi pi-chevron-down"></i></span></div>
+<div class="sk skday"></div>
+<div class="skrow"><div class="sk a" style="width:52%"></div><div class="sk b"></div></div>
+<div class="skrow"><div class="sk a" style="width:44%"></div><div class="sk b"></div></div>
+<div class="skrow"><div class="sk a" style="width:58%"></div><div class="sk b"></div></div>
+<div class="sk skday"></div>
+<div class="skrow"><div class="sk a" style="width:48%"></div><div class="sk b"></div></div>
+<div class="skrow"><div class="sk a" style="width:36%"></div><div class="sk b"></div></div>
+<div class="sk skday"></div>
+<div class="skrow"><div class="sk a" style="width:55%"></div><div class="sk b"></div></div>
+</div>
+</div>
+<div class="nav">
+<a class="navitem" href="dashboard.html"><i class="pi pi-home"></i>Home</a>
+<a class="navitem active" href="expenses.html"><i class="pi pi-receipt"></i>Expenses</a>
+<div style="flex:1;display:flex;justify-content:center"><a class="fab" href="add-expense.html"><i class="pi pi-plus"></i></a></div>
+<a class="navitem" href="recurring.html"><i class="pi pi-sync"></i>Recurring</a>
+<a class="navitem" href="more.html"><i class="pi pi-ellipsis-h"></i>More</a>
+</div>
+</div></div>
+</div>
+
+<div class="cell">
+<div class="cap"><b>2 · Empty</b> — first run, nothing ever recorded</div>
+<div class="phone"><div class="screen">
+<div class="content">
+<div class="torn"></div>
+<div class="roll">
+<div class="rhead"><div class="brand">Pesonal</div><div class="sub">· expense receipt ·</div></div>
+<div class="perf"></div>
+<div class="periodline"><i class="pi pi-chevron-left"></i><span>PERIOD 2026-06</span><i class="pi pi-chevron-right"></i></div>
+<div class="empty">
+<div class="mark"><i class="pi pi-receipt"></i></div>
+<div class="ttl">Wala pang gastos</div>
+<div class="msg">A clean receipt. Enjoy it while it lasts —<br>it only goes one direction from here.</div>
+<a class="act" href="add-expense.html">Record the first one</a>
+</div>
+<div class="foot"><div class="quip">* nothing to total *</div></div>
+</div>
+</div>
+<div class="nav">
+<a class="navitem" href="dashboard.html"><i class="pi pi-home"></i>Home</a>
+<a class="navitem active" href="expenses.html"><i class="pi pi-receipt"></i>Expenses</a>
+<div style="flex:1;display:flex;justify-content:center"><a class="fab" href="add-expense.html"><i class="pi pi-plus"></i></a></div>
+<a class="navitem" href="recurring.html"><i class="pi pi-sync"></i>Recurring</a>
+<a class="navitem" href="more.html"><i class="pi pi-ellipsis-h"></i>More</a>
+</div>
+</div></div>
+</div>
+
+<div class="cell">
+<div class="cap"><b>3 · Filtered to nothing</b> — same component, a way out</div>
+<div class="phone"><div class="screen">
+<div class="content">
+<div class="torn"></div>
+<div class="roll">
+<div class="rhead"><div class="brand">Pesonal</div><div class="sub">· expense receipt ·</div></div>
+<div class="perf"></div>
+<div class="periodline"><i class="pi pi-chevron-left"></i><span>PERIOD 2026-06</span><i class="pi pi-chevron-right"></i></div>
+<div class="perf"></div>
+<div class="field"><span class="lbl">Category</span><span class="val">Travel <i class="pi pi-chevron-down"></i></span></div>
+<div class="empty">
+<div class="mark"><i class="pi pi-filter-slash"></i></div>
+<div class="ttl">No travel in June</div>
+<div class="msg">Either a disciplined month,<br>or you went nowhere. Both count.</div>
+<span class="act quiet">Show all categories</span>
+</div>
+<div class="foot"><div class="quip">* 0 of 138 items shown *</div></div>
+</div>
+</div>
+<div class="nav">
+<a class="navitem" href="dashboard.html"><i class="pi pi-home"></i>Home</a>
+<a class="navitem active" href="expenses.html"><i class="pi pi-receipt"></i>Expenses</a>
+<div style="flex:1;display:flex;justify-content:center"><a class="fab" href="add-expense.html"><i class="pi pi-plus"></i></a></div>
+<a class="navitem" href="recurring.html"><i class="pi pi-sync"></i>Recurring</a>
+<a class="navitem" href="more.html"><i class="pi pi-ellipsis-h"></i>More</a>
+</div>
+</div></div>
+</div>
+
+<div class="cell">
+<div class="cap"><b>4 · Error</b> — the request failed, offer a retry</div>
+<div class="phone"><div class="screen">
+<div class="content">
+<div class="torn"></div>
+<div class="roll">
+<div class="rhead"><div class="brand">Pesonal</div><div class="sub">· expense receipt ·</div></div>
+<div class="perf"></div>
+<div class="periodline"><i class="pi pi-chevron-left"></i><span>PERIOD 2026-06</span><i class="pi pi-chevron-right"></i></div>
+<div class="empty err">
+<div class="mark"><i class="pi pi-exclamation-triangle"></i></div>
+<div class="ttl">Printer jammed</div>
+<div class="msg">Couldn't reach the server.<br>Your entries are safe — this screen just came up blank.</div>
+<span class="act">Try again</span>
+</div>
+<div class="foot"><div class="quip">* nothing was lost *</div></div>
+</div>
+</div>
+<div class="nav">
+<a class="navitem" href="dashboard.html"><i class="pi pi-home"></i>Home</a>
+<a class="navitem active" href="expenses.html"><i class="pi pi-receipt"></i>Expenses</a>
+<div style="flex:1;display:flex;justify-content:center"><a class="fab" href="add-expense.html"><i class="pi pi-plus"></i></a></div>
+<a class="navitem" href="recurring.html"><i class="pi pi-sync"></i>Recurring</a>
+<a class="navitem" href="more.html"><i class="pi pi-ellipsis-h"></i>More</a>
+</div>
+</div></div>
+</div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pesonal — More (Receipt Roll · design reference)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Spline+Sans+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/primeicons/7.0.0/primeicons.min.css">
+<style>
+/*
+  More — the hub. No data of its own: it's the door to the screens that don't
+  earn a permanent nav slot (Categories, Trend) plus app info.
+  Rows are destinations, so they're links with a chevron — not receipt line items.
+  Unbuilt destinations carry a SOON tag rather than being hidden, so the roadmap is visible.
+  Reuses: torn-top receipt shell, header, perf dividers, barcode foot.
+  Token rule: var(--…) → use that token in the app; literal px → intentional one-off.
+*/
+:root{
+  --desk:#EAE5D9;--paper:#FBF8F1;
+  --ink:#1C1A17;--faded:#8A857B;--perforation:#D8D2C4;
+  --stamp:#C8472E;--under:#2F7D52;--hi:#E8B23A;
+  --c-housing:#534F8C;--c-food:#C9692E;--c-groc:#5E7A3E;--c-transport:#3F6F97;--c-fun:#B0577B;--c-other:#8A857B;
+  --text-hero:34px;--text-title:18px;--text-body:14px;--text-label:12px;--text-micro:11px;
+  --space-xs:4px;--space-s:8px;--space-m:12px;--space-l:16px;--space-xl:20px;--space-2xl:24px;
+  --radius-card:6px;--radius-pill:999px;
+  --mono:'Spline Sans Mono',ui-monospace,monospace;
+  --sans:'Plus Jakarta Sans',system-ui,sans-serif;
+  --shadow:0 6px 16px rgba(40,33,20,.05);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:#d8d1c2;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:30px 16px;color:var(--ink)}
+.label{font-size:13px;color:#7c7567;margin-bottom:14px;text-align:center;max-width:360px;line-height:1.5}
+.label b{color:var(--ink)}
+.phone{width:390px;background:#211e19;border-radius:42px;padding:10px;box-shadow:0 30px 60px rgba(33,30,25,.35)}
+.screen{position:relative;background:var(--desk);border-radius:32px;overflow:hidden;display:flex;flex-direction:column;height:760px}
+.statusbar{display:flex;justify-content:space-between;align-items:center;padding:11px 22px 4px;font-size:13px;font-family:var(--mono);color:var(--ink)}
+.statusbar .icons{display:flex;gap:8px;align-items:center}
+.content{padding:var(--space-l) var(--space-l) 0;flex:1;overflow-y:auto}
+.torn{height:12px;background:var(--paper);border-bottom:1px solid var(--perforation);clip-path:polygon(0% 100%,0% 55%,4% 0%,8% 55%,12% 0%,16% 55%,20% 0%,24% 55%,28% 0%,32% 55%,36% 0%,40% 55%,44% 0%,48% 55%,52% 0%,56% 55%,60% 0%,64% 55%,68% 0%,72% 55%,76% 0%,80% 55%,84% 0%,88% 55%,92% 0%,96% 55%,100% 0%,100% 100%)}
+.roll{background:var(--paper);padding:var(--space-m) var(--space-l) var(--space-l);font-family:var(--mono)}
+.rhead{text-align:center;text-transform:uppercase}
+.rhead .brand{font-size:var(--text-body);letter-spacing:3px;font-weight:600}
+.rhead .sub{font-size:var(--text-micro);letter-spacing:.16em;color:var(--faded);margin-top:var(--space-xs)}
+.perf{border-top:1.5px dashed var(--perforation);margin:var(--space-m) 0}
+/* section header */
+.shdr{font-size:var(--text-micro);letter-spacing:.1em;text-transform:uppercase;color:var(--faded);margin:var(--space-l) 0 var(--space-xs)}
+/* destination row */
+.dest{display:flex;align-items:center;gap:var(--space-m);padding:var(--space-m) 2px;border-top:1.5px dashed var(--perforation);color:var(--ink);text-decoration:none}
+.dest i.lead-icon{font-size:16px;color:var(--faded);width:18px;text-align:center}
+.dest .nm{flex:1;font-family:var(--sans);font-size:var(--text-body)}
+.dest .sub{font-family:var(--sans);font-size:var(--text-label);color:var(--faded);display:block;margin-top:2px}
+.dest i.chev{font-size:var(--text-label);color:var(--perforation)}
+.soon{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--faded);border:1px solid var(--perforation);border-radius:var(--radius-pill);padding:2px var(--space-s)}
+.foot{text-align:center;margin-top:var(--space-xl)}
+.barcode{height:36px;width:72%;margin:var(--space-s) auto;background:repeating-linear-gradient(90deg,var(--ink) 0 2px,transparent 2px 5px,var(--ink) 5px 6px,transparent 6px 11px)}
+.foot .count{font-size:var(--text-micro);letter-spacing:.14em;text-transform:uppercase;color:var(--faded)}
+.foot .quip{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--perforation);margin-top:var(--space-s)}
+.nav{display:flex;align-items:center;justify-content:space-between;background:var(--paper);border-top:1.5px dashed var(--perforation);padding:var(--space-m) var(--space-l) var(--space-l)}
+.navitem{display:flex;flex-direction:column;align-items:center;gap:var(--space-xs);flex:1;font-size:var(--text-micro);color:var(--faded);font-weight:500;text-decoration:none}
+.navitem.active{color:var(--ink);font-weight:600}
+.navitem i{font-size:20px}
+.fab{width:54px;height:54px;border-radius:var(--radius-pill);background:var(--stamp);color:#fff;display:flex;align-items:center;justify-content:center;margin-top:-26px;border:3px solid var(--paper);box-shadow:0 8px 18px rgba(200,71,46,.32);font-size:24px;text-decoration:none}
+</style>
+</head>
+<body>
+<div class="label"><b>More</b> — the hub. No data of its own; it's the door to screens that don't earn a nav slot. Unbuilt ones show a <b>SOON</b> tag instead of hiding, so the roadmap stays visible.</div>
+<div class="phone">
+<div class="screen">
+<div class="statusbar"><span>9:41</span><span class="icons"><i class="pi pi-wifi"></i><span>100%</span></span></div>
+<div class="content">
+<div class="torn"></div>
+<div class="roll">
+<div class="rhead"><div class="brand">Pesonal</div><div class="sub">· back of the receipt ·</div></div>
+<div class="perf"></div>
+
+<div class="shdr">Manage</div>
+<a class="dest" href="categories.html">
+<i class="pi pi-tags lead-icon"></i>
+<span class="nm">Categories<span class="sub">8 in use · colors and emoji</span></span>
+<i class="pi pi-chevron-right chev"></i>
+</a>
+<a class="dest" href="recurring.html">
+<i class="pi pi-sync lead-icon"></i>
+<span class="nm">Recurring<span class="sub">6 standing orders · 5 active</span></span>
+<i class="pi pi-chevron-right chev"></i>
+</a>
+
+<div class="shdr">Insights</div>
+<a class="dest" href="trend.html">
+<i class="pi pi-chart-line lead-icon"></i>
+<span class="nm">Spending trend<span class="sub">Last 6 months, in one line</span></span>
+<i class="pi pi-chevron-right chev"></i>
+</a>
+
+<div class="shdr">Data</div>
+<a class="dest" href="#">
+<i class="pi pi-download lead-icon"></i>
+<span class="nm">Export to CSV<span class="sub">Take your damage elsewhere</span></span>
+<span class="soon">Soon</span>
+</a>
+<a class="dest" href="#">
+<i class="pi pi-upload lead-icon"></i>
+<span class="nm">Import<span class="sub">Bulk-add past regrets</span></span>
+<span class="soon">Soon</span>
+</a>
+
+<div class="shdr">About</div>
+<a class="dest" href="#">
+<i class="pi pi-info-circle lead-icon"></i>
+<span class="nm">About Pesonal<span class="sub">v1.0 · one user, no auth, no judgment</span></span>
+<i class="pi pi-chevron-right chev"></i>
+</a>
+
+<div class="foot">
+<div class="barcode"></div>
+<div class="count">Pesonal · v1.0</div>
+<div class="quip">* keep this receipt for your records *</div>
+</div>
+</div>
+</div>
+<div class="nav">
+<a class="navitem" href="dashboard.html"><i class="pi pi-home"></i>Home</a>
+<a class="navitem" href="expenses.html"><i class="pi pi-receipt"></i>Expenses</a>
+<div style="flex:1;display:flex;justify-content:center"><a class="fab" href="add-expense.html"><i class="pi pi-plus"></i></a></div>
+<a class="navitem" href="recurring.html"><i class="pi pi-sync"></i>Recurring</a>
+<a class="navitem active" href="more.html"><i class="pi pi-ellipsis-h"></i>More</a>
+</div>
+</div>
+</div>
+</body>
+</html>
