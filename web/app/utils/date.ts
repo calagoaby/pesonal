@@ -23,6 +23,21 @@ export function formatWeekdayDate(
 }
 
 /**
+ * @return Wed, Jun 17, 2026
+ */
+export function formatFullDate(
+    date_string: string,
+    locale: string,
+) {
+    return toLocalDate(date_string).toLocaleDateString(locale, {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+    })
+}
+
+/**
  * @param month_string YYYY-MM
  * @return June 2026
  */
