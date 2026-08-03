@@ -8,11 +8,18 @@ Monorepo: `api/` (Laravel — intentionally swappable for another backend later)
 
 ## How we build the UI (read this first)
 
-The owner is **learning** the frontend — do NOT hand over finished screens. He also runs all git/PR mechanics himself (branch, commit, push, open PR, merge, cleanup) — guide and explain, don't run them for him. The loop, one screen at a time:
+**Claude implements, the owner supervises.** He learned the frontend by building the dashboard and the app shell himself; from here he reviews rather than writes.
 
-1. Claude posts a **design spec** (an HTML mockup + the tokens below). It does NOT reveal which PrimeVue components map to each region, or the Vue file layout — the owner discovers those.
-2. The owner **implements the screen himself** in `web/`, then opens a PR.
-3. Claude **reviews the owner's PR in chat** — what to change and why (naming, structure, efficiency, correctness, fit with the conventions below), but no paste-ready code and no reference implementations: the owner writes all app code himself. He revises, then merges.
+**Work in small, checkable steps.** One screen — or one coherent slice of one — per turn, then stop and report. Never batch several screens into a single turn, and never run ahead to the next roadmap item without being asked. The owner's instructions are step-by-step by design.
+
+The loop:
+
+1. Claude posts a **design spec** (an HTML mockup) in `design/` if the screen doesn't have one.
+2. Claude **implements** the slice in `web/`, following the conventions below.
+3. Claude runs the git mechanics: feature branch off `main`, commits in the format below, push, open the PR. **The owner reviews and merges — Claude never merges and never pushes to `main`.**
+4. Claude reports what changed and why, then waits.
+
+Commit format: a `[feat]` / `[fix]` tag alone on the first line, then brief lowercase `- bullet` lines. **No co-author trailer** (this overrides the default).
 
 Design specs live in `design/`. Status and the screen order live in `docs/ROADMAP.md`.
 
