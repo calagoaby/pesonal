@@ -8,11 +8,18 @@ Monorepo: `api/` (Laravel — intentionally swappable for another backend later)
 
 ## How we build the UI (read this first)
 
-The owner is **learning** the frontend — do NOT hand over finished screens. He also runs all git/PR mechanics himself (branch, commit, push, open PR, merge, cleanup) — guide and explain, don't run them for him. The loop, one screen at a time:
+**Claude implements, the owner supervises.** He learned the frontend by building the dashboard and the app shell himself; from here he reviews rather than writes.
 
-1. Claude posts a **design spec** (an HTML mockup + the tokens below). It does NOT reveal which PrimeVue components map to each region, or the Vue file layout — the owner discovers those.
-2. The owner **implements the screen himself** in `web/`, then opens a PR.
-3. Claude **reviews the owner's PR in chat** — what to change and why (naming, structure, efficiency, correctness, fit with the conventions below), but no paste-ready code and no reference implementations: the owner writes all app code himself. He revises, then merges.
+**Work in small, checkable steps.** One screen — or one coherent slice of one — per turn, then stop and report. Never batch several screens into a single turn, and never run ahead to the next roadmap item without being asked. The owner's instructions are step-by-step by design.
+
+The loop:
+
+1. Claude posts a **design spec** (an HTML mockup) in `design/` if the screen doesn't have one.
+2. Claude **implements** the slice in `web/`, following the conventions below.
+3. Claude **stops and reports** what changed and why. **Nothing is committed yet** — the owner reads the working diff first, so the change is plain to see before it's buried in history.
+4. Once he approves, Claude runs the git mechanics: feature branch off `main`, commits in the format below, push, open the PR. **The owner reviews and merges — Claude never merges and never pushes to `main`.**
+
+Commit format: a `[feat]` / `[fix]` tag alone on the first line, then brief lowercase `- bullet` lines. **No co-author trailer** (this overrides the default).
 
 Design specs live in `design/`. Status and the screen order live in `docs/ROADMAP.md`.
 
@@ -23,6 +30,7 @@ Design specs live in `design/`. Status and the screen order live in `docs/ROADMA
 - **Extract a region into its own component** when it's reused, large enough to clutter its parent, a clear nameable thing, or has its own state/logic — *readability alone is a valid reason*, not just reuse. Skip it for tiny logic-free one-offs (same don't-over-split rule). Build inline when unsure; lift it out once it earns it. A screen like the dashboard should read as an assembly of region components (`<DashboardHeader />`, `<TotalReceipt />`, …) in `components/<feature>/`. Nuxt prefixes component names by folder, so `components/dashboard/Header.vue` → `<DashboardHeader>` — don't repeat the prefix in the filename.
 - **Shared state across a component tree = provide/inject context, not `useState`.** Wrap the composable in a `*Context.ts`: a `composable_context = ReturnType<typeof useX>` alias, a `const key = Symbol('x')`, a single `provideX()` that calls `useX()` and `provide(key, flow)` then returns it, and a `useXContext()` that injects and throws `new Error('useXContext')` if missing. Both exports are arrow functions. The composable and its `*Context.ts` live together in a `context/` folder. The parent that owns the state's lifetime calls `provideX()` once; descendants call `useXContext()`.
 - **Named functions** use `function name() {}`, not `const name = () =>`. Arrows are fine for inline callbacks (`map`, `computed`, `watch`) and for the `*Context.ts` exports. If a name must be snake_case (e.g. `open_modal`), use the arrow form — lint forces `function` declarations to camelCase.
+- **Comment only what the code can't say.** Cut anything that restates a type, a name, or the line under it — `/** The full resource returned by /api/categories */` above `interface Category` is noise. Keep the ones that stop a bug coming back: **units** (`amount` is centavos), **contract traps** (`meta.total` is a row count, not a sum of amounts), and **the reason behind a non-obvious choice** (why calendar dates skip the timezone). One line beats a block. The `/** States */` · `/** Computed */` · `/** Functions */` section markers in composables stay.
 - **No trailing newline** at the end of any file.
 - Apply personal style first, then run eslint to catch project-specific overrides.
 

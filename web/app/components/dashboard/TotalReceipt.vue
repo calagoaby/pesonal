@@ -1,51 +1,21 @@
 <script setup lang="ts">
 import ArrowDownRight from '@primeicons/vue/arrow-down-right';
-
-/** Types */
-type BarcodeStyle = {
-    height: string,
-    width: string,
-    background: string,
-}
-
-
-/** States */
-const widths = [1, 1, 3, 3, 1, 1, 1, 3, 2, 2, 1, 2, 2, 1, 1, 1, 1, 3, 2, 1, 3, 1]
-const barcode_styles = Array.from(
-    { length: 22 }, (_, i) => barcodeStyle({index: i})
-)
-
-
-/** Functions */
-function barcodeStyle ( { index }: { index: number }): BarcodeStyle {
-  const width = widths[index] ?? 0
-
-  const background = `linear-gradient(
-    90deg,
-    var(--ink) 0 ${width}px
-  )`
-
-  return {
-    height: 'inherit',
-    width: `${width}px`,
-    background: background
-  }
-}
 </script>
 
 <template>
-    <SharedReceipt torn-position="bottom" sub-text="Offical Receipt — JUNE 2026">
-        <div class="perf"></div>
+    <SharedReceipt class="total-receipt" torn-position="bottom" sub-text="Official Receipt — JUNE 2026">
+        <SharedPerf />
+
         <div class="tlabel">TOTAL DAMAGE</div>
         <div class="total">₱43,210</div>
-        <div style="text-align: center; margin-top: var(--space-m);">
-            <span class="stamp"> 
+        <div class="stamp-row">
+            <span class="stamp">
                 <ArrowDownRight />
                  12% VS MAY
             </span>
         </div>
         <div class="note">Petsa de peligro? Hindi today.</div>
-        <div class="perf"></div>
+        <SharedPerf />
         <div class="lrow">
             <div class="label">DAILY AVG</div>
             <div class="fill"></div>
@@ -56,37 +26,17 @@ function barcodeStyle ( { index }: { index: number }): BarcodeStyle {
             <div class="fill"></div>
             <div class="val">38</div>
         </div>
-        <div class="barcode">
-            <div 
-                v-for="(style, index) in barcode_styles"
-                :key="index" 
-                :style="style"
-            ></div>
-        </div>
+        
+        <SharedBarcode class="receipt-barcode" :length="22" />
+
         <div class="ono">NO. 0617-2026</div>
         <div class="thanks">*** salamat — come again ***</div>
     </SharedReceipt>
 </template>
 
 <style scoped>
-.merchant {
-    font-size: var(--text-body);
-    text-align: center;
-    font-weight: 600;
-    letter-spacing: 3px;
-}
-
-.tsub {
-    font-family: var(--mono);
-    font-size: var(--text-micro);
-    text-align: center;
-    color: var(--faded);
-    margin-top: var(--space-xs);
-}
-
-.perf {
-    border-top: 1.5px dashed var(--perforation);
-    margin: var(--space-m) 0;
+.total-receipt {
+    margin: var(--space-l) 0 var(--space-2xl);
 }
 
 .tlabel {
@@ -102,6 +52,11 @@ function barcodeStyle ( { index }: { index: number }): BarcodeStyle {
     font-size: var(--text-hero);
     margin-top: var(--space-xs);
     font-variant-numeric: tabular-nums;
+}
+
+.stamp-row {
+    text-align: center;
+    margin-top: var(--space-m);
 }
 
 .stamp {
@@ -145,13 +100,8 @@ function barcodeStyle ( { index }: { index: number }): BarcodeStyle {
     }
 }
 
-.barcode {
+.receipt-barcode {
     margin-top: var(--space-l);
-    height: 30px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 1.5px;
 }
 
 .ono {
