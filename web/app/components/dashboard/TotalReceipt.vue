@@ -3,11 +3,13 @@ import ArrowDownRight from '@primeicons/vue/arrow-down-right';
 </script>
 
 <template>
-    <SharedReceipt torn-position="bottom" sub-text="Offical Receipt — JUNE 2026">
+    <SharedReceipt class="total-receipt" torn-position="bottom" sub-text="Official Receipt — JUNE 2026">
+        <SharedPerf />
+
         <div class="tlabel">TOTAL DAMAGE</div>
         <div class="total">₱43,210</div>
-        <div style="text-align: center; margin-top: var(--space-m);">
-            <span class="stamp"> 
+        <div class="stamp-row">
+            <span class="stamp">
                 <ArrowDownRight />
                  12% VS MAY
             </span>
@@ -25,7 +27,7 @@ import ArrowDownRight from '@primeicons/vue/arrow-down-right';
             <div class="val">38</div>
         </div>
         
-        <SharedBarcode :length="22" style="margin-top: var(--space-l);" />
+        <SharedBarcode class="receipt-barcode" :length="22" />
 
         <div class="ono">NO. 0617-2026</div>
         <div class="thanks">*** salamat — come again ***</div>
@@ -33,19 +35,9 @@ import ArrowDownRight from '@primeicons/vue/arrow-down-right';
 </template>
 
 <style scoped>
-.merchant {
-    font-size: var(--text-body);
-    text-align: center;
-    font-weight: 600;
-    letter-spacing: 3px;
-}
-
-.tsub {
-    font-family: var(--mono);
-    font-size: var(--text-micro);
-    text-align: center;
-    color: var(--faded);
-    margin-top: var(--space-xs);
+/* The shell has no margin of its own — spacing is the consumer's call. */
+.total-receipt {
+    margin: var(--space-l) 0 var(--space-2xl);
 }
 
 .tlabel {
@@ -61,6 +53,11 @@ import ArrowDownRight from '@primeicons/vue/arrow-down-right';
     font-size: var(--text-hero);
     margin-top: var(--space-xs);
     font-variant-numeric: tabular-nums;
+}
+
+.stamp-row {
+    text-align: center;
+    margin-top: var(--space-m);
 }
 
 .stamp {
@@ -102,6 +99,10 @@ import ArrowDownRight from '@primeicons/vue/arrow-down-right';
         flex: 1;
         border-bottom: 1px dotted var(--perforation);
     }
+}
+
+.receipt-barcode {
+    margin-top: var(--space-l);
 }
 
 .ono {
