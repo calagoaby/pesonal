@@ -1,9 +1,6 @@
 import type { Expense } from '#shared/types/Expense'
 
-/**
- * View model — not a contract shape. The API returns a flat, date-desc list;
- * the receipt roll groups it by day for display only.
- */
+/** View model — the API list is flat, the roll groups it by day. */
 export interface DailyExpense {
     date: string
     items: Expense[]

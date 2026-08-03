@@ -35,7 +35,6 @@ import ArrowDownRight from '@primeicons/vue/arrow-down-right';
 </template>
 
 <style scoped>
-/* The shell has no margin of its own — spacing is the consumer's call. */
 .total-receipt {
     margin: var(--space-l) 0 var(--space-2xl);
 }

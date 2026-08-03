@@ -1,10 +1,6 @@
 /**
- * The contract's `date` is a calendar date with no time component, so it must NOT
- * be run through a timezone: `new Date('2026-06-17')` parses as UTC midnight, which
- * lands on the 16th for any zone behind UTC. Building the date from its parts keeps
- * it the same calendar day everywhere — server and client included, so SSR agrees.
- * (`timezone` in runtimeConfig is still right for created_at / updated_at, which are
- * real ISO timestamps.)
+ * Calendar dates carry no time, so they must not go through a timezone:
+ * `new Date('2026-06-17')` is UTC midnight, which lands on the 16th behind UTC.
  */
 function toLocalDate(date_string: string) {
     const [year = 0, month = 1, day = 1] = date_string.split('-').map(Number)

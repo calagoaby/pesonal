@@ -14,13 +14,7 @@ const mock_categories = {
 } satisfies Record<string, CategoryRef>
 
 export function useMonthExpense() {
-    /**
-     * States
-     *
-     * Shaped exactly like GET /api/expenses: a flat list sorted date desc, plus meta.
-     * Keeping it flat (rather than pre-grouped) is what makes the swap to the real
-     * endpoint a one-line change — everything downstream reads the same shape.
-     */
+    /** States — shaped like GET /api/expenses: flat, date desc, plus meta. */
     const month = ref('2026-06')
     const meta = ref<ListMeta>({
         current_page: 1,
@@ -102,13 +96,7 @@ export function useMonthExpense() {
     ])
 
 
-    /**
-     * Computed
-     *
-     * Grouping is display-only, and deliberately runs over the whole accumulated
-     * list rather than per page — a day split across two pages must still print
-     * one header once tear-to-load starts appending.
-     */
+    /** Computed — grouped over the whole list, so a day split across pages prints one header. */
     const daily_expenses = computed(() => groupByDate(expenses.value))
 
 
