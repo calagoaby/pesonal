@@ -7,6 +7,10 @@ import { useMonthExpense } from '~/composables/expenses/useMonthExpense';
 const {
     month_expenses
 } = useMonthExpense()
+
+const {
+    formatDailyDate
+} = useDateFormatter()
 </script>
 
 <template>
@@ -31,7 +35,7 @@ const {
         <div class="daily-expenses" v-for="(daily_expense, index) in month_expenses.days" :key="index">
             <div class="date">
                 <SharedPerf style="flex: 1;" />
-                {{ daily_expense.date }}
+                {{ formatDailyDate(daily_expense.date) }}
                 <SharedPerf style="flex: 1;" />
             </div>
             <div class="expenses">
