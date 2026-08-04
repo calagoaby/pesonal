@@ -1,28 +1,37 @@
 <script setup lang="ts">
 import ChevronRight from '@primeicons/vue/chevron-right';
+import { useMonthlyStatsContext } from '~/composables/dashboard/context/MonthlyStatsContext';
 import { useRecentItems } from '~/composables/dashboard/useRecentItems';
 
 const {
+    month
+} = useMonthlyStatsContext()
+
+const {
     items
-} = useRecentItems()
+} = useRecentItems(month)
+
+const {
+    formatListDate
+} = useDateFormatter()
 </script>
 
 <template>
     <DashboardCard
         header='Recent Items'
     >
-        <template #hint> 
-            <span class="seeall">
-                See all 
+        <template #hint>
+            <NuxtLink to="/expenses" class="seeall">
+                See all
                 <ChevronRight />
-            </span> 
+            </NuxtLink>
         </template>
-        <div v-for="(item, index) in items" class="item" :key="index">
+        <div v-for="item in items" class="item" :key="item.id">
             <div class="iname">
-                <div class="dot" :style="{ backgroundColor: item.category_color }"></div>
+                <div class="dot" :style="{ backgroundColor: item.category.color }"></div>
                 <div class="itext">
-                    <span>{{ item.text }}</span>
-                    <span class="isub">{{ item.category }} · {{ item.date_created }}</span>
+                    <span>{{ item.note }}</span>
+                    <span class="isub">{{ item.category.name }} · {{ formatListDate(item.date) }}</span>
                 </div>
             </div>
             <span class="iamt">{{ formatAmountWithCurrency(item.amount) }}</span>
@@ -37,6 +46,7 @@ const {
     display: flex;
     align-items: center;
     gap: var(--space-xs);
+    text-decoration: none;
 }
 
 .item {

@@ -23,6 +23,30 @@ export function formatWeekdayDate(
 }
 
 /**
+ * @return Jun 17
+ */
+export function formatShortDate(
+    date_string: string,
+    locale: string,
+) {
+    return toLocalDate(date_string).toLocaleDateString(locale, {
+        month: 'short',
+        day: 'numeric',
+    })
+}
+
+/**
+ * @param month YYYY-MM
+ * @return the same, shifted by delta months
+ */
+export function shiftMonth(month: string, delta: number) {
+    const [year = 0, index = 1] = month.split('-').map(Number)
+    const date = new Date(year, index - 1 + delta, 1)
+
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
+}
+
+/**
  * @return Wed, Jun 17, 2026
  */
 export function formatFullDate(
