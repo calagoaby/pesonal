@@ -45,12 +45,40 @@ function done() {
     is_open.value = false
 }
 
+function handleKeydown(event: KeyboardEvent) {
+    if (!is_open.value) {
+        return
+    }
+
+    // Numpad and number-row digits both arrive as '0'–'9'.
+    if (/^\d$/.test(event.key)) {
+        event.preventDefault()
+        press(event.key)
+        return
+    }
+
+    if (event.key === 'Backspace') {
+        event.preventDefault()
+        backspace()
+        return
+    }
+
+    if (event.key === 'Enter') {
+        event.preventDefault()
+        done()
+    }
+}
+
 
 watch(is_open, (open) => {
     if (open) {
         entry.value = amount.value
     }
 })
+
+// Escape is handled by SharedSheet — every sheet closes the same way.
+onMounted(() => window.addEventListener('keydown', handleKeydown))
+onBeforeUnmount(() => window.removeEventListener('keydown', handleKeydown))
 </script>
 
 <template>

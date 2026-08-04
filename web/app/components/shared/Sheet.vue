@@ -12,6 +12,18 @@ defineProps<{
 function close() {
     is_open.value = false
 }
+
+function handleKeydown(event: KeyboardEvent) {
+    if (is_open.value && event.key === 'Escape') {
+        close()
+    }
+}
+
+
+// Listener lives on the window rather than the panel: a sheet is modal, so escape
+// should reach it wherever focus happens to be. onMounted keeps it off the server.
+onMounted(() => window.addEventListener('keydown', handleKeydown))
+onBeforeUnmount(() => window.removeEventListener('keydown', handleKeydown))
 </script>
 
 <template>
