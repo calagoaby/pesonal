@@ -35,43 +35,53 @@ function findCategory(id: number): CategoryRef {
     return categories.find(category => category.id === id) ?? categories[categories.length - 1]!
 }
 
+const months = [
+    { month: '2026-07', days: 31 },
+    { month: '2026-06', days: 30 },
+    { month: '2026-05', days: 31 },
+]
+
 function buildExpenses(): Expense[] {
     const expenses: Expense[] = []
-    let id = 1000
+    let id = 2000
 
     // Newest first, matching the contract's date desc ordering.
-    for (let day = 30; day >= 1; day--) {
-        const per_day = day % 3 === 0 ? 1 : 2
+    for (const { month, days } of months) {
+        for (let day = days; day >= 1; day--) {
+            const per_day = day % 3 === 0 ? 1 : 2
 
-        for (let slot = 0; slot < per_day; slot++) {
-            const template = templates[(day + slot) % templates.length]!
-            const date = `2026-06-${String(day).padStart(2, '0')}`
-            const timestamp = `${date}T0${slot + 1}:00:00Z`
+            for (let slot = 0; slot < per_day; slot++) {
+                const template = templates[(day + slot) % templates.length]!
+                const date = `${month}-${String(day).padStart(2, '0')}`
+                const timestamp = `${date}T0${slot + 1}:00:00Z`
 
-            expenses.push({
-                id: id--,
-                amount: template.amount,
-                date,
-                note: template.note,
-                category: findCategory(template.category_id),
-                recurring_id: null,
-                created_at: timestamp,
-                updated_at: timestamp,
-            })
+                expenses.push({
+                    id: id--,
+                    amount: template.amount,
+                    date,
+                    note: template.note,
+                    category: findCategory(template.category_id),
+                    recurring_id: null,
+                    created_at: timestamp,
+                    updated_at: timestamp,
+                })
+            }
+
+            // Rent lands on the 1st, so recurring_id is exercised every month.
+            if (day === 1) {
+                expenses.push({
+                    id: id--,
+                    amount: 1500000,
+                    date: `${month}-01`,
+                    note: 'Rent share',
+                    category: findCategory(1),
+                    recurring_id: 1,
+                    created_at: `${month}-01T00:00:00Z`,
+                    updated_at: `${month}-01T00:00:00Z`,
+                })
+            }
         }
     }
-
-    // The one materialized row, so recurring_id is exercised somewhere.
-    expenses.push({
-        id: 900,
-        amount: 1500000,
-        date: '2026-06-01',
-        note: 'Rent share',
-        category: findCategory(1),
-        recurring_id: 1,
-        created_at: '2026-06-01T00:00:00Z',
-        updated_at: '2026-06-01T00:00:00Z',
-    })
 
     return expenses
 }

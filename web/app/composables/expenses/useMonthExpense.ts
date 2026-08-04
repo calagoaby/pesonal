@@ -4,7 +4,7 @@ import type { DailyExpense } from "~/types/Expenses";
 
 export async function useMonthExpense() {
     /** States */
-    const month = ref('2026-07')
+    const month = ref('2026-06')
 
     const { data, status, error, refresh } = await useAsyncData(
         'month-expenses',
