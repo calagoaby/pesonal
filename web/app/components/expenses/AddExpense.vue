@@ -23,6 +23,7 @@ const {
 /** States */
 const is_category_sheet_open = ref(false)
 const is_keypad_open = ref(false)
+const is_date_picker_open = ref(false)
 
 
 /** Computed */
@@ -57,7 +58,7 @@ const category = computed(() => categories.value.find(item => item.id === catego
             </span>
         </button>
 
-        <button class="field">
+        <button class="field" @click="is_date_picker_open = true">
             <span class="label">Date</span>
             <span class="value">
                 {{ formatFieldDate(date) }}
@@ -85,6 +86,11 @@ const category = computed(() => categories.value.find(item => item.id === catego
     <SharedKeypad
         v-model:open="is_keypad_open"
         v-model:amount="amount"
+    />
+
+    <SharedDatePicker
+        v-model:open="is_date_picker_open"
+        v-model:date="date"
     />
 </template>
 
