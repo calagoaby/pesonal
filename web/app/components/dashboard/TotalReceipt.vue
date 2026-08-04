@@ -1,17 +1,38 @@
 <script setup lang="ts">
 import ArrowDownRight from '@primeicons/vue/arrow-down-right';
+import ArrowUpRight from '@primeicons/vue/arrow-up-right';
+import { useMonthlyStatsContext } from '~/composables/dashboard/context/MonthlyStatsContext';
+
+const {
+    month,
+    total,
+    change_pct,
+    daily_average,
+    transaction_count
+} = useMonthlyStatsContext()
+
+const {
+    formatMonthLabel
+} = useDateFormatter()
+
+
+/** Computed */
+const spent_less = computed(() => (change_pct.value ?? 0) < 0)
+const receipt_label = computed(() => `Official Receipt — ${formatMonthLabel(month.value).toUpperCase()}`)
+const previous_label = computed(() => formatMonthLabel(shiftMonth(month.value, -1)).split(' ')[0]?.toUpperCase())
 </script>
 
 <template>
-    <SharedReceipt class="total-receipt" torn-position="bottom" sub-text="Official Receipt — JUNE 2026">
+    <SharedReceipt class="total-receipt" torn-position="bottom" :sub-text="receipt_label">
         <SharedPerf />
 
         <div class="tlabel">TOTAL DAMAGE</div>
-        <div class="total">₱43,210</div>
-        <div class="stamp-row">
-            <span class="stamp">
-                <ArrowDownRight />
-                 12% VS MAY
+        <div class="total">{{ formatAmountWithCurrency(total) }}</div>
+        <div class="stamp-row" v-if="change_pct !== null">
+            <span class="stamp" :class="{ over: !spent_less }">
+                <ArrowDownRight v-if="spent_less" />
+                <ArrowUpRight v-else />
+                {{ Math.abs(change_pct) }}% VS {{ previous_label }}
             </span>
         </div>
         <div class="note">Petsa de peligro? Hindi today.</div>
@@ -19,17 +40,17 @@ import ArrowDownRight from '@primeicons/vue/arrow-down-right';
         <div class="lrow">
             <div class="label">DAILY AVG</div>
             <div class="fill"></div>
-            <div class="val">₱2,540</div>
+            <div class="val">{{ formatAmountWithCurrency(daily_average) }}</div>
         </div>
         <div class="lrow">
             <div class="label">TRANSACTIONS</div>
             <div class="fill"></div>
-            <div class="val">38</div>
+            <div class="val">{{ transaction_count }}</div>
         </div>
-        
+
         <SharedBarcode class="receipt-barcode" :length="22" />
 
-        <div class="ono">NO. 0617-2026</div>
+        <div class="ono">NO. {{ month }}</div>
         <div class="thanks">*** salamat — come again ***</div>
     </SharedReceipt>
 </template>
@@ -72,6 +93,11 @@ import ArrowDownRight from '@primeicons/vue/arrow-down-right';
     border-radius: var(--radius-card);
     transform: rotate(-7deg);
     opacity: 0.92;
+}
+
+.stamp.over {
+    border-color: var(--stamp);
+    color: var(--stamp);
 }
 
 .note {

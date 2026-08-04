@@ -1,30 +1,23 @@
-export function useRecentItems() {
+import type { Ref } from "vue";
+import { listExpenses } from "~/repositories/expenses";
+
+/** The newest few rows of the month — the expenses list, not the stats call. */
+export function useRecentItems(month: Ref<string>) {
     /** States */
-    const items = [
-        {
-            text: 'Lunch with team',
-            category: 'Food',
-            category_color: '#C9692E',
-            date_created: 'Jun 17',
-            amount: 68000,
-        },
-        {
-            text: 'Grab to office',
-            category: 'Transport',
-            category_color: '#3F6F97',
-            date_created: 'Jun 17',
-            amount: 24000,
-        },
-        {
-            text: 'SM Groceries',
-            category: 'Groceries',
-            category_color: '#5E7A3E',
-            date_created: 'Jun 16',
-            amount: 215000,
-        },
-    ]
+    const { data, status, error } = useAsyncData(
+        'recent-items',
+        () => listExpenses({ month: month.value, per_page: 3 }),
+        { watch: [month] },
+    )
+
+
+    /** Computed */
+    const items = computed(() => data.value?.items ?? [])
+
 
     return {
-        items
+        items,
+        status,
+        error
     }
 }

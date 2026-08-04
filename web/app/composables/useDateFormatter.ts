@@ -15,10 +15,15 @@ export function useDateFormatter() {
         return formatFullDate(date, config.locale).replace(',', ' ·')
     }
 
+    function formatListDate(date: string) {
+        return formatShortDate(date, config.locale)
+    }
+
 
     return {
         formatDailyDate,
         formatMonthLabel,
-        formatFieldDate
+        formatFieldDate,
+        formatListDate
     }
 }

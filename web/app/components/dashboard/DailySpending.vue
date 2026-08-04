@@ -1,27 +1,36 @@
 <script setup lang="ts">
-import { useDailySpending } from '~/composables/dashboard/useDailySpending';
+import { useMonthlyStatsContext } from '~/composables/dashboard/context/MonthlyStatsContext';
 
 const {
-    spending_percentages,
-    is_peak_index,
-} = useDailySpending()
+    daily_percentages,
+    peak_index,
+    peak_date
+} = useMonthlyStatsContext()
+
+const {
+    formatListDate
+} = useDateFormatter()
+
+
+/** Computed */
+const peak_hint = computed(() => peak_date.value ? `biggest: ${formatListDate(peak_date.value)}` : '')
 </script>
 
 <template>
     <DashboardCard
         header='Daily Damage'
-        hint="biggest: Jun 1"
+        :hint="peak_hint"
     >
         <div class="bars">
-            <div v-for="(daily, index) in spending_percentages" 
-                :key="index" 
+            <div v-for="(daily, index) in daily_percentages"
+                :key="index"
                 :style="{ height: `${daily}%`}"
-                :class="{ peak: is_peak_index === index }"
+                :class="{ peak: peak_index === index }"
             >
             </div>
         </div>
         <div class="number-labels">
-            <div v-for="index in spending_percentages.length" :key="index">
+            <div v-for="index in daily_percentages.length" :key="index">
                 {{ (index === 1 || index % 5 === 0) ? index : '' }}
             </div>
         </div>

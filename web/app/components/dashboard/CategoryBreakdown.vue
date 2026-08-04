@@ -1,11 +1,25 @@
 <script setup lang="ts">
-import { useCategoryBreakdown } from '~/composables/dashboard/useCategoryBreakdown';
+import { useMonthlyStatsContext } from '~/composables/dashboard/context/MonthlyStatsContext';
 
 const {
-    chart_data,
-    chart_options,
+    total,
     category_rows
-} = useCategoryBreakdown()
+} = useMonthlyStatsContext()
+
+
+/** Computed */
+const chart_data = computed(() => ({
+    datasets: [
+        {
+            data: category_rows.value.map(row => row.percentage),
+            backgroundColor: category_rows.value.map(row => row.color),
+        }
+    ]
+}))
+
+const chart_options = { cutout: '65%' }
+
+const total_label = computed(() => `₱${(total.value / 100000).toFixed(1)}k`)
 </script>
 
 <template>
@@ -18,7 +32,7 @@ const {
             <div class="doughnut">
                 <Chart type="doughnut" :data="chart_data" :options="chart_options"/>
                 <div class="inside-text">
-                    <div class="total">₱43.2k</div>
+                    <div class="total">{{ total_label }}</div>
                     <div class="text">total</div>
                 </div>
             </div>

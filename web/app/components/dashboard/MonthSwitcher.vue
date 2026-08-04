@@ -1,14 +1,25 @@
 <script setup lang="ts">
 import ChevronLeft from '@primeicons/vue/chevron-left';
 import ChevronRight from '@primeicons/vue/chevron-right';
+import { useMonthlyStatsContext } from '~/composables/dashboard/context/MonthlyStatsContext';
+
+const {
+    month,
+    goToPreviousMonth,
+    goToNextMonth
+} = useMonthlyStatsContext()
+
+const {
+    formatMonthLabel
+} = useDateFormatter()
 </script>
 
 <template>
     <div class="month-switcher">
         <div class="period">
-            <ChevronLeft class="chevron" />
-            <span>June 2026</span>
-            <ChevronRight class="chevron" />
+            <ChevronLeft class="chevron" @click="goToPreviousMonth" />
+            <span>{{ formatMonthLabel(month) }}</span>
+            <ChevronRight class="chevron" @click="goToNextMonth" />
         </div>
         <div class="text">
             printed just now
@@ -41,6 +52,7 @@ import ChevronRight from '@primeicons/vue/chevron-right';
 .chevron {
     font-size: var(--text-label);
     color: var(--faded);
+    cursor: pointer;
 }
 
 .text {
