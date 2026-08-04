@@ -6,14 +6,26 @@ import { useAddExpense } from '~/composables/expenses/useAddExpense';
 
 const {
     amount,
-    category,
+    category_id,
     date,
     note
 } = useAddExpense()
 
 const {
+    categories
+} = useCategories()
+
+const {
     formatFieldDate
 } = useDateFormatter()
+
+
+/** States */
+const is_category_sheet_open = ref(false)
+
+
+/** Computed */
+const category = computed(() => categories.value.find(item => item.id === category_id.value) ?? null)
 </script>
 
 <template>
@@ -30,7 +42,7 @@ const {
 
         <SharedPerf />
 
-        <button class="field">
+        <button class="field" @click="is_category_sheet_open = true">
             <span class="label">Category</span>
             <span class="value">
                 <template v-if="category">
@@ -60,6 +72,12 @@ const {
 
         <div class="quip">* no take-backs, only edits *</div>
     </SharedReceipt>
+
+    <SharedCategorySheet
+        v-model:open="is_category_sheet_open"
+        v-model:selected="category_id"
+        :categories="categories"
+    />
 </template>
 
 <style scoped>

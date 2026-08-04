@@ -5,11 +5,16 @@ import type { DailyExpense } from "~/types/Expenses";
 export async function useMonthExpense() {
     /** States */
     const month = ref('2026-06')
+    /** Null means every category — the query param is dropped, not sent empty. */
+    const category_id = ref<number | null>(null)
 
     const { data, status, error, refresh } = await useAsyncData(
         'month-expenses',
-        () => listExpenses({ month: month.value }),
-        { watch: [month] },
+        () => listExpenses({
+            month: month.value,
+            category_id: category_id.value ?? undefined,
+        }),
+        { watch: [month, category_id] },
     )
 
 
@@ -40,6 +45,7 @@ export async function useMonthExpense() {
 
     return {
         month,
+        category_id,
         meta,
         status,
         error,
