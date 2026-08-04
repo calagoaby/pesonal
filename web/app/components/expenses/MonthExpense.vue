@@ -8,7 +8,7 @@ const {
     month,
     meta,
     daily_expenses
-} = useMonthExpense()
+} = await useMonthExpense()
 
 const {
     formatDailyDate,
@@ -58,7 +58,7 @@ const {
 
         <div class="foot">
             <SharedBarcode class="roll-barcode" gap="5px" height="36px" />
-            <div class="count">{{ meta.total }} items · {{ formatMonthLabel(month) }}</div>
+            <div class="count">{{ meta?.total ?? 0 }} items · {{ formatMonthLabel(month) }}</div>
             <div class="quip">* thank you, come again *</div>
         </div>
     </SharedReceipt>

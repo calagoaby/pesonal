@@ -10,7 +10,7 @@ Status: `[x]` done · `[~]` in progress · `[ ]` todo. See `CLAUDE.md` for conve
 
 Icons come from `@primeicons/vue` as SVG components (`import Home from '@primeicons/vue/home'`), **not** the `primeicons` CSS font — that dependency was removed. Node runs in WSL via nvm; the whole stack runs on Docker (`docker compose up`), web on `:3000`.
 
-No Pinia — shared state uses provide/inject context (see `CLAUDE.md`).
+Shared state defaults to provide/inject context; Pinia is the escape hatch once state gets large, complex, or genuinely global (see `CLAUDE.md`).
 
 ## Build loop
 
