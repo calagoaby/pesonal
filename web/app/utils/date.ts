@@ -22,6 +22,66 @@ export function formatWeekdayDate(
     })
 }
 
+export interface CalendarDay {
+    /** YYYY-MM-DD */
+    date: string
+    day: number
+    /** False for the leading/trailing days borrowed from the neighbouring months. */
+    in_month: boolean
+}
+
+function toDateString(date: Date) {
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+
+    return `${date.getFullYear()}-${month}-${day}`
+}
+
+/**
+ * Today as a calendar date in a fixed zone. Pinning the zone is what keeps a
+ * UTC server and a Manila browser from rendering different days and tripping
+ * hydration. `en-CA` is the locale that formats as YYYY-MM-DD.
+ */
+export function todayIn(timezone: string) {
+    return new Intl.DateTimeFormat('en-CA', {
+        timeZone: timezone,
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+    }).format(new Date())
+}
+
+/**
+ * @param date_string YYYY-MM-DD
+ * @return the same, shifted by delta days
+ */
+export function shiftDay(date_string: string, delta: number) {
+    const [year = 0, month = 1, day = 1] = date_string.split('-').map(Number)
+
+    return toDateString(new Date(year, month - 1, day + delta))
+}
+
+/**
+ * Whole weeks for one month, padded with neighbouring days so the grid is square.
+ * @param month YYYY-MM
+ */
+export function buildCalendarGrid(month: string): CalendarDay[] {
+    const [year = 0, index = 1] = month.split('-').map(Number)
+    const leading = new Date(year, index - 1, 1).getDay()
+    const days = new Date(year, index, 0).getDate()
+    const cells = Math.ceil((leading + days) / 7) * 7
+
+    return Array.from({ length: cells }, (_, cell) => {
+        const date = new Date(year, index - 1, cell - leading + 1)
+
+        return {
+            date: toDateString(date),
+            day: date.getDate(),
+            in_month: date.getMonth() === index - 1,
+        }
+    })
+}
+
 /**
  * @return Jun 17
  */
