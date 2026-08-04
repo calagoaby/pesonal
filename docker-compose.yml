@@ -16,7 +16,9 @@ services:
       - ./web:/app          # live-mount Nuxt source
       - /app/node_modules   # keep the image's node_modules, don't let the host shadow it
     environment:
-      # Browser-side calls go to the host, so localhost (not the service name).
-      NUXT_PUBLIC_API_BASE: "http://localhost:8000"
+      # Empty while the frontend runs on the mock routes in web/server/api.
+      # Restore "http://localhost:8000" to point at Laravel — browser-side calls
+      # go to the host, so localhost, not the service name.
+      NUXT_PUBLIC_API_BASE: ""
     depends_on:
       - api

@@ -28,6 +28,9 @@ export default defineNuxtConfig({
     },
     runtimeConfig: {
         public: {
+            // Empty = same origin, so calls land on the mock routes in server/api.
+            // Point it at the Laravel host to swap the real backend in.
+            apiBase: '',
             locale: 'en-PH',
             timezone: 'Asia/Manila'
         }
