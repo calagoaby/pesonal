@@ -6,14 +6,29 @@ import { useMonthExpense } from '~/composables/expenses/useMonthExpense';
 
 const {
     month,
+    category_id,
     meta,
     daily_expenses
 } = await useMonthExpense()
 
 const {
+    categories
+} = useCategories()
+
+const {
     formatDailyDate,
     formatMonthLabel
 } = useDateFormatter()
+
+
+/** States */
+const is_category_sheet_open = ref(false)
+
+
+/** Computed */
+const category_label = computed(() =>
+    categories.value.find(item => item.id === category_id.value)?.name ?? 'All'
+)
 </script>
 
 <template>
@@ -28,13 +43,13 @@ const {
 
         <SharedPerf />
 
-        <div class="category-switcher">
+        <button class="category-switcher" @click="is_category_sheet_open = true">
             <span class="label">Category</span>
             <span class="value">
-                All
+                {{ category_label }}
                 <ChevronDown color="var(--faded)" />
             </span>
-        </div>
+        </button>
 
         <div class="daily-expenses" v-for="daily_expense in daily_expenses" :key="daily_expense.date">
             <div class="date">
@@ -62,6 +77,14 @@ const {
             <div class="quip">* thank you, come again *</div>
         </div>
     </SharedReceipt>
+
+    <SharedCategorySheet
+        v-model:open="is_category_sheet_open"
+        v-model:selected="category_id"
+        :categories="categories"
+        title="Filter by category"
+        all-label="All"
+    />
 </template>
 
 <style scoped>
@@ -78,14 +101,20 @@ const {
 }
 
 .category-switcher {
+    width: 100%;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    font-family: var(--mono);
     font-size: var(--text-label);
     text-transform: uppercase;
     letter-spacing: .08em;
     padding: var(--space-s) 2px;
+    border: 0;
     border-bottom: 1.5px dashed var(--perforation);
+    background: transparent;
+    color: var(--ink);
+    cursor: pointer;
 }
 
 .label {
