@@ -33,8 +33,11 @@ const {
         <button class="field">
             <span class="label">Category</span>
             <span class="value">
-                <span class="dot" :style="{ backgroundColor: category.color }"></span>
-                {{ category.name }}
+                <template v-if="category">
+                    <span class="dot" :style="{ backgroundColor: category.color }"></span>
+                    {{ category.name }}
+                </template>
+                <span v-else class="placeholder">Choose one</span>
                 <ChevronDown />
             </span>
         </button>

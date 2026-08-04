@@ -1,4 +1,4 @@
-import type { CategoryRef } from "#shared/types/Category";
+import type { Category, CategoryRef } from "#shared/types/Category";
 import type { Expense } from "#shared/types/Expense";
 
 /**
@@ -7,15 +7,17 @@ import type { Expense } from "#shared/types/Expense";
  * makes pagination and SSR impossible to reason about.
  */
 
-export const categories: CategoryRef[] = [
-    { id: 1, name: 'Housing', color: '#534F8C', emoji: '🏠' },
-    { id: 2, name: 'Groceries', color: '#5E7A3E', emoji: '🛒' },
-    { id: 3, name: 'Food', color: '#C9692E', emoji: '🍔' },
-    { id: 4, name: 'Transport', color: '#3F6F97', emoji: '🚗' },
-    { id: 5, name: 'Fun', color: '#B0577B', emoji: '🎉' },
-    { id: 6, name: 'Utilities', color: '#7A6A3E', emoji: '💡' },
-    { id: 7, name: 'Health', color: '#2F7D52', emoji: '💊' },
-    { id: 8, name: 'Other', color: '#8A857B', emoji: '🧾' },
+const seeded_at = '2026-01-01T00:00:00Z'
+
+export const categories: Category[] = [
+    { id: 1, name: 'Housing', color: '#534F8C', emoji: '🏠', created_at: seeded_at },
+    { id: 2, name: 'Groceries', color: '#5E7A3E', emoji: '🛒', created_at: seeded_at },
+    { id: 3, name: 'Food', color: '#C9692E', emoji: '🍔', created_at: seeded_at },
+    { id: 4, name: 'Transport', color: '#3F6F97', emoji: '🚗', created_at: seeded_at },
+    { id: 5, name: 'Fun', color: '#B0577B', emoji: '🎉', created_at: seeded_at },
+    { id: 6, name: 'Utilities', color: '#7A6A3E', emoji: '💡', created_at: seeded_at },
+    { id: 7, name: 'Health', color: '#2F7D52', emoji: '💊', created_at: seeded_at },
+    { id: 8, name: 'Other', color: '#8A857B', emoji: '🧾', created_at: seeded_at },
 ]
 
 const templates = [
@@ -31,8 +33,16 @@ const templates = [
     { note: 'Merienda', amount: 12000, category_id: 3 },
 ]
 
+/** Expenses embed the ref shape — no created_at on a nested category. */
 function findCategory(id: number): CategoryRef {
-    return categories.find(category => category.id === id) ?? categories[categories.length - 1]!
+    const category = categories.find(item => item.id === id) ?? categories[categories.length - 1]!
+
+    return {
+        id: category.id,
+        name: category.name,
+        color: category.color,
+        emoji: category.emoji,
+    }
 }
 
 const months = [
