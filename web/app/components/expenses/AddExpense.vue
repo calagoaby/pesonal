@@ -22,6 +22,7 @@ const {
 
 /** States */
 const is_category_sheet_open = ref(false)
+const is_keypad_open = ref(false)
 
 
 /** Computed */
@@ -32,13 +33,15 @@ const category = computed(() => categories.value.find(item => item.id === catego
     <SharedReceipt class="add-receipt" torn-position="top" sub-text="· unrecorded damage ·">
         <SharedPerf />
 
-        <div class="amount-label">Amount</div>
-        <div class="amount">
-            <span class="peso">₱</span>
-            <span>{{ formatAmount(amount) }}</span>
-            <span class="caret"></span>
-        </div>
-        <div class="amount-hint">Tap to open the keypad</div>
+        <button class="amount-field" @click="is_keypad_open = true">
+            <span class="amount-label">Amount</span>
+            <span class="amount">
+                <span class="peso">₱</span>
+                <span>{{ formatAmount(amount) }}</span>
+                <span class="caret"></span>
+            </span>
+            <span class="amount-hint">Tap to open the keypad</span>
+        </button>
 
         <SharedPerf />
 
@@ -78,6 +81,11 @@ const category = computed(() => categories.value.find(item => item.id === catego
         v-model:selected="category_id"
         :categories="categories"
     />
+
+    <SharedKeypad
+        v-model:open="is_keypad_open"
+        v-model:amount="amount"
+    />
 </template>
 
 <style scoped>
@@ -85,8 +93,20 @@ const category = computed(() => categories.value.find(item => item.id === catego
     margin-bottom: var(--space-l);
 }
 
+.amount-field {
+    display: block;
+    width: 100%;
+    border: 0;
+    background: transparent;
+    padding: 0;
+    color: var(--ink);
+    cursor: pointer;
+}
+
 .amount-label {
+    display: block;
     text-align: center;
+    font-family: var(--mono);
     font-size: var(--text-micro);
     letter-spacing: 1.5px;
     text-transform: uppercase;
@@ -116,6 +136,7 @@ const category = computed(() => categories.value.find(item => item.id === catego
 }
 
 .amount-hint {
+    display: block;
     text-align: center;
     font-family: var(--sans);
     font-size: var(--text-label);

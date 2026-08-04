@@ -17,6 +17,9 @@
   4 Month picker sheet                → SharedMonthPicker
   5 Date picker sheet                 → SharedDatePicker
   6 Amount keypad sheet               → SharedKeypad
+  The pad is cents-first, like an ATM: digits shift in from the right, so 6-8-0
+  reads ₱6.80. Hence no decimal key — the value is always a whole number of
+  centavos and can never be a half-typed decimal. 00 takes that slot instead.
   All are overlays: a scrim + a paper surface. Sheets rise from the bottom;
   the VOID slip is centered (it interrupts, it doesn't offer a menu).
   Token rule: var(--…) → use that token in the app; literal px → intentional one-off.
@@ -234,7 +237,7 @@ body{font-family:var(--sans);background:#d8d1c2;min-height:100vh;padding:30px 16
 <div class="key">1</div><div class="key">2</div><div class="key">3</div>
 <div class="key">4</div><div class="key">5</div><div class="key">6</div>
 <div class="key">7</div><div class="key">8</div><div class="key">9</div>
-<div class="key">.</div><div class="key">0</div><div class="key"><i class="pi pi-delete-left"></i></div>
+<div class="key">00</div><div class="key">0</div><div class="key"><i class="pi pi-delete-left"></i></div>
 </div>
 <button class="kdone">Done</button>
 </div>
