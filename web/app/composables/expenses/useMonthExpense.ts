@@ -25,6 +25,14 @@ export async function useMonthExpense() {
 
 
     /** Functions */
+    function goToPreviousMonth() {
+        month.value = shiftMonth(month.value, -1)
+    }
+
+    function goToNextMonth() {
+        month.value = shiftMonth(month.value, 1)
+    }
+
     function groupByDate(items: Expense[]): DailyExpense[] {
         const days = new Map<string, Expense[]>()
 
@@ -51,6 +59,8 @@ export async function useMonthExpense() {
         error,
         daily_expenses,
 
+        goToPreviousMonth,
+        goToNextMonth,
         refresh
     }
 }
