@@ -2,13 +2,21 @@
 import ChevronLeft from '@primeicons/vue/chevron-left';
 import ChevronRight from '@primeicons/vue/chevron-right';
 import ChevronDown from '@primeicons/vue/chevron-down';
+import Receipt from '@primeicons/vue/receipt';
+import FilterSlash from '@primeicons/vue/filter-slash';
+import ExclamationTriangle from '@primeicons/vue/exclamation-triangle';
 import { useMonthExpense } from '~/composables/expenses/useMonthExpense';
 
 const {
     month,
     category_id,
     meta,
-    daily_expenses
+    status,
+    error,
+    daily_expenses,
+    goToPreviousMonth,
+    goToNextMonth,
+    refresh
 } = await useMonthExpense()
 
 const {
@@ -29,6 +37,18 @@ const is_category_sheet_open = ref(false)
 const category_label = computed(() =>
     categories.value.find(item => item.id === category_id.value)?.name ?? 'All'
 )
+
+// Both screens render server-side, so pending only shows on a client refetch —
+// switching month or category — never on first paint.
+const is_loading = computed(() => status.value === 'pending')
+const is_empty = computed(() => !is_loading.value && !error.value && daily_expenses.value.length === 0)
+const is_filtered = computed(() => category_id.value !== null)
+
+
+/** Functions */
+function clearCategory() {
+    category_id.value = null
+}
 </script>
 
 <template>
@@ -36,9 +56,9 @@ const category_label = computed(() =>
         <SharedPerf />
 
         <div class="period-switcher">
-            <ChevronLeft />
+            <ChevronLeft class="chevron" @click="goToPreviousMonth" />
             PERIOD {{ month }}
-            <ChevronRight />
+            <ChevronRight class="chevron" @click="goToNextMonth" />
         </div>
 
         <SharedPerf />
@@ -51,25 +71,69 @@ const category_label = computed(() =>
             </span>
         </button>
 
-        <div class="daily-expenses" v-for="daily_expense in daily_expenses" :key="daily_expense.date">
-            <div class="date">
-                {{ formatDailyDate(daily_expense.date) }}
-            </div>
-            <div class="expenses">
-                <div class="row" v-for="expense in daily_expense.items" :key="expense.id">
-                    <div class="desc">
-                        {{ expense.note }}
-                        <span class="cat">{{ expense.category.name }}</span>
-                    </div>
-                    <div class="lead"></div>
-                    <div class="amount">{{ formatAmountWithCurrency(expense.amount) }}</div>
-                </div>
+        <SharedNotice v-if="error" title="Printer jammed" tone="alert">
+            <template #mark>
+                <ExclamationTriangle />
+            </template>
+            Couldn't reach the server.<br>
+            Your entries are safe — this screen just came up blank.
+            <template #action>
+                <button class="act" @click="refresh()">Try again</button>
+            </template>
+        </SharedNotice>
+
+        <div v-else-if="is_loading" class="loading">
+            <SharedSkeleton class="skeleton-day" width="38%" height="9px" />
+            <div v-for="row in 6" :key="row" class="skeleton-row">
+                <SharedSkeleton :width="`${38 + (row * 7) % 24}%`" />
+                <SharedSkeleton width="64px" />
             </div>
         </div>
 
+        <template v-else-if="is_empty">
+            <SharedNotice v-if="is_filtered" :title="`No ${category_label.toLowerCase()} in ${formatMonthLabel(month).split(' ')[0]}`">
+                <template #mark>
+                    <FilterSlash />
+                </template>
+                Either a disciplined month,<br>
+                or you went nowhere. Both count.
+                <template #action>
+                    <button class="act quiet" @click="clearCategory">Show all categories</button>
+                </template>
+            </SharedNotice>
+            <SharedNotice v-else title="Wala pang gastos">
+                <template #mark>
+                    <Receipt />
+                </template>
+                A clean receipt. Enjoy it while it lasts —<br>
+                it only goes one direction from here.
+                <template #action>
+                    <NuxtLink to="/add-expense" class="act">Record the first one</NuxtLink>
+                </template>
+            </SharedNotice>
+        </template>
+
+        <template v-else>
+            <div class="daily-expenses" v-for="daily_expense in daily_expenses" :key="daily_expense.date">
+                <div class="date">
+                    {{ formatDailyDate(daily_expense.date) }}
+                </div>
+                <div class="expenses">
+                    <div class="row" v-for="expense in daily_expense.items" :key="expense.id">
+                        <div class="desc">
+                            {{ expense.note }}
+                            <span class="cat">{{ expense.category.name }}</span>
+                        </div>
+                        <div class="lead"></div>
+                        <div class="amount">{{ formatAmountWithCurrency(expense.amount) }}</div>
+                    </div>
+                </div>
+            </div>
+        </template>
+
         <SharedPerf />
 
-        <div class="more">✂ &nbsp; pull for more &nbsp; ✂</div>
+        <div v-if="!is_empty && !error" class="more">✂ &nbsp; pull for more &nbsp; ✂</div>
 
         <div class="foot">
             <SharedBarcode class="roll-barcode" gap="5px" height="36px" />
@@ -98,6 +162,10 @@ const category_label = computed(() =>
     align-items: center;
     gap: var(--space-xl);
     font-size: var(--text-label);
+
+    .chevron {
+        cursor: pointer;
+    }
 }
 
 .category-switcher {
@@ -169,6 +237,44 @@ const category_label = computed(() =>
 .lead {
     flex: 1;
     border-bottom: 1.5px dotted var(--perforation);
+}
+
+.loading {
+    padding-bottom: var(--space-s);
+}
+
+.skeleton-day {
+    margin: var(--space-l) auto var(--space-m);
+}
+
+.skeleton-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-l);
+    padding: var(--space-s) 0;
+}
+
+.act {
+    display: inline-block;
+    background-color: var(--stamp);
+    color: var(--paper);
+    border: 0;
+    border-radius: var(--radius-pill);
+    padding: var(--space-s) var(--space-l);
+    font-family: var(--mono);
+    font-size: var(--text-label);
+    font-weight: 600;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.act.quiet {
+    background: transparent;
+    color: var(--ink);
+    border: 1px solid var(--perforation);
 }
 
 .more {
