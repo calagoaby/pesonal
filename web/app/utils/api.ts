@@ -20,23 +20,40 @@ export class ApiRequestError extends Error {
 
 type Query = Record<string, string | number | undefined>
 
+type RequestOptions = {
+    method?: 'GET' | 'POST' | 'PATCH' | 'DELETE'
+    query?: Query
+    /**
+     * `Record<string, any>` mirrors what ofetch itself declares. `unknown` is too
+     * wide for it, and `Record<string, unknown>` is too narrow to accept a plain
+     * payload interface — interfaces have no implicit index signature.
+     */
+    body?: Record<string, any>
+}
+
 export async function apiGet<T>(path: string, query?: Query): Promise<T> {
-    const response = await request<{ data: T }>(path, query)
+    const response = await request<{ data: T }>(path, { query })
 
     return response.data
 }
 
 export async function apiGetList<T>(path: string, query?: Query): Promise<{ items: T[], meta: ListMeta }> {
-    const response = await request<{ data: T[], meta: ListMeta }>(path, query)
+    const response = await request<{ data: T[], meta: ListMeta }>(path, { query })
 
     return { items: response.data, meta: response.meta }
 }
 
-async function request<T>(path: string, query?: Query): Promise<T> {
+export async function apiPost<T>(path: string, body: Record<string, any>): Promise<T> {
+    const response = await request<{ data: T }>(path, { method: 'POST', body })
+
+    return response.data
+}
+
+async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
     const { public: config } = useRuntimeConfig()
 
     try {
-        return await $fetch<T>(`${config.apiBase}/api${path}`, { query })
+        return await $fetch<T>(`${config.apiBase}/api${path}`, options) as T
     } catch (error) {
         throw toRequestError(error)
     }
