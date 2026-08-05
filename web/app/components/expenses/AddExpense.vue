@@ -2,14 +2,15 @@
 import ChevronDown from '@primeicons/vue/chevron-down';
 import Calendar from '@primeicons/vue/calendar';
 import Pencil from '@primeicons/vue/pencil';
-import { useAddExpense } from '~/composables/expenses/useAddExpense';
+import { useAddExpenseContext } from '~/composables/expenses/context/AddExpenseContext';
 
 const {
     amount,
     category_id,
     date,
-    note
-} = useAddExpense()
+    note,
+    errors
+} = useAddExpenseContext()
 
 const {
     categories
@@ -73,6 +74,10 @@ const category = computed(() => categories.value.find(item => item.id === catego
                 <Pencil />
             </span>
         </button>
+
+        <p v-for="(messages, field) in errors" :key="field" class="field-error">
+            {{ messages[0] }}
+        </p>
 
         <div class="quip">* no take-backs, only edits *</div>
     </SharedReceipt>
@@ -197,6 +202,13 @@ const category = computed(() => categories.value.find(item => item.id === catego
     width: 12px;
     height: 12px;
     color: var(--faded);
+}
+
+.field-error {
+    font-family: var(--sans);
+    font-size: var(--text-label);
+    color: var(--stamp);
+    margin-top: var(--space-m);
 }
 
 .quip {

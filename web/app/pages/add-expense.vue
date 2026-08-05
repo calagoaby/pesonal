@@ -1,9 +1,35 @@
 <script setup lang="ts">
 import Times from '@primeicons/vue/times';
+import { provideAddExpense } from '~/composables/expenses/context/AddExpenseContext';
 
 // layout: false so the page can fill the modal layout's named footer slot —
 // the commit bar has to sit outside the scroll region, beside it, not in it.
 definePageMeta({ layout: false })
+
+const {
+    amount,
+    can_save,
+    is_saving,
+    failure,
+    save
+} = provideAddExpense()
+
+
+/** States */
+const is_toast_open = ref(false)
+const toast_message = ref('')
+
+
+/** Functions */
+async function record() {
+    // Read before saving: a successful save resets the draft.
+    const recorded = amount.value
+
+    if (await save()) {
+        toast_message.value = `Recorded ${formatAmountWithCurrency(recorded)}`
+        is_toast_open.value = true
+    }
+}
 </script>
 
 <template>
@@ -19,11 +45,18 @@ definePageMeta({ layout: false })
 
         <template #footer>
             <div class="commit-bar">
-                <NuxtLink to="/" class="cancel">Cancel</NuxtLink>
-                <button class="record">Record it</button>
+                <p v-if="failure" class="failure">{{ failure }}</p>
+                <div class="actions">
+                    <NuxtLink to="/" class="cancel">Cancel</NuxtLink>
+                    <button class="record" :disabled="!can_save || is_saving" @click="record">
+                        {{ is_saving ? 'Recording…' : 'Record it' }}
+                    </button>
+                </div>
             </div>
         </template>
     </NuxtLayout>
+
+    <SharedToast v-model:open="is_toast_open" :message="toast_message" />
 </template>
 
 <style scoped>
@@ -53,13 +86,23 @@ definePageMeta({ layout: false })
 }
 
 .commit-bar {
-    display: flex;
-    align-items: center;
-    gap: var(--space-m);
     flex: none;
     background-color: var(--paper);
     border-top: 1.5px dashed var(--perforation);
     padding: var(--space-m) var(--space-l) var(--space-l);
+}
+
+.failure {
+    font-size: var(--text-label);
+    color: var(--stamp);
+    text-align: center;
+    margin-bottom: var(--space-s);
+}
+
+.actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-m);
 }
 
 .cancel {
@@ -86,6 +129,13 @@ definePageMeta({ layout: false })
     letter-spacing: .14em;
     text-transform: uppercase;
     cursor: pointer;
-    box-shadow: 0 8px 18px rgba(200, 71, 46, .32);
+    box-shadow: 0 8px 18px rgb(200 71 46 / 32%);
+}
+
+.record:disabled {
+    background-color: var(--perforation);
+    color: var(--faded);
+    box-shadow: none;
+    cursor: not-allowed;
 }
 </style>
