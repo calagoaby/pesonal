@@ -23,6 +23,10 @@ Commit format: a `[feat]` / `[fix]` tag alone on the first line, then brief lowe
 
 PR format: the title is the same one-liner in that style — `[feat] - navbar route aware active`. **Leave the body empty.** The title and the commits say it; a written-up description is noise. Explain the reasoning in chat instead.
 
+**Explain the reasoning, not just the result.** The owner is comfortable reviewing frontend code but is still learning the tooling around it — Docker, git plumbing, Nuxt internals, TypeScript. Annotate commands in plain language and say *why* a non-obvious choice was made. He asks follow-up questions and expects real answers; "it works" is not one.
+
+**Verify before claiming.** Run the check, read the output, then report. If something is unverified, say so.
+
 Design specs live in `design/`. Status and the screen order live in `docs/ROADMAP.md`.
 
 ## Frontend conventions (Nuxt 4 + PrimeVue, code in `web/app/`)
@@ -64,6 +68,41 @@ Signature: flat — no soft shadows; dashed perforation dividers, a torn zig-zag
 
 The mockups in `design/` read in these var names — anything still literal px there (icon sizes, hairlines, barcode art) is an intentional one-off. Snap off-scale values to the nearest step; never mint a token per pixel.
 
-## Run
+## Working environment
 
-Whole stack via Docker from the repo root (`docker compose up`). Confirm the API and web ports in `docker-compose.yml`.
+The repo lives in **WSL** (`/home/aby/projects/Pesonal`); the assistant harness runs on **Windows** and sees it over a UNC path. WSL-installed CLIs are not on the Windows PATH, so run them through WSL:
+
+```
+wsl -e bash -lc "cd /home/aby/projects/Pesonal && <command>"
+```
+
+- **`git` and `gh`** exist only in WSL. Use the form above, not Git Bash — the UNC path breaks it.
+- **`npm` on the host** needs nvm sourced first (`export NVM_DIR="$HOME/.nvm"; . "$NVM_DIR/nvm.sh"`). A bare `wsl npm` resolves to *Windows* npm, which fails on the UNC path with "UNC paths are not supported".
+- **The stack runs on Docker** (`docker compose up -d`), web on `:3000`, and live-mounts `./web` — so the running app always reflects the working tree. Don't start a second dev server; it collides on the port.
+
+### Gotchas that have already cost real time
+
+- **`docker compose restart` does not reload `docker-compose.yml` env changes.** It reuses the container's existing environment. Use `docker compose up -d` to recreate.
+- **A new top-level directory needs a container restart.** Nuxt and Nitro scan `shared/`, `server/`, `layouts/` at boot; HMR won't pick up a folder that didn't exist. Symptom: `#shared` alias unresolved, or a new `server/api/` route 404s.
+- **Stale Vite module graph.** If the *browser* shows an error but a direct `Invoke-WebRequest`/`curl` to the same URL returns correct HTML, the code is fine and the dev server's in-memory graph is stale — restart the container. That disagreement between the two is the diagnostic; if both fail, it's a real bug.
+- **`.nuxt` is root-owned.** The container writes build artifacts into the mounted `./web` as root, so host commands that write there fail with `EACCES`. Run typecheck inside the container instead.
+- **Mock data is in-memory only.** `server/utils/mockDb.ts` holds it in module scope, so anything created through the UI vanishes on container restart and nothing is ever written to disk.
+
+### Typecheck
+
+```
+docker compose exec web npx nuxt typecheck
+```
+
+Prints nothing and exits 0 on success. Run it before opening a PR — **Vite strips types without checking them**, so type errors never surface at runtime and the dev server will happily serve broken code.
+
+**TypeScript is pinned to `^5` deliberately.** TypeScript 7 is the native Go compiler; its npm package doesn't ship `lib/tsc`, which `vue-tsc` requires. `vue-tsc`'s peer range (`>=5.0.0`) accepts TS 7 without warning and then fails at runtime. Don't let a dependency bump move it to 7.
+
+There is **no ESLint configured** yet, despite the convention above mentioning it.
+
+## Verifying your work
+
+- **Drive the UI, don't just read the HTML.** Most of this app's behaviour is client-side — sheets, the keypad, pagination, filters. Use the browser tools to click and type, then read the result.
+- **Vue emits dynamic classes before static ones.** `:class="{ selected: … }"` on `class="option"` renders `class="selected option"`. Regex counting `class="option` silently undercounts and has produced false "bugs" more than once.
+- **Vue reactivity is async.** Reading the DOM in the same tick as a click shows the *old* value. Click, then read in a separate step. If a value looks unchanged, suspect the read before the code.
+- Both list screens `await useAsyncData`, so data is server-rendered. `status === 'pending'` only appears on a *client* refetch (month/category change) — loading skeletons are a transition state, not a page-load state.

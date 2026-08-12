@@ -14,8 +14,13 @@ const {
     status,
     error,
     daily_expenses,
+    loaded_count,
+    has_more,
+    is_loading_more,
+    load_more_error,
     goToPreviousMonth,
     goToNextMonth,
+    loadMore,
     refresh
 } = await useMonthExpense()
 
@@ -133,11 +138,17 @@ function clearCategory() {
 
         <SharedPerf />
 
-        <div v-if="!is_empty && !error" class="more">✂ &nbsp; pull for more &nbsp; ✂</div>
+        <button v-if="has_more" class="more" :disabled="is_loading_more" @click="loadMore">
+            ✂ &nbsp; {{ is_loading_more ? 'printing…' : 'pull for more' }} &nbsp; ✂
+        </button>
+        <p v-if="load_more_error" class="more-error">{{ load_more_error }}</p>
 
         <div class="foot">
             <SharedBarcode class="roll-barcode" gap="5px" height="36px" />
-            <div class="count">{{ meta?.total ?? 0 }} items · {{ formatMonthLabel(month) }}</div>
+            <div class="count">
+                {{ has_more ? `${loaded_count} of ${meta?.total ?? 0}` : meta?.total ?? 0 }} items
+                · {{ formatMonthLabel(month) }}
+            </div>
             <div class="quip">* thank you, come again *</div>
         </div>
     </SharedReceipt>
@@ -278,11 +289,30 @@ function clearCategory() {
 }
 
 .more {
+    width: 100%;
     text-align: center;
     text-transform: uppercase;
     color: var(--stamp);
+    font-family: var(--mono);
     font-size: var(--text-label);
     letter-spacing: .14em;
+    background: transparent;
+    border: 0;
+    padding: var(--space-xs) 0;
+    cursor: pointer;
+}
+
+.more:disabled {
+    color: var(--faded);
+    cursor: progress;
+}
+
+.more-error {
+    text-align: center;
+    font-family: var(--sans);
+    font-size: var(--text-label);
+    color: var(--stamp);
+    margin-top: var(--space-s);
 }
 
 .foot {
