@@ -49,6 +49,12 @@ export async function apiPost<T>(path: string, body: Record<string, any>): Promi
     return response.data
 }
 
+export async function apiPatch<T>(path: string, body: Record<string, any>): Promise<T> {
+    const response = await request<{ data: T }>(path, { method: 'PATCH', body })
+
+    return response.data
+}
+
 async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
     const { public: config } = useRuntimeConfig()
 

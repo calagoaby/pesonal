@@ -83,7 +83,10 @@ const category = computed(() => categories.value.find(item => item.id === catego
             {{ messages[0] }}
         </p>
 
-        <div class="quip">* no take-backs, only edits *</div>
+        <!-- Add shows the quip; edit fills this with its void action and audit line. -->
+        <slot>
+            <div class="quip">* no take-backs, only edits *</div>
+        </slot>
     </SharedReceipt>
 
     <SharedCategorySheet

@@ -122,6 +122,31 @@ export function formatFullDate(
 }
 
 /**
+ * Full ISO timestamps (created_at / updated_at) carry a real time, so unlike the
+ * calendar dates above they must be read in a fixed zone, not the viewer's.
+ * @param iso an ISO 8601 timestamp
+ * @return Jun 17, 2026 · 10:03
+ */
+export function formatTimestamp(
+    iso: string,
+    locale: string,
+    timezone: string,
+) {
+    const formatted = new Date(iso).toLocaleString(locale, {
+        timeZone: timezone,
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+    })
+
+    // "Jun 17, 2026, 10:03" → swap the comma before the time for the dot separator.
+    return formatted.replace(/,(\s\d{1,2}:\d{2})$/, ' ·$1')
+}
+
+/**
  * @param month_string YYYY-MM
  * @return June 2026
  */
