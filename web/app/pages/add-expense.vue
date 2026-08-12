@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import Times from '@primeicons/vue/times';
-import { provideAddExpense } from '~/composables/expenses/context/AddExpenseContext';
+import { useAddExpense } from '~/composables/expenses/useAddExpense';
 
 // layout: false so the page can fill the modal layout's named footer slot —
 // the commit bar has to sit outside the scroll region, beside it, not in it.
@@ -12,7 +12,7 @@ const {
     is_saving,
     failure,
     save
-} = provideAddExpense()
+} = useAddExpense()
 
 
 /** States */
@@ -41,7 +41,7 @@ async function record() {
             </NuxtLink>
         </div>
 
-        <ExpensesAddExpense />
+        <ExpensesExpenseForm subtitle="· unrecorded damage ·" />
 
         <template #footer>
             <div class="commit-bar">
