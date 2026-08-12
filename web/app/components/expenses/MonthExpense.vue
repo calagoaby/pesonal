@@ -36,6 +36,7 @@ const {
 
 /** States */
 const is_category_sheet_open = ref(false)
+const is_month_picker_open = ref(false)
 
 
 /** Computed */
@@ -62,7 +63,7 @@ function clearCategory() {
 
         <div class="period-switcher">
             <ChevronLeft class="chevron" @click="goToPreviousMonth" />
-            PERIOD {{ month }}
+            <button class="period" @click="is_month_picker_open = true">PERIOD {{ month }}</button>
             <ChevronRight class="chevron" @click="goToNextMonth" />
         </div>
 
@@ -160,6 +161,11 @@ function clearCategory() {
         title="Filter by category"
         all-label="All"
     />
+
+    <SharedMonthPicker
+        v-model:open="is_month_picker_open"
+        v-model:month="month"
+    />
 </template>
 
 <style scoped>
@@ -177,6 +183,16 @@ function clearCategory() {
     .chevron {
         cursor: pointer;
     }
+}
+
+.period {
+    background: transparent;
+    border: 0;
+    padding: 0;
+    font: inherit;
+    letter-spacing: inherit;
+    color: var(--ink);
+    cursor: pointer;
 }
 
 .category-switcher {

@@ -41,9 +41,14 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleKeydown))
 </template>
 
 <style scoped>
+/* Lifts the overlay above page content, the nav, and the FAB. Nothing else in
+   the app sets z-index, so these two values are the whole stacking order — they
+   only need to beat the default 0. The scrim then covers the nav so it can't be
+   tapped through. */
 .scrim {
     position: fixed;
     inset: 0;
+    z-index: 100;
     background-color: rgb(28 26 23 / 45%);
     opacity: 0;
     pointer-events: none;
@@ -60,6 +65,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleKeydown))
     left: 0;
     right: 0;
     bottom: 0;
+    z-index: 101;
     background-color: var(--paper);
     border-top: 2px solid var(--ink);
     border-radius: 18px 18px 0 0;

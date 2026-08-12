@@ -24,7 +24,7 @@ Steps 1–3 stood up the data layer; 4–7 finished Add expense; 8–10 are cros
 6. `[x]` **Date picker** — `SharedDatePicker`; date defaults to today in the configured zone.
 7. `[x]` **Create expense** — `POST`, validation, `SharedToast`, cache invalidation. Add expense is complete.
 8. `[x]` **Screen states** — `SharedNotice` (empty + error) and `SharedSkeleton`, applied to the roll and the dashboard.
-9. `[~]` **Tear-to-load** — append pages onto the roll, reset on filter/month change.
+9. `[x]` **Tear-to-load** — append pages onto the roll, reset on filter/month change.
 10. `[ ]` **Month picker** — `SharedMonthPicker`; the month label becomes tappable. Prev/next chevrons already work on both screens.
 11. `[ ]` **Edit / void expense** — `PATCH` + `DELETE`, reached by tapping a row. Extract the shared expense form from `AddExpense.vue` here. Adds `SharedVoidSlip`, and the toast gains Undo (which needs `pointer-events: auto` on `.shown`).
 12. `[ ]` **Categories screen** — CRUD, colour + emoji pickers, 409 surfaced through the void slip.

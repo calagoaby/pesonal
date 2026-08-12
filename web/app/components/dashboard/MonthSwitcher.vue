@@ -12,19 +12,23 @@ const {
 const {
     formatMonthLabel
 } = useDateFormatter()
+
+const is_month_picker_open = ref(false)
 </script>
 
 <template>
     <div class="month-switcher">
         <div class="period">
             <ChevronLeft class="chevron" @click="goToPreviousMonth" />
-            <span>{{ formatMonthLabel(month) }}</span>
+            <button class="label" @click="is_month_picker_open = true">{{ formatMonthLabel(month) }}</button>
             <ChevronRight class="chevron" @click="goToNextMonth" />
         </div>
         <div class="text">
             printed just now
         </div>
     </div>
+
+    <SharedMonthPicker v-model:open="is_month_picker_open" v-model:month="month" />
 </template>
 
 <style scoped>
@@ -47,6 +51,15 @@ const {
     padding: var(--space-s) var(--space-l);
     border: 1px solid var(--perforation);
     border-radius: var(--radius-pill);
+}
+
+.label {
+    background: transparent;
+    border: 0;
+    padding: 0;
+    font: inherit;
+    color: var(--ink);
+    cursor: pointer;
 }
 
 .chevron {
