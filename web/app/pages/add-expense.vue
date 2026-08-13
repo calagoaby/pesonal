@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import Times from '@primeicons/vue/times';
 import { useAddExpense } from '~/composables/expenses/useAddExpense';
+import { useToaster } from '~/stores/toaster';
 
 // layout: false so the page can fill the modal layout's named footer slot —
 // the commit bar has to sit outside the scroll region, beside it, not in it.
@@ -14,10 +15,7 @@ const {
     save
 } = useAddExpense()
 
-
-/** States */
-const is_toast_open = ref(false)
-const toast_message = ref('')
+const toaster = useToaster()
 
 
 /** Functions */
@@ -26,8 +24,7 @@ async function record() {
     const recorded = amount.value
 
     if (await save()) {
-        toast_message.value = `Recorded ${formatAmountWithCurrency(recorded)}`
-        is_toast_open.value = true
+        toaster.show({ message: `Recorded ${formatAmountWithCurrency(recorded)}` })
     }
 }
 </script>
@@ -55,8 +52,6 @@ async function record() {
             </div>
         </template>
     </NuxtLayout>
-
-    <SharedToast v-model:open="is_toast_open" :message="toast_message" />
 </template>
 
 <style scoped>

@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import Times from '@primeicons/vue/times';
+import Trash from '@primeicons/vue/trash';
 import { getExpense } from '~/repositories/expenses';
 import { useEditExpense } from '~/composables/expenses/useEditExpense';
+import { useToaster } from '~/stores/toaster';
 
 // layout: false so the page can fill the modal layout's named footer slot —
 // the commit bar has to sit outside the scroll region, beside it, not in it.
@@ -23,22 +25,47 @@ const {
     is_saving,
     failure,
     save,
+    remove,
+    restore,
     entry
 } = useEditExpense(expense.value)
 
 const {
-    formatStamp
+    formatStamp,
+    formatDailyDate
 } = useDateFormatter()
+
+const toaster = useToaster()
 
 
 /** States */
-const is_toast_open = ref(false)
+const is_void_slip_open = ref(false)
+
+
+/** Computed — the muted line under the subject on the void slip. */
+const void_detail = computed(() => `${formatDailyDate(entry.value.date)} · ${entry.value.category.name}`)
 
 
 /** Functions */
 async function record() {
     if (await save()) {
-        is_toast_open.value = true
+        toaster.show({ message: 'Saved changes' })
+    }
+}
+
+async function voidEntry() {
+    // Capture before we leave — the undo re-creates from this snapshot on the roll.
+    const removed = entry.value
+
+    if (await remove()) {
+        toaster.show({
+            message: `Voided · ${formatAmountWithCurrency(removed.amount)}`,
+            action: { label: 'Undo', run: () => restore(removed) },
+        })
+        navigateTo('/expenses')
+    } else {
+        // Reveal the failure line, which the scrim was covering.
+        is_void_slip_open.value = false
     }
 }
 </script>
@@ -53,6 +80,10 @@ async function record() {
         </div>
 
         <ExpensesExpenseForm :subtitle="`· entry no. ${entry.id} ·`">
+            <button class="void-row" @click="is_void_slip_open = true">
+                <Trash />
+                Void this entry
+            </button>
             <div class="audit">
                 Recorded {{ formatStamp(entry.created_at) }}<br>
                 Last changed {{ formatStamp(entry.updated_at) }}
@@ -72,7 +103,14 @@ async function record() {
         </template>
     </NuxtLayout>
 
-    <SharedToast v-model:open="is_toast_open" message="Saved changes" />
+    <SharedVoidSlip
+        v-model:open="is_void_slip_open"
+        title="Void this entry?"
+        :subject="entry.note ?? 'This entry'"
+        :amount="entry.amount"
+        :detail="void_detail"
+        @confirm="voidEntry"
+    />
 </template>
 
 <style scoped>
@@ -99,6 +137,30 @@ async function record() {
 .close :deep(.p-icon) {
     width: 18px;
     height: 18px;
+}
+
+.void-row {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-s);
+    margin-top: var(--space-l);
+    padding-top: var(--space-m);
+    border: 0;
+    border-top: 1.5px dashed var(--perforation);
+    background: transparent;
+    color: var(--stamp);
+    font-family: var(--mono);
+    font-size: var(--text-label);
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    cursor: pointer;
+}
+
+.void-row :deep(.p-icon) {
+    width: 13px;
+    height: 13px;
 }
 
 .audit {

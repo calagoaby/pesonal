@@ -4,6 +4,7 @@
             <slot />
         </div>
         <SharedNavBar />
+        <SharedToaster />
     </div>
 </template>
 

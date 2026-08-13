@@ -55,6 +55,11 @@ export async function apiPatch<T>(path: string, body: Record<string, any>): Prom
     return response.data
 }
 
+// DELETE answers 204 with no body, so there's nothing to unwrap or return.
+export async function apiDelete(path: string): Promise<void> {
+    await request<unknown>(path, { method: 'DELETE' })
+}
+
 async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
     const { public: config } = useRuntimeConfig()
 

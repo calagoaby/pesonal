@@ -4,6 +4,7 @@
             <slot />
         </div>
         <slot name="footer" />
+        <SharedToaster />
     </div>
 </template>
 

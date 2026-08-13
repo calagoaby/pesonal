@@ -17,3 +17,7 @@ export function getExpense(id: number) {
 export function updateExpense(id: number, payload: Partial<ExpensePayload>) {
     return apiPatch<Expense>(`${resource}/${id}`, payload)
 }
+
+export function deleteExpense(id: number) {
+    return apiDelete(`${resource}/${id}`)
+}
