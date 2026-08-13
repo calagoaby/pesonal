@@ -14,6 +14,8 @@
     display: flex;
     flex-direction: column;
     height: 100dvh;
+    /* No nav or commit bar here, so the toast sits near the bottom edge. */
+    --toast-offset: var(--space-l);
 
     .content {
         padding: var(--space-m) var(--space-l) 0;

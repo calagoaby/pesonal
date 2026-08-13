@@ -29,32 +29,10 @@ export function useExpenseForm(seed: ExpenseFormSeed = {}) {
 
 
     /** Functions */
-    // The one submit dance add and edit share: lock, clear the last attempt, run
-    // the write, and sort an ApiRequestError into field errors (422) or a single
-    // failure line (everything else). Returns whether the write went through.
-    async function submit(write: () => Promise<unknown>): Promise<boolean> {
-        if (is_saving.value) {
-            return false
-        }
-
-        is_saving.value = true
-        errors.value = {}
-        failure.value = ''
-
-        try {
-            await write()
-
-            return true
-        } catch (error) {
-            const request_error = error as ApiRequestError
-
-            errors.value = request_error.errors ?? {}
-            failure.value = request_error.errors ? '' : request_error.message
-
-            return false
-        } finally {
-            is_saving.value = false
-        }
+    // The lock/clear/run/sort-errors dance lives in submitRequest so the category
+    // form runs the identical sequence; this just binds it to these refs.
+    function submit(write: () => Promise<unknown>) {
+        return submitRequest(write, { is_saving, errors, failure })
     }
 
 
