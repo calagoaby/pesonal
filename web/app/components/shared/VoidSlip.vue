@@ -1,18 +1,30 @@
 <script setup lang="ts">
 const is_open = defineModel<boolean>('open', { required: true })
 
-defineProps<{
+const props = withDefaults(defineProps<{
     title: string
     subject: string
-    /** centavos */
-    amount: number
-    /** the muted line under the subject, e.g. "Wed Jun 17 · Food" */
-    detail: string
-}>()
+    /** 'confirm' asks to delete; 'blocked' explains why a delete was refused. */
+    variant?: 'confirm' | 'blocked'
+    /** centavos — shown on the subject line in confirm mode when given. */
+    amount?: number
+    /** confirm: the muted line under the subject, e.g. "Wed Jun 17 · Food". */
+    detail?: string
+    /** blocked: why the delete was refused (the 409 message). */
+    message?: string
+    confirmLabel?: string
+}>(), {
+    variant: 'confirm',
+    confirmLabel: 'Void it',
+})
 
 const emit = defineEmits<{
     confirm: []
 }>()
+
+
+/** Computed */
+const is_confirm = computed(() => props.variant === 'confirm')
 
 
 /** Functions */
@@ -36,31 +48,38 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleKeydown))
     <div class="scrim" :class="{ shown: is_open }" @click="close"></div>
     <div class="slip-wrap" :class="{ shown: is_open }">
         <div class="slip" role="alertdialog" :aria-label="title">
-            <div class="stamp">Void</div>
+            <div v-if="is_confirm" class="stamp">Void</div>
             <div class="slip-title">{{ title }}</div>
             <div class="rule"></div>
             <div class="subject">
                 <span class="desc">{{ subject }}</span>
                 <span class="lead"></span>
-                <span>{{ formatAmountWithCurrency(amount) }}</span>
+                <span v-if="amount !== undefined">{{ formatAmountWithCurrency(amount) }}</span>
             </div>
             <div class="warn">
-                {{ detail }}<br>
-                This one does not come back.
+                <template v-if="is_confirm">
+                    <template v-if="detail">{{ detail }}<br></template>
+                    This one does not come back.
+                </template>
+                <template v-else>{{ message }}</template>
             </div>
             <div class="actions">
-                <button class="btn keep" @click="close">Keep</button>
-                <button class="btn danger" @click="emit('confirm')">Void it</button>
+                <template v-if="is_confirm">
+                    <button class="btn keep" @click="close">Keep</button>
+                    <button class="btn danger" @click="emit('confirm')">{{ confirmLabel }}</button>
+                </template>
+                <button v-else class="btn calm" @click="close">Got it</button>
             </div>
         </div>
     </div>
 </template>
 
 <style scoped>
+/* Above the sheet (z 101), so a delete confirm can layer over the open editor. */
 .scrim {
     position: fixed;
     inset: 0;
-    z-index: 100;
+    z-index: 110;
     background-color: rgb(28 26 23 / 45%);
     opacity: 0;
     pointer-events: none;
@@ -76,7 +95,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleKeydown))
 .slip-wrap {
     position: fixed;
     inset: 0;
-    z-index: 101;
+    z-index: 111;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -187,5 +206,10 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleKeydown))
 .btn.danger {
     background-color: var(--stamp);
     color: #fff;
+}
+
+.btn.calm {
+    background-color: var(--ink);
+    color: var(--paper);
 }
 </style>

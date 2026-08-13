@@ -23,13 +23,13 @@ const emit = defineEmits<{
 </template>
 
 <style scoped>
-/* 88px clears the commit bar on the modal screens and the nav on the roll — an
-   intentional one-off, not a spacing step. */
+/* 88px clears the commit bar on the modal screens and the nav on the roll; the
+   drill layout has neither, so it overrides --toast-offset to sit lower. */
 .toast {
     position: fixed;
     left: var(--space-l);
     right: var(--space-l);
-    bottom: 88px;
+    bottom: var(--toast-offset, 88px);
     z-index: 90;
     display: flex;
     align-items: center;

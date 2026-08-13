@@ -27,7 +27,7 @@ Steps 1–3 stood up the data layer; 4–7 finished Add expense; 8–10 are cros
 9. `[x]` **Tear-to-load** — append pages onto the roll, reset on filter/month change.
 10. `[x]` **Month picker** — `SharedMonthPicker`; the month label becomes tappable. Prev/next chevrons already work on both screens.
 11. `[x]` **Edit / void expense** — `PATCH` + `DELETE`, reached by tapping a row. Extract the shared expense form from `AddExpense.vue` here. Adds `SharedVoidSlip`, and the toast gains Undo (which needs `pointer-events: auto` on `.shown`).
-12. `[ ]` **Categories screen** — CRUD, colour + emoji pickers, 409 surfaced through the void slip.
+12. `[x]` **Categories screen** — CRUD, colour + emoji pickers, 409 surfaced through the void slip.
 13. `[ ]` **Recurring list** — grouped by `day_of_month`, paused rows struck, monthly commitment total.
 14. `[ ]` **Recurring form** — CRUD, `active` toggle, day-of-month clamp warning.
 15. `[ ]` **More hub** — links Categories and Trend.
@@ -70,9 +70,7 @@ The specs are a guide, not scripture — where one has been wrong, the code won 
 
 ## Shared components
 
-Built: `SharedNavBar` · `SharedReceipt` (torn top/bottom + header) · `SharedPerf` · `SharedBarcode` · `SharedSheet` (scrim + panel + titled header, closes on Escape) · `SharedCategorySheet` · `SharedKeypad` · `SharedDatePicker` · `SharedMonthPicker` · `SharedToast` (presentational) + `SharedToaster` (store-driven, in both layouts) · `SharedVoidSlip` (confirm variant) · `SharedNotice` · `SharedSkeleton` · `DashboardCard`.
-
-To build: the `SharedVoidSlip` 409 variant (step 12, category delete blocked).
+Built: `SharedNavBar` · `SharedReceipt` (torn top/bottom + header) · `SharedPerf` · `SharedBarcode` · `SharedSheet` (scrim + panel + titled header, closes on Escape) · `SharedCategorySheet` · `SharedKeypad` · `SharedDatePicker` · `SharedMonthPicker` · `SharedToast` (presentational) + `SharedToaster` (store-driven, in both layouts) · `SharedVoidSlip` (confirm + blocked/409 variants) · `SharedNotice` · `SharedSkeleton` · `DashboardCard`.
 
 ## Backend track (separate sessions)
 
