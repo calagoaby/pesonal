@@ -2,7 +2,11 @@
 import ChevronDown from '@primeicons/vue/chevron-down';
 import Calendar from '@primeicons/vue/calendar';
 import Pencil from '@primeicons/vue/pencil';
-import { useAddExpenseContext } from '~/composables/expenses/context/AddExpenseContext';
+import { useExpenseFormContext } from '~/composables/expenses/context/ExpenseFormContext';
+
+defineProps<{
+    subtitle: string
+}>()
 
 const {
     amount,
@@ -10,7 +14,7 @@ const {
     date,
     note,
     errors
-} = useAddExpenseContext()
+} = useExpenseFormContext()
 
 const {
     categories
@@ -32,7 +36,7 @@ const category = computed(() => categories.value.find(item => item.id === catego
 </script>
 
 <template>
-    <SharedReceipt class="add-receipt" torn-position="top" sub-text="· unrecorded damage ·">
+    <SharedReceipt class="add-receipt" torn-position="top" :sub-text="subtitle">
         <SharedPerf />
 
         <button class="amount-field" @click="is_keypad_open = true">
@@ -79,7 +83,10 @@ const category = computed(() => categories.value.find(item => item.id === catego
             {{ messages[0] }}
         </p>
 
-        <div class="quip">* no take-backs, only edits *</div>
+        <!-- Add shows the quip; edit fills this with its void action and audit line. -->
+        <slot>
+            <div class="quip">* no take-backs, only edits *</div>
+        </slot>
     </SharedReceipt>
 
     <SharedCategorySheet

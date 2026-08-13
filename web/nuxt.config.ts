@@ -4,7 +4,7 @@ import { PesonalPreset } from './app/theme/pesonal-preset'
 export default defineNuxtConfig({
     compatibilityDate: '2025-07-15',
     devtools: { enabled: true },
-    modules: ['@primevue/nuxt-module'],
+    modules: ['@primevue/nuxt-module', '@pinia/nuxt'],
     css: ['~/assets/css/main.css'],
     // Fonts via <head> links (with preconnect) instead of a CSS @import.
     // @import forces: fetch CSS -> parse -> discover font -> fetch — a render-blocking

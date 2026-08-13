@@ -49,6 +49,17 @@ export async function apiPost<T>(path: string, body: Record<string, any>): Promi
     return response.data
 }
 
+export async function apiPatch<T>(path: string, body: Record<string, any>): Promise<T> {
+    const response = await request<{ data: T }>(path, { method: 'PATCH', body })
+
+    return response.data
+}
+
+// DELETE answers 204 with no body, so there's nothing to unwrap or return.
+export async function apiDelete(path: string): Promise<void> {
+    await request<unknown>(path, { method: 'DELETE' })
+}
+
 async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
     const { public: config } = useRuntimeConfig()
 

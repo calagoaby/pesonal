@@ -25,8 +25,8 @@ Steps 1–3 stood up the data layer; 4–7 finished Add expense; 8–10 are cros
 7. `[x]` **Create expense** — `POST`, validation, `SharedToast`, cache invalidation. Add expense is complete.
 8. `[x]` **Screen states** — `SharedNotice` (empty + error) and `SharedSkeleton`, applied to the roll and the dashboard.
 9. `[x]` **Tear-to-load** — append pages onto the roll, reset on filter/month change.
-10. `[ ]` **Month picker** — `SharedMonthPicker`; the month label becomes tappable. Prev/next chevrons already work on both screens.
-11. `[ ]` **Edit / void expense** — `PATCH` + `DELETE`, reached by tapping a row. Extract the shared expense form from `AddExpense.vue` here. Adds `SharedVoidSlip`, and the toast gains Undo (which needs `pointer-events: auto` on `.shown`).
+10. `[x]` **Month picker** — `SharedMonthPicker`; the month label becomes tappable. Prev/next chevrons already work on both screens.
+11. `[x]` **Edit / void expense** — `PATCH` + `DELETE`, reached by tapping a row. Extract the shared expense form from `AddExpense.vue` here. Adds `SharedVoidSlip`, and the toast gains Undo (which needs `pointer-events: auto` on `.shown`).
 12. `[ ]` **Categories screen** — CRUD, colour + emoji pickers, 409 surfaced through the void slip.
 13. `[ ]` **Recurring list** — grouped by `day_of_month`, paused rows struck, monthly commitment total.
 14. `[ ]` **Recurring form** — CRUD, `active` toggle, day-of-month clamp warning.
@@ -43,7 +43,7 @@ Worth knowing before changing any of it:
 - **A filter defines the result set; pagination only walks it.** Changing month or category resets to page 1 and discards appended pages.
 - **Calendar dates never go through a timezone.** `new Date('2026-06-17')` is UTC midnight and lands on the 16th anywhere behind UTC. `utils/date.ts` builds dates from parts; `todayIn(timezone)` pins "today" so SSR and the client agree.
 - **The keypad is cents-first.** Digits shift in from the right, so the value is always a whole number of centavos and can never be a half-typed decimal. That's why there's no decimal key.
-- **Context vs `v-model`.** A sheet talking to its own parent is `v-model` (steps 4–6). Two components in a tree needing the same state is a context (`useMonthlyStats`, `useAddExpense`). Pinia only if state outgrows both.
+- **Context vs `v-model` vs Pinia.** A sheet talking to its own parent is `v-model` (steps 4–6). Two components in a tree needing the same state is a context (`useMonthlyStats`, the shared expense form via `ExpenseFormContext`). State that outlives a screen goes to Pinia — the toast store is the first: a void on the edit screen shows its undo back on the roll, so it can't live in either tree.
 - **Writes are imperative, reads are declarative.** Reads go through `useAsyncData`; a save is a repository call from a handler, then `clearNuxtData([...])` to invalidate other screens' caches. Don't `await refreshNuxtData` for keys owned by screens that aren't mounted — it never settles.
 
 ## Design specs — complete
@@ -70,9 +70,9 @@ The specs are a guide, not scripture — where one has been wrong, the code won 
 
 ## Shared components
 
-Built: `SharedNavBar` · `SharedReceipt` (torn top/bottom + header) · `SharedPerf` · `SharedBarcode` · `SharedSheet` (scrim + panel + titled header, closes on Escape) · `SharedCategorySheet` · `SharedKeypad` · `SharedDatePicker` · `SharedToast` · `SharedNotice` · `SharedSkeleton` · `DashboardCard`.
+Built: `SharedNavBar` · `SharedReceipt` (torn top/bottom + header) · `SharedPerf` · `SharedBarcode` · `SharedSheet` (scrim + panel + titled header, closes on Escape) · `SharedCategorySheet` · `SharedKeypad` · `SharedDatePicker` · `SharedMonthPicker` · `SharedToast` (presentational) + `SharedToaster` (store-driven, in both layouts) · `SharedVoidSlip` (confirm variant) · `SharedNotice` · `SharedSkeleton` · `DashboardCard`.
 
-To build: `SharedVoidSlip` (confirm + 409 variant, step 11) · `SharedMonthPicker` (step 10).
+To build: the `SharedVoidSlip` 409 variant (step 12, category delete blocked).
 
 ## Backend track (separate sessions)
 

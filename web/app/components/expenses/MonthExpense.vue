@@ -125,14 +125,19 @@ function clearCategory() {
                     {{ formatDailyDate(daily_expense.date) }}
                 </div>
                 <div class="expenses">
-                    <div class="row" v-for="expense in daily_expense.items" :key="expense.id">
+                    <NuxtLink
+                        v-for="expense in daily_expense.items"
+                        :key="expense.id"
+                        :to="`/edit-expense/${expense.id}`"
+                        class="row"
+                    >
                         <div class="desc">
                             {{ expense.note }}
                             <span class="cat">{{ expense.category.name }}</span>
                         </div>
                         <div class="lead"></div>
                         <div class="amount">{{ formatAmountWithCurrency(expense.amount) }}</div>
-                    </div>
+                    </NuxtLink>
                 </div>
             </div>
         </template>
@@ -246,6 +251,8 @@ function clearCategory() {
     font-size: var(--text-body);
     gap: var(--space-s);
     padding: var(--space-xs) 0;
+    color: inherit;
+    text-decoration: none;
 }
 
 .desc {

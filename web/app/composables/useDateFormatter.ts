@@ -19,11 +19,16 @@ export function useDateFormatter() {
         return formatShortDate(date, config.locale)
     }
 
+    function formatStamp(iso: string) {
+        return formatTimestamp(iso, config.locale, config.timezone)
+    }
+
 
     return {
         formatDailyDate,
         formatMonthLabel,
         formatFieldDate,
-        formatListDate
+        formatListDate,
+        formatStamp
     }
 }
