@@ -13,3 +13,7 @@ export function createCategory(payload: CategoryPayload) {
 export function updateCategory(id: number, payload: Partial<CategoryPayload>) {
     return apiPatch<Category>(`${resource}/${id}`, payload)
 }
+
+export function deleteCategory(id: number) {
+    return apiDelete(`${resource}/${id}`)
+}

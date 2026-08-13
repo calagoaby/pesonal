@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Category, CategoryPayload } from '#shared/types/Category';
+import Trash from '@primeicons/vue/trash';
 import { createCategory, updateCategory } from '~/repositories/categories';
 
 const is_open = defineModel<boolean>('open', { required: true })
@@ -11,6 +12,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
     saved: []
+    delete: []
 }>()
 
 // Fixed picker sets. The first eight colours are the category palette; the rest
@@ -112,9 +114,14 @@ watch(is_open, (open) => {
         <p v-for="(messages, field) in errors" :key="field" class="error">{{ messages[0] }}</p>
         <p v-if="failure" class="error">{{ failure }}</p>
 
-        <button class="save" :disabled="!can_save || is_saving" @click="save">
-            {{ is_saving ? 'Saving…' : 'Save' }}
-        </button>
+        <div class="actions">
+            <button v-if="is_edit" class="delete" type="button" aria-label="Delete category" @click="emit('delete')">
+                <Trash />
+            </button>
+            <button class="save" :disabled="!can_save || is_saving" @click="save">
+                {{ is_saving ? 'Saving…' : 'Save' }}
+            </button>
+        </div>
     </SharedSheet>
 </template>
 
@@ -209,9 +216,31 @@ watch(is_open, (open) => {
     margin-top: var(--space-m);
 }
 
-.save {
-    width: 100%;
+.actions {
+    display: flex;
+    gap: var(--space-s);
     margin-top: var(--space-l);
+}
+
+.delete {
+    flex: none;
+    display: flex;
+    align-items: center;
+    background: transparent;
+    color: var(--stamp);
+    border: 1px solid var(--perforation);
+    border-radius: var(--radius-pill);
+    padding: var(--space-m) var(--space-l);
+    cursor: pointer;
+}
+
+.delete :deep(.p-icon) {
+    width: 14px;
+    height: 14px;
+}
+
+.save {
+    flex: 1;
     background-color: var(--stamp);
     color: var(--paper);
     border: 0;

@@ -4,7 +4,7 @@ import ChevronLeft from '@primeicons/vue/chevron-left';
 import ChevronRight from '@primeicons/vue/chevron-right';
 import Plus from '@primeicons/vue/plus';
 import ExclamationTriangle from '@primeicons/vue/exclamation-triangle';
-import { listCategories } from '~/repositories/categories';
+import { listCategories, deleteCategory } from '~/repositories/categories';
 import { useToaster } from '~/stores/toaster';
 
 definePageMeta({ layout: 'drill' })
@@ -24,6 +24,11 @@ const is_sheet_open = ref(false)
 /** Null opens the sheet in create mode; a row opens it prefilled for editing. */
 const editing = ref<Category | null>(null)
 
+const is_confirm_slip_open = ref(false)
+const is_blocked_slip_open = ref(false)
+/** The 409 reason, shown on the blocked slip. */
+const blocked_message = ref('')
+
 
 /** Functions */
 function openNew() {
@@ -39,6 +44,37 @@ function openEdit(category: Category) {
 function onSaved() {
     refresh()
     toaster.show({ message: editing.value ? 'Category updated' : 'Category added' })
+}
+
+function requestDelete() {
+    is_confirm_slip_open.value = true
+}
+
+async function confirmDelete() {
+    if (!editing.value) {
+        return
+    }
+
+    try {
+        await deleteCategory(editing.value.id)
+        is_confirm_slip_open.value = false
+        is_sheet_open.value = false
+        refresh()
+        toaster.show({ message: 'Category deleted' })
+    } catch (error) {
+        const request_error = error as ApiRequestError
+
+        is_confirm_slip_open.value = false
+
+        // 409 = still in use. The slip explains rather than deletes; anything else
+        // is an unexpected failure worth a plain toast.
+        if (request_error.status === 409) {
+            blocked_message.value = request_error.message
+            is_blocked_slip_open.value = true
+        } else {
+            toaster.show({ message: request_error.message })
+        }
+    }
 }
 </script>
 
@@ -83,7 +119,23 @@ function onSaved() {
         </div>
     </SharedReceipt>
 
-    <CategoriesForm v-model:open="is_sheet_open" :category="editing" @saved="onSaved" />
+    <CategoriesForm v-model:open="is_sheet_open" :category="editing" @saved="onSaved" @delete="requestDelete" />
+
+    <SharedVoidSlip
+        v-model:open="is_confirm_slip_open"
+        title="Delete this category?"
+        :subject="editing?.name ?? ''"
+        confirm-label="Delete it"
+        @confirm="confirmDelete"
+    />
+
+    <SharedVoidSlip
+        v-model:open="is_blocked_slip_open"
+        variant="blocked"
+        title="Can't delete that"
+        :subject="editing?.name ?? ''"
+        :message="blocked_message"
+    />
 </template>
 
 <style scoped>
