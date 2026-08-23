@@ -1,5 +1,6 @@
 import type { Category, CategoryRef } from "#shared/types/Category";
 import type { Expense } from "#shared/types/Expense";
+import type { RecurringExpense } from "#shared/types/Recurring";
 
 /**
  * Stand-in dataset until the Laravel endpoints land. Deliberately generated from
@@ -97,3 +98,14 @@ function buildExpenses(): Expense[] {
 }
 
 export const expenses: Expense[] = buildExpenses()
+
+// Standing orders. Active amounts sum to ₱18,700; Gym is paused. Days spread so
+// the list groups into several "Every Nth" sections.
+export const recurring: RecurringExpense[] = [
+    { id: 1, amount: 1500000, note: 'Apartment rent', day_of_month: 1, start_date: '2026-01-01', end_date: null, active: true, category: findCategory(1), created_at: '2026-01-01T00:00:00Z', updated_at: '2026-01-01T00:00:00Z' },
+    { id: 2, amount: 180000, note: 'Internet', day_of_month: 5, start_date: '2026-03-01', end_date: null, active: true, category: findCategory(6), created_at: '2026-03-01T00:00:00Z', updated_at: '2026-03-01T00:00:00Z' },
+    { id: 3, amount: 19400, note: 'Spotify', day_of_month: 15, start_date: '2026-02-01', end_date: null, active: true, category: findCategory(5), created_at: '2026-02-01T00:00:00Z', updated_at: '2026-02-01T00:00:00Z' },
+    { id: 4, amount: 150000, note: 'Gym', day_of_month: 15, start_date: '2026-01-01', end_date: null, active: false, category: findCategory(7), created_at: '2026-01-01T00:00:00Z', updated_at: '2026-05-01T00:00:00Z' },
+    { id: 5, amount: 62000, note: 'Water bill', day_of_month: 20, start_date: '2026-01-01', end_date: null, active: true, category: findCategory(6), created_at: '2026-01-01T00:00:00Z', updated_at: '2026-01-01T00:00:00Z' },
+    { id: 6, amount: 108600, note: 'Netflix', day_of_month: 20, start_date: '2026-01-01', end_date: '2026-12-01', active: true, category: findCategory(5), created_at: '2026-01-01T00:00:00Z', updated_at: '2026-01-01T00:00:00Z' },
+]

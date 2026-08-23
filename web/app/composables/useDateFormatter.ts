@@ -23,12 +23,17 @@ export function useDateFormatter() {
         return formatTimestamp(iso, config.locale, config.timezone)
     }
 
+    function formatMonthAndYear(date: string) {
+        return formatMonthShort(date, config.locale)
+    }
+
 
     return {
         formatDailyDate,
         formatMonthLabel,
         formatFieldDate,
         formatListDate,
-        formatStamp
+        formatStamp,
+        formatMonthAndYear
     }
 }
