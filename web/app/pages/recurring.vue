@@ -81,7 +81,7 @@ function sinceLabel(template: RecurringExpense) {
                 >
                     <div class="line">
                         <span class="desc">
-                            {{ template.note }}
+                            {{ template.note || template.category.name }}
                             <span class="tag">{{ template.category.name }}</span>
                         </span>
                         <span class="lead"></span>
