@@ -185,3 +185,42 @@ export function ordinal(day: number) {
 
     return `${day}${suffix}`
 }
+
+/**
+ * When the next charge will land for a monthly template — the first occurrence
+ * of day_of_month on or after `from` (but never before start_date), clamped to
+ * month length, honoring end_date. Returns null if the template has ended.
+ * @param day_of_month 1–31
+ * @param from YYYY-MM-DD, usually today
+ * @param start_date YYYY-MM-DD
+ * @param end_date YYYY-MM-DD or null
+ */
+export function nextChargeDate(
+    day_of_month: number,
+    from: string,
+    start_date: string,
+    end_date: string | null,
+): string | null {
+    const base = from < start_date ? start_date : from
+    let [year = 0, month = 1] = base.split('-').map(Number)
+
+    // 24 iterations is a paranoid ceiling — the answer is always this month or the next.
+    for (let step = 0; step < 24; step++) {
+        const days_in_month = new Date(year, month, 0).getDate()
+        const clamped = Math.min(day_of_month, days_in_month)
+        const candidate = `${year}-${String(month).padStart(2, '0')}-${String(clamped).padStart(2, '0')}`
+
+        if (candidate >= base) {
+            return end_date && candidate > end_date ? null : candidate
+        }
+
+        month += 1
+
+        if (month > 12) {
+            month = 1
+            year += 1
+        }
+    }
+
+    return null
+}
