@@ -159,3 +159,29 @@ export function formatMonthYear(
         year: 'numeric',
     })
 }
+
+/**
+ * @param date_string YYYY-MM-DD
+ * @return Jan 2026
+ */
+export function formatMonthShort(
+    date_string: string,
+    locale: string,
+) {
+    return toLocalDate(date_string).toLocaleDateString(locale, {
+        month: 'short',
+        year: 'numeric',
+    })
+}
+
+/**
+ * @return 1 → "1st", 22 → "22nd", 13 → "13th"
+ */
+export function ordinal(day: number) {
+    const teens = day % 100
+    const suffix = teens >= 11 && teens <= 13
+        ? 'th'
+        : ['th', 'st', 'nd', 'rd'][day % 10] ?? 'th'
+
+    return `${day}${suffix}`
+}
