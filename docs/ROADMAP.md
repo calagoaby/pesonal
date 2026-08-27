@@ -30,7 +30,7 @@ Steps 1–3 stood up the data layer; 4–7 finished Add expense; 8–10 are cros
 12. `[x]` **Categories screen** — CRUD, colour + emoji pickers, 409 surfaced through the void slip.
 13. `[x]` **Recurring list** — grouped by `day_of_month`, paused rows struck, monthly commitment total.
 14. `[x]` **Recurring form** — CRUD, `active` toggle, day-of-month clamp warning.
-15. `[ ]` **More hub** — links Categories and Trend.
+15. `[x]` **More hub** — links Categories and Trend.
 16. `[ ]` **Trend** — `GET /api/stats/trend`; dashboard sparkline card plus the drill-down screen.
 17. `[ ]` **Point at Laravel** — set `apiBase`, delete `web/server/api/`.
 
