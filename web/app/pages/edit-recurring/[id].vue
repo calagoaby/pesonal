@@ -66,7 +66,14 @@ async function deleteOrder() {
     if (await remove()) {
         toaster.show({
             message: `Deleted · ${removed.note || removed.category.name}`,
-            action: { label: 'Undo', run: () => restore(removed) },
+            action: {
+                label: 'Undo',
+                run: async () => {
+                    if (!await restore(removed)) {
+                        toaster.show({ message: 'Could not bring the order back' })
+                    }
+                },
+            },
         })
         navigateTo('/recurring')
     } else {

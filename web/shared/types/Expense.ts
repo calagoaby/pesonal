@@ -23,5 +23,5 @@ export type ExpensePayload = {
     amount: number
     date: string
     category_id: number
-    note?: string
+    note?: string | null
 }

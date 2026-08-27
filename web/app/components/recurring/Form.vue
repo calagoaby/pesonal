@@ -37,6 +37,7 @@ const is_end_picker_open = ref(false)
 
 /** Computed */
 const category = computed(() => categories.value.find(item => item.id === category_id.value) ?? null)
+// 29+ can exceed a short month (February has 28); the picker warns on the same rule.
 const clamps = computed(() => day_of_month.value >= 29)
 </script>
 
@@ -70,7 +71,7 @@ const clamps = computed(() => day_of_month.value >= 29)
 
         <div class="field">
             <span class="label">Note</span>
-            <input v-model="note" class="note-input" placeholder="Apartment rent" maxlength="40">
+            <input v-model="note" class="note-input" placeholder="Apartment rent" maxlength="40" aria-label="Note">
         </div>
 
         <button class="field" @click="is_day_picker_open = true">
@@ -117,7 +118,7 @@ const clamps = computed(() => day_of_month.value >= 29)
             {{ messages[0] }}
         </p>
 
-        <!-- Add shows the quip; edit fills this with its toggle-aware void action and audit. -->
+        <!-- Add shows the quip; edit fills this with its delete action and audit line. -->
         <slot>
             <div class="quip">* set it once, forget it forever *</div>
         </slot>
@@ -147,6 +148,7 @@ const clamps = computed(() => day_of_month.value >= 29)
     <SharedDatePicker
         v-model:open="is_end_picker_open"
         :date="end_date ?? start_date"
+        :unselected="!end_date"
         clear-label="No end"
         @update:date="end_date = $event"
         @clear="end_date = null"

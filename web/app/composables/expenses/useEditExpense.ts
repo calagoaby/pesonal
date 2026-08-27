@@ -33,7 +33,7 @@ export function useEditExpense(loaded: Expense) {
                 amount: form.amount.value,
                 date: form.date.value,
                 category_id: category,
-                note: form.note.value.trim() || undefined,
+                note: form.note.value.trim() || null,
             })
         })
 
@@ -72,18 +72,24 @@ export function useEditExpense(loaded: Expense) {
 
     // Undo a void. The contract has no restore, so bring the row back by creating
     // it afresh — a new id, but the same money, which is what the user is undoing.
-    async function restore(removed: Expense) {
-        await createExpense({
-            amount: removed.amount,
-            date: removed.date,
-            category_id: removed.category.id,
-            note: removed.note ?? undefined,
-        })
+    async function restore(removed: Expense): Promise<boolean> {
+        try {
+            await createExpense({
+                amount: removed.amount,
+                date: removed.date,
+                category_id: removed.category.id,
+                note: removed.note,
+            })
 
-        // The roll is the screen the undo runs from, so refetch it live; the others
-        // just drop their cache and refetch the next time they're shown.
-        clearNuxtData(['monthly-stats', 'recent-items'])
-        refreshNuxtData('month-expenses')
+            // The roll is the screen the undo runs from, so refetch it live; the others
+            // just drop their cache and refetch the next time they're shown.
+            clearNuxtData(['monthly-stats', 'recent-items'])
+            refreshNuxtData('month-expenses')
+
+            return true
+        } catch {
+            return false
+        }
     }
 
 

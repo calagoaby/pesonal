@@ -21,7 +21,7 @@ export function useAddRecurring() {
             category_id: category,
             day_of_month: form.day_of_month.value,
             start_date: form.start_date.value,
-            note: form.note.value.trim() || undefined,
+            note: form.note.value.trim() || null,
             end_date: form.end_date.value,
             active: form.active.value,
         }))

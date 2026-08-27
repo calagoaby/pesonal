@@ -60,7 +60,14 @@ async function voidEntry() {
     if (await remove()) {
         toaster.show({
             message: `Voided · ${formatAmountWithCurrency(removed.amount)}`,
-            action: { label: 'Undo', run: () => restore(removed) },
+            action: {
+                label: 'Undo',
+                run: async () => {
+                    if (!await restore(removed)) {
+                        toaster.show({ message: 'Could not bring the entry back' })
+                    }
+                },
+            },
         })
         navigateTo('/expenses')
     } else {

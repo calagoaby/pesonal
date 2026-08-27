@@ -34,7 +34,7 @@ export function useEditRecurring(loaded: RecurringExpense) {
             updated = await updateRecurring(entry.value.id, {
                 amount: form.amount.value,
                 category_id: category,
-                note: form.note.value.trim() || undefined,
+                note: form.note.value.trim() || null,
                 day_of_month: form.day_of_month.value,
                 start_date: form.start_date.value,
                 end_date: form.end_date.value,
@@ -77,19 +77,26 @@ export function useEditRecurring(loaded: RecurringExpense) {
 
     // Undo a delete. The contract has no restore, so bring the order back by
     // creating it afresh — a new id, but the same schedule and money.
-    async function restore(removed: RecurringExpense) {
-        await createRecurring({
-            amount: removed.amount,
-            category_id: removed.category.id,
-            day_of_month: removed.day_of_month,
-            start_date: removed.start_date,
-            note: removed.note ?? undefined,
-            end_date: removed.end_date,
-            active: removed.active,
-        })
+    async function restore(removed: RecurringExpense): Promise<boolean> {
+        try {
+            await createRecurring({
+                amount: removed.amount,
+                category_id: removed.category.id,
+                day_of_month: removed.day_of_month,
+                start_date: removed.start_date,
+                note: removed.note,
+                end_date: removed.end_date,
+                active: removed.active,
+            })
 
-        // The list is the screen the undo runs from, so refetch it live.
-        refreshNuxtData('recurring')
+            // The list is the screen the undo runs from, so refetch it live.
+            refreshNuxtData('recurring')
+
+            return true
+        } catch {
+            // The toast has already dismissed; the caller surfaces the failure.
+            return false
+        }
     }
 
 

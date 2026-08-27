@@ -20,7 +20,7 @@ export function useAddExpense() {
             amount: form.amount.value,
             date: form.date.value,
             category_id: category,
-            note: form.note.value.trim() || undefined,
+            note: form.note.value.trim() || null,
         }))
 
         if (saved) {

@@ -28,7 +28,7 @@ export type RecurringPayload = {
     category_id: number
     day_of_month: number
     start_date: string
-    note?: string
+    note?: string | null
     end_date?: string | null
     active?: boolean
 }

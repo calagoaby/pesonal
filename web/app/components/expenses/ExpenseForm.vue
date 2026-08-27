@@ -72,7 +72,7 @@ const category = computed(() => categories.value.find(item => item.id === catego
 
         <div class="field">
             <span class="label">Note</span>
-            <input v-model="note" class="note-input" placeholder="Lunch with team" maxlength="40">
+            <input v-model="note" class="note-input" placeholder="Lunch with team" maxlength="40" aria-label="Note">
         </div>
 
         <p v-for="(messages, field) in errors" :key="field" class="field-error">

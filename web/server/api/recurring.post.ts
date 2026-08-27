@@ -39,7 +39,7 @@ export default defineEventHandler(async (event) => {
 
     const now = new Date().toISOString()
     const created: RecurringExpense = {
-        id: Math.max(...recurring.map(item => item.id)) + 1,
+        id: recurring.length ? Math.max(...recurring.map(item => item.id)) + 1 : 1,
         amount: body.amount,
         note: body.note ?? null,
         day_of_month: body.day_of_month,
