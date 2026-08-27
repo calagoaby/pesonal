@@ -18,3 +18,17 @@ export interface RecurringExpense {
     created_at: string
     updated_at: string
 }
+
+/**
+ * A `type`, not an `interface`, so it satisfies the index signature the fetch
+ * layer's body parameter expects — interfaces don't get an implicit one.
+ */
+export type RecurringPayload = {
+    amount: number
+    category_id: number
+    day_of_month: number
+    start_date: string
+    note?: string | null
+    end_date?: string | null
+    active?: boolean
+}

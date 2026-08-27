@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import ChevronDown from '@primeicons/vue/chevron-down';
 import Calendar from '@primeicons/vue/calendar';
-import Pencil from '@primeicons/vue/pencil';
 import { useExpenseFormContext } from '~/composables/expenses/context/ExpenseFormContext';
 
 defineProps<{
@@ -71,13 +70,10 @@ const category = computed(() => categories.value.find(item => item.id === catego
             </span>
         </button>
 
-        <button class="field">
+        <div class="field">
             <span class="label">Note</span>
-            <span class="value">
-                <span :class="{ placeholder: !note }">{{ note || 'Lunch with team' }}</span>
-                <Pencil />
-            </span>
-        </button>
+            <input v-model="note" class="note-input" placeholder="Lunch with team" maxlength="40" aria-label="Note">
+        </div>
 
         <p v-for="(messages, field) in errors" :key="field" class="field-error">
             {{ messages[0] }}
@@ -209,6 +205,21 @@ const category = computed(() => categories.value.find(item => item.id === catego
     width: 12px;
     height: 12px;
     color: var(--faded);
+}
+
+.note-input {
+    flex: 1;
+    border: 0;
+    background: transparent;
+    text-align: right;
+    font-family: var(--sans);
+    font-size: var(--text-body);
+    color: var(--ink);
+    outline: none;
+}
+
+.note-input::placeholder {
+    color: var(--perforation);
 }
 
 .field-error {

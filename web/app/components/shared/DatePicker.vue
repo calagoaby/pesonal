@@ -6,6 +6,17 @@ const is_open = defineModel<boolean>('open', { required: true })
 /** YYYY-MM-DD */
 const date = defineModel<string>('date', { required: true })
 
+defineProps<{
+    /** Set to offer a "clear" chip (e.g. "No end"); the parent handles @clear. */
+    clearLabel?: string
+    /** True when the field holds no date, so nothing on the calendar is "selected". */
+    unselected?: boolean
+}>()
+
+const emit = defineEmits<{
+    clear: []
+}>()
+
 const {
     formatMonthLabel
 } = useDateFormatter()
@@ -31,6 +42,11 @@ function pick(next: string) {
     is_open.value = false
 }
 
+function clear() {
+    emit('clear')
+    is_open.value = false
+}
+
 function goToPreviousMonth() {
     view_month.value = shiftMonth(view_month.value, -1)
 }
@@ -51,8 +67,9 @@ watch(is_open, (open) => {
 <template>
     <SharedSheet v-model:open="is_open" title="Pick a date">
         <div class="quick">
-            <button class="chip" :class="{ selected: date === today }" @click="pick(today)">Today</button>
-            <button class="chip" :class="{ selected: date === yesterday }" @click="pick(yesterday)">Yesterday</button>
+            <button class="chip" :class="{ selected: !unselected && date === today }" @click="pick(today)">Today</button>
+            <button class="chip" :class="{ selected: !unselected && date === yesterday }" @click="pick(yesterday)">Yesterday</button>
+            <button v-if="clearLabel" class="chip" :class="{ selected: unselected }" @click="clear">{{ clearLabel }}</button>
         </div>
 
         <div class="month-row">
@@ -74,7 +91,7 @@ watch(is_open, (open) => {
                 :class="{
                     muted: !cell.in_month,
                     today: cell.date === today,
-                    selected: cell.date === date,
+                    selected: !unselected && cell.date === date,
                 }"
                 @click="pick(cell.date)"
             >

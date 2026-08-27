@@ -236,7 +236,7 @@ Multi-month totals for the trend chart, oldest → newest, ending with the curre
 | Method | Path | Purpose |
 |---|---|---|
 | GET | `/api/recurring` | List all templates. |
-| POST | `/api/recurring` | Create. Body: `amount`, `category_id`, `day_of_month`, `start_date`, `note?`, `end_date?`. → 201 |
+| POST | `/api/recurring` | Create. Body: `amount`, `category_id`, `day_of_month`, `start_date`, `note?`, `end_date?`, `active?`. → 201 |
 | GET | `/api/recurring/{id}` | Single. |
 | PATCH | `/api/recurring/{id}` | Update any field incl. `active`. |
 | DELETE | `/api/recurring/{id}` | Delete template. Already-materialized expenses are untouched. |

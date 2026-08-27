@@ -29,7 +29,7 @@ Steps 1–3 stood up the data layer; 4–7 finished Add expense; 8–10 are cros
 11. `[x]` **Edit / void expense** — `PATCH` + `DELETE`, reached by tapping a row. Extract the shared expense form from `AddExpense.vue` here. Adds `SharedVoidSlip`, and the toast gains Undo (which needs `pointer-events: auto` on `.shown`).
 12. `[x]` **Categories screen** — CRUD, colour + emoji pickers, 409 surfaced through the void slip.
 13. `[x]` **Recurring list** — grouped by `day_of_month`, paused rows struck, monthly commitment total.
-14. `[ ]` **Recurring form** — CRUD, `active` toggle, day-of-month clamp warning.
+14. `[x]` **Recurring form** — CRUD, `active` toggle, day-of-month clamp warning.
 15. `[ ]` **More hub** — links Categories and Trend.
 16. `[ ]` **Trend** — `GET /api/stats/trend`; dashboard sparkline card plus the drill-down screen.
 17. `[ ]` **Point at Laravel** — set `apiBase`, delete `web/server/api/`.
@@ -70,7 +70,7 @@ The specs are a guide, not scripture — where one has been wrong, the code won 
 
 ## Shared components
 
-Built: `SharedNavBar` · `SharedReceipt` (torn top/bottom + header) · `SharedPerf` · `SharedBarcode` · `SharedSheet` (scrim + panel + titled header, closes on Escape) · `SharedCategorySheet` · `SharedKeypad` · `SharedDatePicker` · `SharedMonthPicker` · `SharedToast` (presentational) + `SharedToaster` (store-driven, in both layouts) · `SharedVoidSlip` (confirm + blocked/409 variants) · `SharedNotice` · `SharedSkeleton` · `DashboardCard`.
+Built: `SharedNavBar` · `SharedReceipt` (torn top/bottom + header) · `SharedPerf` · `SharedBarcode` · `SharedSheet` (scrim + panel + titled header, closes on Escape) · `SharedCategorySheet` · `SharedKeypad` · `SharedDatePicker` (optional clear chip, e.g. "No end") · `SharedMonthPicker` · `SharedToast` (presentational) + `SharedToaster` (store-driven, in both layouts) · `SharedVoidSlip` (confirm + blocked/409 variants, overridable warning line) · `SharedNotice` · `SharedSkeleton` · `DashboardCard`.
 
 ## Backend track (separate sessions)
 
