@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import Times from '@primeicons/vue/times';
+import Trash from '@primeicons/vue/trash';
 import { getRecurring } from '~/repositories/recurring';
 import { useEditRecurring } from '~/composables/recurring/useEditRecurring';
 import { useToaster } from '~/stores/toaster';
@@ -21,6 +22,8 @@ const {
     is_saving,
     failure,
     save,
+    remove,
+    restore,
     entry
 } = useEditRecurring(template.value)
 
@@ -33,7 +36,13 @@ const {
 const toaster = useToaster()
 
 
+/** States */
+const is_void_slip_open = ref(false)
+
+
 /** Computed */
+const void_detail = computed(() => `Every ${ordinal(entry.value.day_of_month)} · ${entry.value.category.name}`)
+
 const next_charge = computed(() => {
     if (!entry.value.active) {
         return null
@@ -49,6 +58,22 @@ async function record() {
         toaster.show({ message: 'Standing order saved' })
     }
 }
+
+async function deleteOrder() {
+    // Capture before we leave — the undo re-creates from this snapshot on the list.
+    const removed = entry.value
+
+    if (await remove()) {
+        toaster.show({
+            message: `Deleted · ${removed.note || removed.category.name}`,
+            action: { label: 'Undo', run: () => restore(removed) },
+        })
+        navigateTo('/recurring')
+    } else {
+        // Reveal the failure line, which the scrim was covering.
+        is_void_slip_open.value = false
+    }
+}
 </script>
 
 <template>
@@ -61,6 +86,10 @@ async function record() {
         </div>
 
         <RecurringForm subtitle="· standing order ·">
+            <button class="void-row" @click="is_void_slip_open = true">
+                <Trash />
+                Delete this order
+            </button>
             <div class="audit">
                 Created {{ formatStamp(entry.created_at) }}<br>
                 <template v-if="entry.active && next_charge">Next charge {{ formatFieldDate(next_charge) }}</template>
@@ -81,6 +110,17 @@ async function record() {
             </div>
         </template>
     </NuxtLayout>
+
+    <SharedVoidSlip
+        v-model:open="is_void_slip_open"
+        title="Delete this order?"
+        :subject="entry.note || entry.category.name"
+        :amount="entry.amount"
+        :detail="void_detail"
+        warning="Already recorded charges stay put."
+        confirm-label="Delete it"
+        @confirm="deleteOrder"
+    />
 </template>
 
 <style scoped>
@@ -107,6 +147,30 @@ async function record() {
 .close :deep(.p-icon) {
     width: 18px;
     height: 18px;
+}
+
+.void-row {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-s);
+    margin-top: var(--space-l);
+    padding-top: var(--space-m);
+    border: 0;
+    border-top: 1.5px dashed var(--perforation);
+    background: transparent;
+    color: var(--stamp);
+    font-family: var(--mono);
+    font-size: var(--text-label);
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    cursor: pointer;
+}
+
+.void-row :deep(.p-icon) {
+    width: 13px;
+    height: 13px;
 }
 
 .audit {

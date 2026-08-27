@@ -12,9 +12,12 @@ const props = withDefaults(defineProps<{
     detail?: string
     /** blocked: why the delete was refused (the 409 message). */
     message?: string
+    /** confirm: the consequence line under the detail. */
+    warning?: string
     confirmLabel?: string
 }>(), {
     variant: 'confirm',
+    warning: 'This one does not come back.',
     confirmLabel: 'Void it',
 })
 
@@ -59,7 +62,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleKeydown))
             <div class="warn">
                 <template v-if="is_confirm">
                     <template v-if="detail">{{ detail }}<br></template>
-                    This one does not come back.
+                    {{ warning }}
                 </template>
                 <template v-else>{{ message }}</template>
             </div>

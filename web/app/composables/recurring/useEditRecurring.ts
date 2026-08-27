@@ -1,5 +1,5 @@
 import type { RecurringExpense } from "#shared/types/Recurring";
-import { updateRecurring } from "~/repositories/recurring";
+import { createRecurring, deleteRecurring, updateRecurring } from "~/repositories/recurring";
 import { provideRecurringForm } from "./context/RecurringFormContext";
 
 export function useEditRecurring(loaded: RecurringExpense) {
@@ -17,6 +17,8 @@ export function useEditRecurring(loaded: RecurringExpense) {
     // The row as the server last confirmed it — the audit line reads this. A save
     // swaps in the row PATCH returns, so "last changed" reflects the write live.
     const entry = ref(loaded)
+
+    const is_removing = ref(false)
 
 
     /** Functions */
@@ -49,10 +51,55 @@ export function useEditRecurring(loaded: RecurringExpense) {
     }
 
 
+    async function remove() {
+        if (is_removing.value) {
+            return false
+        }
+
+        is_removing.value = true
+        form.failure.value = ''
+
+        try {
+            await deleteRecurring(entry.value.id)
+            // Only the template's own keys — deleting it leaves already-materialized
+            // expenses alone, so the roll and the month totals are still accurate.
+            clearNuxtData(['recurring', `recurring-${entry.value.id}`])
+
+            return true
+        } catch (error) {
+            form.failure.value = (error as ApiRequestError).message
+
+            return false
+        } finally {
+            is_removing.value = false
+        }
+    }
+
+    // Undo a delete. The contract has no restore, so bring the order back by
+    // creating it afresh — a new id, but the same schedule and money.
+    async function restore(removed: RecurringExpense) {
+        await createRecurring({
+            amount: removed.amount,
+            category_id: removed.category.id,
+            day_of_month: removed.day_of_month,
+            start_date: removed.start_date,
+            note: removed.note ?? undefined,
+            end_date: removed.end_date,
+            active: removed.active,
+        })
+
+        // The list is the screen the undo runs from, so refetch it live.
+        refreshNuxtData('recurring')
+    }
+
+
     return {
         ...form,
         entry,
+        is_removing,
 
-        save
+        save,
+        remove,
+        restore
     }
 }

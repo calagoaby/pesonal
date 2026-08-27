@@ -17,3 +17,7 @@ export function createRecurring(payload: RecurringPayload) {
 export function updateRecurring(id: number, payload: Partial<RecurringPayload>) {
     return apiPatch<RecurringExpense>(`${resource}/${id}`, payload)
 }
+
+export function deleteRecurring(id: number) {
+    return apiDelete(`${resource}/${id}`)
+}
