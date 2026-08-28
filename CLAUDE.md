@@ -19,6 +19,8 @@ The loop:
 3. Claude **stops and reports** what changed and why. **Nothing is committed yet** — the owner reads the working diff first, so the change is plain to see before it's buried in history.
 4. Once he approves, Claude runs the git mechanics: feature branch off `main`, commits in the format below, push, open the PR. **The owner reviews and merges — Claude never merges and never pushes to `main`.**
 
+**The owner runs the app and the merge; Claude runs git up to the PR.** Claude may create branches, commit, push feature branches, and open PRs. Claude does **not** run Docker lifecycle commands (`build` · `up` · `down` · `restart` · `--force-recreate` · `--renew-anon-volumes`) and does **not** merge PRs. When a step needs one — a container restart to pick up a new top-level dir / `server/api` route / env or dep change, an image rebuild, or a merge — **stop and hand the owner the exact copy-pasteable command(s)** (he forgets them), then verify once he says it's done. Read-only container use is fine: `docker compose exec … npx nuxt typecheck`, `curl` against `:3000`.
+
 Commit format: a `[feat]` / `[fix]` tag alone on the first line, then brief lowercase `- bullet` lines. **No co-author trailer** (this overrides the default).
 
 PR format: the title is the same one-liner in that style — `[feat] - navbar route aware active`. **Leave the body empty.** The title and the commits say it; a written-up description is noise. Explain the reasoning in chat instead.
@@ -84,6 +86,7 @@ wsl -e bash -lc "cd /home/aby/projects/Pesonal && <command>"
 
 - **`docker compose restart` does not reload `docker-compose.yml` env changes.** It reuses the container's existing environment. Use `docker compose up -d` to recreate.
 - **A new top-level directory needs a container restart.** Nuxt and Nitro scan `shared/`, `server/`, `layouts/` at boot; HMR won't pick up a folder that didn't exist. Symptom: `#shared` alias unresolved, or a new `server/api/` route 404s.
+- **A dependency added with `docker compose exec … npm install` lives only in the container's `node_modules` volume, never in the image.** `package.json` updates (it's host-mounted), but the image's baked `node_modules` doesn't — so the next time the anonymous volume is recreated it re-seeds from the image, the dep vanishes, and Nuxt dies at boot (`Could not load @pinia/nuxt. Is it installed?`). After adding any dep, rebuild so `package.json` drives the install, then recreate with a fresh volume: `docker compose build web && docker compose up -d --force-recreate --renew-anon-volumes web`. (Owner runs these — see the build loop.)
 - **Stale Vite module graph.** If the *browser* shows an error but a direct `Invoke-WebRequest`/`curl` to the same URL returns correct HTML, the code is fine and the dev server's in-memory graph is stale — restart the container. That disagreement between the two is the diagnostic; if both fail, it's a real bug.
 - **`.nuxt` is root-owned.** The container writes build artifacts into the mounted `./web` as root, so host commands that write there fail with `EACCES`. Run typecheck inside the container instead.
 - **Mock data is in-memory only.** `server/utils/mockDb.ts` holds it in module scope, so anything created through the UI vanishes on container restart and nothing is ever written to disk.
