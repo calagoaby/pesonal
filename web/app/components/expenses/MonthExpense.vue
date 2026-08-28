@@ -30,7 +30,8 @@ const {
 
 const {
     formatDailyDate,
-    formatMonthLabel
+    formatMonthLabel,
+    formatMonthName
 } = useDateFormatter()
 
 
@@ -97,7 +98,7 @@ function clearCategory() {
         </div>
 
         <template v-else-if="is_empty">
-            <SharedNotice v-if="is_filtered" :title="`No ${category_label.toLowerCase()} in ${formatMonthLabel(month).split(' ')[0]}`">
+            <SharedNotice v-if="is_filtered" :title="`No ${category_label.toLowerCase()} in ${formatMonthName(month)}`">
                 <template #mark>
                     <FilterSlash />
                 </template>

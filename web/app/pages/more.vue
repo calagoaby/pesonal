@@ -48,14 +48,14 @@ const active_count = computed(() => (recurring.value ?? []).filter(item => item.
 
         <div class="section">Insights</div>
 
-        <div class="destination">
+        <NuxtLink to="/trend" class="destination">
             <ChartLine class="lead-icon" />
             <span class="name">
                 Spending trend
                 <span class="sub">Last 6 months, in one line</span>
             </span>
-            <span class="soon">Soon</span>
-        </div>
+            <ChevronRight class="chevron" />
+        </NuxtLink>
 
         <div class="section">Data</div>
 

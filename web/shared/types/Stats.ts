@@ -23,3 +23,10 @@ export interface MonthlyStats {
     /** Zero-filled for every day of the month so bars render contiguously. */
     daily: DailyTotal[]
 }
+
+/** One point on the trend line. `GET /api/stats/trend` returns these oldest → newest. */
+export interface MonthTotal {
+    /** YYYY-MM */
+    month: string
+    total: number
+}
