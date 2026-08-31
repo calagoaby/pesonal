@@ -27,6 +27,14 @@ export function useDateFormatter() {
         return formatMonthShort(date, config.locale)
     }
 
+    function formatMonthName(month: string) {
+        return formatMonthNameLong(month, config.locale)
+    }
+
+    function formatMonthAbbrev(month: string) {
+        return formatMonthNameShort(month, config.locale)
+    }
+
 
     return {
         formatDailyDate,
@@ -34,6 +42,8 @@ export function useDateFormatter() {
         formatFieldDate,
         formatListDate,
         formatStamp,
-        formatMonthAndYear
+        formatMonthAndYear,
+        formatMonthName,
+        formatMonthAbbrev
     }
 }

@@ -48,6 +48,7 @@ const has_nothing = computed(() =>
         <DashboardTotalReceipt />
         <DashboardCategoryBreakdown />
         <DashboardDailySpending />
+        <DashboardTrendCard />
         <DashboardRecentItems />
     </template>
 </template>

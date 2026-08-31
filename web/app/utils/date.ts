@@ -175,6 +175,30 @@ export function formatMonthShort(
 }
 
 /**
+ * The month name alone. Callers used to slice the year off a formatted
+ * "August 2026", which only works while the locale puts the year last.
+ * @param month_string YYYY-MM
+ * @return August
+ */
+export function formatMonthNameLong(
+    month_string: string,
+    locale: string,
+) {
+    return toLocalDate(`${month_string}-01`).toLocaleDateString(locale, { month: 'long' })
+}
+
+/**
+ * @param month_string YYYY-MM
+ * @return Aug
+ */
+export function formatMonthNameShort(
+    month_string: string,
+    locale: string,
+) {
+    return toLocalDate(`${month_string}-01`).toLocaleDateString(locale, { month: 'short' })
+}
+
+/**
  * @return 1 → "1st", 22 → "22nd", 13 → "13th"
  */
 export function ordinal(day: number) {

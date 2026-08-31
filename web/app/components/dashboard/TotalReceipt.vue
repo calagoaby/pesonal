@@ -12,14 +12,15 @@ const {
 } = useMonthlyStatsContext()
 
 const {
-    formatMonthLabel
+    formatMonthLabel,
+    formatMonthName
 } = useDateFormatter()
 
 
 /** Computed */
 const spent_less = computed(() => (change_pct.value ?? 0) < 0)
 const receipt_label = computed(() => `Official Receipt — ${formatMonthLabel(month.value).toUpperCase()}`)
-const previous_label = computed(() => formatMonthLabel(shiftMonth(month.value, -1)).split(' ')[0]?.toUpperCase())
+const previous_label = computed(() => formatMonthName(shiftMonth(month.value, -1)).toUpperCase())
 </script>
 
 <template>
