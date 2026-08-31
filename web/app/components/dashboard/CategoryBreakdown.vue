@@ -1,5 +1,11 @@
 <script setup lang="ts">
+import { Doughnut } from 'vue-chartjs';
+import { Chart as ChartJS, ArcElement } from 'chart.js';
 import { useMonthlyStatsContext } from '~/composables/dashboard/context/MonthlyStatsContext';
+
+// vue-chartjs draws nothing unless the elements are registered — the old PrimeVue
+// wrapper auto-registered all of chart.js; here we opt in to just the arc.
+ChartJS.register(ArcElement)
 
 const {
     total,
@@ -17,7 +23,14 @@ const chart_data = computed(() => ({
     ]
 }))
 
-const chart_options = { cutout: '65%' }
+// The legend is custom HTML beside the ring, so chart.js draws only the doughnut;
+// maintainAspectRatio:false lets it fill the fixed 116×116 box.
+const chart_options = {
+    cutout: '65%',
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: { enabled: false } },
+}
 
 const total_label = computed(() => `₱${(total.value / 100000).toFixed(1)}k`)
 </script>
@@ -30,7 +43,7 @@ const total_label = computed(() => `₱${(total.value / 100000).toFixed(1)}k`)
     >
         <div class="body-row">
             <div class="doughnut">
-                <Chart type="doughnut" :data="chart_data" :options="chart_options"/>
+                <Doughnut :data="chart_data" :options="chart_options" />
                 <div class="inside-text">
                     <div class="total">{{ total_label }}</div>
                     <div class="text">total</div>

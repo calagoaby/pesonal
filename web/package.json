@@ -13,14 +13,12 @@
   "dependencies": {
     "@pinia/nuxt": "^1.0.1",
     "@primeicons/vue": "^8.0.0",
-    "@primeuix/themes": "^2.0.3",
-    "@primevue/nuxt-module": "^4.5.5",
     "chart.js": "^4.5.1",
     "nuxt": "^4.4.8",
     "pinia": "^4.0.2",
-    "primevue": "^4.5.5",
     "vue": "^3.5.35",
-    "vue-router": "^5.1.0"
+    "vue-router": "^5.1.0",
+    "vue-chartjs": "^5.3.2"
   },
   "devDependencies": {
     "typescript": "^5.9.3",

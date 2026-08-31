@@ -4,7 +4,7 @@
             <p class="greeting">Kumusta, User</p>
             <h1 class="title">Your money this month</h1>
         </div>
-        <Avatar label="A" shape="circle" class="avatar" />
+        <div class="avatar">A</div>
     </header>
 </template>
 
@@ -28,11 +28,16 @@
 }
 
 .avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 38px;
     height: 38px;
     border: 1.5px solid var(--ink);
+    border-radius: var(--radius-pill);
     background-color: var(--paper);
-    font-family: "Spline Sans Mono", monospace;
+    color: var(--ink);
+    font-family: var(--mono);
     font-weight: 600;
     font-size: 16px;
 }
