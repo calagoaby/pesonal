@@ -3,6 +3,7 @@
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\RecurringController;
+use App\Http\Controllers\StatsController;
 use App\Models\Category;
 use App\Models\Expense;
 use App\Models\Recurring;
@@ -20,3 +21,6 @@ Route::bind('recurring', fn (string $id) => Recurring::find($id) ?? abort(404, '
 Route::apiResource('categories', CategoryController::class);
 Route::apiResource('expenses', ExpenseController::class);
 Route::apiResource('recurring', RecurringController::class);
+
+Route::get('stats/monthly', [StatsController::class, 'monthly']);
+Route::get('stats/trend', [StatsController::class, 'trend']);
