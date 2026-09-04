@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 class StoreRecurringRequest extends RecurringRequest
 {
+    /** @return array<string, mixed> */
     public function rules(): array
     {
         // note and active are read straight from the request (mock doesn't type-validate

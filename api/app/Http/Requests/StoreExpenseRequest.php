@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 class StoreExpenseRequest extends ExpenseRequest
 {
+    /** @return array<string, mixed> */
     public function rules(): array
     {
         // note is intentionally unvalidated (mock accepts absent/string/null) and read

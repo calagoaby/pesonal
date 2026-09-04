@@ -1,5 +1,11 @@
 FROM php:8.4-cli
 
+# git + unzip so Composer can fetch and extract packages (e.g. dev deps like larastan);
+# the base image ships neither, so a `composer require` would otherwise fail to extract.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends git unzip \
+    && rm -rf /var/lib/apt/lists/*
+
 # install-php-extensions auto-handles the system libraries each PHP
 # extension needs, so we don't hand-manage apt packages for them.
 COPY --from=mlocati/php-extension-installer /usr/bin/install-php-extensions /usr/bin/

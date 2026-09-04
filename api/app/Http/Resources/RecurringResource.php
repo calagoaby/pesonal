@@ -2,11 +2,14 @@
 
 namespace App\Http\Resources;
 
+use App\Models\Recurring;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
+/** @mixin Recurring */
 class RecurringResource extends JsonResource
 {
+    /** @return array<string, mixed> */
     public function toArray(Request $request): array
     {
         return [

@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 class UpdateExpenseRequest extends ExpenseRequest
 {
+    /** @return array<string, mixed> */
     public function rules(): array
     {
         // `sometimes` → only sent fields are validated, so PATCH stays partial.

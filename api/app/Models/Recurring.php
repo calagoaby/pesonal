@@ -2,15 +2,25 @@
 
 namespace App\Models;
 
+use Database\Factories\RecurringFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
+/**
+ * The 'date:Y-m-d' casts return Carbon instances; Larastan reads a formatted cast
+ * as a string without these hints, so the Resource's ->format() calls trip it.
+ *
+ * @property Carbon $start_date
+ * @property Carbon|null $end_date
+ */
 #[Fillable(['amount', 'note', 'day_of_month', 'start_date', 'end_date', 'active', 'category_id'])]
 class Recurring extends Model
 {
+    /** @use HasFactory<RecurringFactory> */
     use HasFactory;
 
     protected $table = 'recurring';
@@ -29,11 +39,13 @@ class Recurring extends Model
         ];
     }
 
+    /** @return BelongsTo<Category, $this> */
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
     }
 
+    /** @return HasMany<Expense, $this> */
     public function expenses(): HasMany
     {
         return $this->hasMany(Expense::class);

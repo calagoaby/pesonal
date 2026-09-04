@@ -6,6 +6,7 @@ use Illuminate\Validation\Rule;
 
 class UpdateCategoryRequest extends ApiFormRequest
 {
+    /** @return array<string, mixed> */
     public function rules(): array
     {
         // `sometimes` → a field is validated only when present, so PATCH stays partial.

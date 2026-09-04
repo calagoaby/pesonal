@@ -7,6 +7,7 @@ use App\Models\Category;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class StatsController extends Controller
@@ -37,7 +38,9 @@ class StatsController extends Controller
                 'previous_total' => $previousTotal,
                 'change_pct' => $changePct,
                 'by_category' => $this->byCategory($month),
-                'daily' => $this->daily($month, $monthDate?->daysInMonth ?? 0),
+                // ternary, not $monthDate?->daysInMonth ?? 0: same result (null month → 0),
+                // but phpstan's nullsafe.neverNull rule mis-flags the ?->…?? form here.
+                'daily' => $this->daily($month, $monthDate !== null ? $monthDate->daysInMonth : 0),
             ],
         ]);
     }
@@ -73,7 +76,7 @@ class StatsController extends Controller
         return (int) DB::table('expenses')->where('date', 'like', "$month%")->sum('amount');
     }
 
-    /** @return \Illuminate\Support\Collection<int, array{category: array, total: int, count: int}> */
+    /** @return Collection<int, array{category: array<string, mixed>, total: int, count: int}> */
     private function byCategory(string $month)
     {
         $rows = DB::table('expenses')
@@ -86,11 +89,16 @@ class StatsController extends Controller
 
         $categories = Category::findMany($rows->pluck('category_id'))->keyBy('id');
 
-        return $rows->map(fn ($row) => [
-            'category' => CategoryRefResource::make($categories[$row->category_id])->resolve(),
-            'total' => (int) $row->total,
-            'count' => (int) $row->count, // a row count, not a peso figure
-        ])->values();
+        return $rows->map(function ($row) use ($categories) {
+            /** @var array<string, mixed> $category */
+            $category = CategoryRefResource::make($categories[$row->category_id])->resolve();
+
+            return [
+                'category' => $category,
+                'total' => (int) $row->total,
+                'count' => (int) $row->count, // a row count, not a peso figure
+            ];
+        })->values();
     }
 
     /** @return array<int, array{date: string, total: int}> zero-filled, one per calendar day */

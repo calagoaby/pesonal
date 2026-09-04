@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 class UpdateRecurringRequest extends RecurringRequest
 {
+    /** @return array<string, mixed> */
     public function rules(): array
     {
         // `sometimes` → only sent fields are validated. end_date present-and-null clears

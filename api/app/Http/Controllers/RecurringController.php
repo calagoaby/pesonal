@@ -8,7 +8,6 @@ use App\Http\Resources\RecurringResource;
 use App\Models\Recurring;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
-use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
 class RecurringController extends Controller
