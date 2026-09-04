@@ -757,4 +757,72 @@ Once the endpoints are live and seeded:
 - **Money**: every amount is an integer number of centavos, in and out.
 - **Category shape**: reads embed the 4-field ref (id, name, colour, emoji) — never the full category with `created_at`.
 - **Errors**: 422 is `{ message, errors: { field: [msg] } }`; 404/409 carry `message` alone. Status codes: 201 create, 204 delete, 409 category-in-use, 404 missing.
+
+---
+
+## Architecture & best practices (post-build refactor)
+
+The four resources are built and contract-verified. This section is the agreed refactor: tighten the code to **right-sized, idiomatic Laravel** and add the tooling and tests a real project wants — without over-building.
+
+**Guiding principle.** The app is single-user, local, and the backend is deliberately swappable **at the HTTP boundary** (`docs/api-contract.md` is the seam). So the value is a clean, well-tested implementation of that contract — not speculative internal layering. Don't fight Eloquent, don't add indirection that buys nothing at this size. Every change below either removes duplication, makes a unit explicit, or locks the contract with a test.
+
+### Keep (already correct)
+
+Thin controllers · FormRequests for validation · API Resources for the `{ data }` shape · `Route::bind` 404s that fire before validation · attribute-style models with casts. None of this changes.
+
+### Refactors (right-sized)
+
+1. **Query scopes for the month filter.** The date-prefix filter (`where('date','like',"$month%")`) is duplicated in `ExpenseController@index` and four times in `StatsController`. Lift it to `Expense::scopeInMonth($q, $month)` (and a `scopeForCategory`), so the SQL trap lives in one place. Stats aggregates move from `DB::table('expenses')` to the Eloquent builder + scope for consistency (aggregates alias the raw `date`/`ym` columns to sidestep the date cast).
+2. **A `StatsService`.** Lift the two aggregations out of the controller into `app/Services/StatsService.php` (`monthly(string $month): array`, `trend(int $months): array`). The controller just resolves query params and calls it. This is the one place the logic is dense enough to earn its own class — and it becomes unit-testable in isolation.
+3. **Materialization as an Action + command (step 4, next).** The scheduled job lands as `app/Actions/MaterializeRecurring.php` invoked by an `artisan recurring:materialize` command registered `->daily()` — same right-sized pattern, with its own tests.
+4. **Leave the note/active merge logic in the controllers.** It's request-shaped (absent-vs-null), reads clearly where it is, and does not earn an action class.
+
+### Money value object
+
+Make **centavos** a type, not a bare int that could silently become a float. `app/Support/Money.php` — a small immutable value object (`Money::fromCentavos(int)`, `->centavos(): int`) — bound to the `amount` attribute on `Expense` and `Recurring` via a custom `CastsAttributes`. Boundary rules: the amount validation closure still runs on the **raw request int** (pre-cast, so `is_int` strictness is unchanged); Resources serialize `->centavos()` so the wire stays a **bare integer**; the Stats aggregates read raw `SUM(amount)` and stay ints. This is the one add-on that leans "demonstration over necessity" — kept minimal so it clarifies intent without spreading through the codebase.
+
+### Config
+
+`config/pesonal.php` holds the tunables now hard-coded as controller constants: `pagination.default_per_page` (20), `pagination.max_per_page` (100), `trend.default_months` (6), `trend.max_months` (24). Controllers read `config('pesonal.…')`.
+
+### Tooling
+
+- **Pint** (already a dev dependency) — run `./vendor/bin/pint` to normalise to Laravel's PSR-12 style; commit the reformat as one reviewable step so it never muddies a feature diff.
+- **Larastan** (add `larastan/larastan` dev) + a `phpstan.neon` starting at **level 6**, scanning `app/`. Fix what it flags (mostly missing generics/return types). Run `./vendor/bin/phpstan analyse`.
+
+### Feature test suite (contract-locking)
+
+The highest-value item, and CI-ready as-is: `phpunit.xml` already points the `testing` env at an **in-memory SQLite** DB, so tests are hermetic and need no services.
+
+- **Framework:** the installed **PHPUnit** (no new dependency; `php artisan test` works today). Pest is a nicer syntax but an added dependency — skipped to stay right-sized; easy to swap later.
+- **Factories:** add `CategoryFactory`, `ExpenseFactory`, `RecurringFactory` so each test builds exactly the rows it needs (deterministic, no reliance on the seed corpus).
+- **Tests** (`tests/Feature/`), one file per resource, each mirroring the curl matrices already run by hand:
+  - `CategoryTest` — envelope, 5-key shape, 422 messages + unique, 404-before-validation, 409-with-count, 204.
+  - `ExpenseTest` — list `meta`/filters/pagination edges, strict centavos, nested ref, the note absent/null/string PATCH, 404-first.
+  - `RecurringTest` — no-meta list, cross-field on merged values, `active` null-vs-false, and the **DELETE invariant** (materialized expenses keep `recurring_id`).
+  - `StatsTest` — monthly totals + `change_pct` null baseline + zero-filled daily; trend window + clamps.
+  - (`MaterializationTest` arrives with step 4.)
+- **Run:** `docker compose exec api php artisan test`. Each test uses `RefreshDatabase`.
+- **CI (optional final step):** a `.github/workflows/tests.yml` running `composer install`, `php artisan test`, `pint --test`, and `phpstan analyse` on push/PR — a concrete starting point for the CI/CD you're learning.
+
+### Deliberately NOT doing (and why)
+
+- **Repository pattern over Eloquent** — Eloquent *is* the data-access layer; a repo wrapper adds indirection and buys nothing when the swap seam is the HTTP contract, not the ORM.
+- **DTOs for every payload** — `FormRequest::validated()` on the way in and API Resources on the way out already pin the shapes; a DTO layer between them is ceremony here.
+- **A service/action class per CRUD action** — the controllers are already thin; only Stats and materialization are dense enough to extract.
+- **DDD / hexagonal layering, API versioning (`/v1`)** — one user, one client, frozen contract. YAGNI; revisit only if a second consumer or a breaking change ever appears.
+
+### Sequence (each a small, reviewable, committable step)
+
+Tests **first** so every refactor after them is done under a green safety net — the whole point of having them.
+
+1. **Feature test suite** (factories + the four test files) — green against the current code.
+2. **Pint + Larastan** — reformat + static analysis baseline, tests stay green.
+3. **Query scopes + `StatsService`** — tests stay green.
+4. **Money value object + cast** — tests stay green.
+5. **`config/pesonal.php`** — tests stay green.
+6. **Materialization** (roadmap step 4) — Action + command + scheduler, with `MaterializationTest`.
+7. **CI workflow** (optional) — wire the above into GitHub Actions.
+
+Then the swap (roadmap step 5, already staged on `feat/point-at-laravel`).
 - **CORS**: the browser at `:3000` can actually reach `:8000` (check the Network tab, not just curl — curl skips the preflight).
