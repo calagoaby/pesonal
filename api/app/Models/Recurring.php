@@ -17,8 +17,10 @@ class Recurring extends Model
         return [
             'amount' => 'integer',
             'day_of_month' => 'integer',
-            'start_date' => 'date',
-            'end_date' => 'date',
+            // Format pins the stored string to YYYY-MM-DD — materialization compares these
+            // as strings, and a bare 'date' cast would write a time component.
+            'start_date' => 'date:Y-m-d',
+            'end_date' => 'date:Y-m-d',
             // must serialize as JSON true/false, not 1/0 — the frontend type is boolean.
             'active' => 'boolean',
         ];

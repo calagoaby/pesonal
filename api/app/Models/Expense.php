@@ -13,7 +13,10 @@ class Expense extends Model
     {
         return [
             'amount' => 'integer', // centavos, bare int — never a float or formatted string
-            'date' => 'date',
+            // The format normalizes the WRITE too: a bare 'date' cast persists via the
+            // model's datetime format, and SQLite keeps '2026-09-15 00:00:00' verbatim,
+            // which stats' daily grouping then never matches.
+            'date' => 'date:Y-m-d',
         ];
     }
 
