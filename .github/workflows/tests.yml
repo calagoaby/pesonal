@@ -1,0 +1,47 @@
+name: API tests
+
+# Runs on pull requests (feature work) and on pushes to main (post-merge). A PR
+# branch is covered by its pull_request run, so it isn't tested twice.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+
+    # The Laravel app lives in api/, not the repo root, so every run step works there.
+    defaults:
+      run:
+        working-directory: api
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Mirror the Dockerfile: PHP 8.4 with the same extensions the app needs.
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: pdo_sqlite, mbstring, bcmath
+          coverage: none
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      # No .env is committed; the app needs an APP_KEY to boot. phpunit.xml still
+      # overrides the DB to in-memory sqlite for the test run.
+      - name: Prepare environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Tests
+        run: php artisan test
+
+      - name: Code style (Pint)
+        run: ./vendor/bin/pint --test
+
+      - name: Static analysis (PHPStan)
+        run: ./vendor/bin/phpstan analyse --no-progress
