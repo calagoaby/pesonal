@@ -12,8 +12,6 @@ use Illuminate\Http\Response;
 
 class ExpenseController extends Controller
 {
-    private const MAX_PER_PAGE = 100;
-
     public function index(Request $request): JsonResponse
     {
         $query = Expense::query()
@@ -32,9 +30,12 @@ class ExpenseController extends Controller
             $query->where('category_id', $categoryId);
         }
 
+        $defaultPerPage = (int) config('pesonal.pagination.default_per_page');
+        $maxPerPage = (int) config('pesonal.pagination.max_per_page');
+
         $page = max(1, (int) $request->query('page', 1));
-        $perPage = (int) $request->query('per_page', 20);
-        $perPage = $perPage < 1 ? 20 : min($perPage, self::MAX_PER_PAGE);
+        $perPage = (int) $request->query('per_page', $defaultPerPage);
+        $perPage = $perPage < 1 ? $defaultPerPage : min($perPage, $maxPerPage);
 
         $paginator = $query->paginate(perPage: $perPage, page: $page);
 

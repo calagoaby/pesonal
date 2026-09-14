@@ -10,8 +10,6 @@ use Illuminate\Support\Collection;
 
 class StatsService
 {
-    private const MAX_MONTHS = 24;
-
     /**
      * @return array<string, mixed>
      */
@@ -46,8 +44,8 @@ class StatsService
      */
     public function trend(int $months): array
     {
-        // Clamp to 1..24. A 0/non-numeric fallback (→6) is the caller's; negatives clamp up to 1.
-        $months = min(max($months, 1), self::MAX_MONTHS);
+        // Clamp to 1..max. A 0/non-numeric fallback (→default) is the caller's; negatives clamp up to 1.
+        $months = min(max($months, 1), (int) config('pesonal.trend.max_months'));
 
         // Window ends on the current month, anchored on the clock, oldest → newest.
         $anchor = now()->startOfMonth();

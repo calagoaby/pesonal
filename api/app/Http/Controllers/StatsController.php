@@ -21,8 +21,8 @@ class StatsController extends Controller
 
     public function trend(Request $request): JsonResponse
     {
-        // 0 / empty / non-numeric → 6 (falsy); the service clamps to 1..24.
-        $months = (int) $request->query('months') ?: 6;
+        // 0 / empty / non-numeric → default (falsy); the service clamps to 1..max.
+        $months = (int) $request->query('months') ?: (int) config('pesonal.trend.default_months');
 
         return response()->json(['data' => $this->stats->trend($months)]);
     }
