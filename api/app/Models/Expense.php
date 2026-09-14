@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Database\Factories\ExpenseFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -30,6 +31,17 @@ class Expense extends Model
             // which stats' daily grouping then never matches.
             'date' => 'date:Y-m-d',
         ];
+    }
+
+    /**
+     * Match rows whose date falls in the given 'YYYY-MM' month. A malformed month
+     * simply matches nothing (LIKE 'garbage%'); it is never an error.
+     *
+     * @param  Builder<Expense>  $query
+     */
+    public function scopeInMonth(Builder $query, string $month): void
+    {
+        $query->where('date', 'like', "{$month}%");
     }
 
     /** @return BelongsTo<Category, $this> */

@@ -23,7 +23,7 @@ class ExpenseController extends Controller
 
         // A malformed month simply matches nothing (date LIKE '2026-06%'); not an error.
         if ($request->filled('month')) {
-            $query->where('date', 'like', $request->query('month').'%');
+            $query->inMonth($request->query('month'));
         }
 
         // 0 / empty / non-numeric means "no filter"; an unknown id just returns empty.
