@@ -14,7 +14,7 @@ class RecurringResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'amount' => $this->amount, // centavos
+            'amount' => $this->amount->centavos(), // centavos, bare int — wire stays a plain integer
             'note' => $this->note, // string | null, always emitted
             'day_of_month' => $this->day_of_month,
             'start_date' => $this->start_date->format('Y-m-d'),

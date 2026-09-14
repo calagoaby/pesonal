@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Casts\MoneyCast;
+use App\Support\Money;
 use Database\Factories\RecurringFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -16,6 +18,7 @@ use Illuminate\Support\Carbon;
  *
  * @property Carbon $start_date
  * @property Carbon|null $end_date
+ * @property Money $amount
  */
 #[Fillable(['amount', 'note', 'day_of_month', 'start_date', 'end_date', 'active', 'category_id'])]
 class Recurring extends Model
@@ -28,7 +31,7 @@ class Recurring extends Model
     protected function casts(): array
     {
         return [
-            'amount' => 'integer',
+            'amount' => MoneyCast::class, // centavos, bound to the Money VO
             'day_of_month' => 'integer',
             // Format pins the stored string to YYYY-MM-DD — materialization compares these
             // as strings, and a bare 'date' cast would write a time component.

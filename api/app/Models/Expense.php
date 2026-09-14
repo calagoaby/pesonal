@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Casts\MoneyCast;
+use App\Support\Money;
 use Database\Factories\ExpenseFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
@@ -15,6 +17,7 @@ use Illuminate\Support\Carbon;
  * cast as a string without this hint, so the Resource's ->format() call trips it.
  *
  * @property Carbon $date
+ * @property Money $amount
  */
 #[Fillable(['amount', 'date', 'note', 'category_id', 'recurring_id'])]
 class Expense extends Model
@@ -25,7 +28,7 @@ class Expense extends Model
     protected function casts(): array
     {
         return [
-            'amount' => 'integer', // centavos, bare int — never a float or formatted string
+            'amount' => MoneyCast::class, // centavos, bound to the Money VO
             // The format normalizes the WRITE too: a bare 'date' cast persists via the
             // model's datetime format, and SQLite keeps '2026-09-15 00:00:00' verbatim,
             // which stats' daily grouping then never matches.
