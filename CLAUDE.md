@@ -16,14 +16,12 @@ The loop:
 
 1. Claude posts a **design spec** (an HTML mockup) in `design/` if the screen doesn't have one.
 2. Claude **implements** the slice in `web/`, following the conventions below.
-3. Claude **stops and reports** what changed and why. **Nothing is committed yet** — the owner reads the working diff first, so the change is plain to see before it's buried in history.
-4. Once he approves, Claude runs the git mechanics: feature branch off `main`, commits in the format below, push, open the PR. **The owner reviews and merges — Claude never merges and never pushes to `main`.**
+3. Claude **verifies** the slice, then **commits it straight to `main`** in the format below. No feature branch, no PR, no waiting for approval. The owner reviews afterwards with `git log` / `git show`; anything he wants changed becomes a follow-up commit.
+4. Claude **stops and reports** what changed and why, naming the commit.
 
-**The owner runs the app and the merge; Claude runs git up to the PR.** Claude may create branches, commit, push feature branches, and open PRs. Claude does **not** run Docker lifecycle commands (`build` · `up` · `down` · `restart` · `--force-recreate` · `--renew-anon-volumes`) and does **not** merge PRs. When a step needs one — a container restart to pick up a new top-level dir / `server/api` route / env or dep change, an image rebuild, or a merge — **stop and hand the owner the exact copy-pasteable command(s)** (he forgets them), then verify once he says it's done. Read-only container use is fine: `docker compose exec … npx nuxt typecheck`, `curl` against `:3000`.
+**Claude commits; the owner pushes and runs the app.** Commits stay local: Claude never pushes unless the owner asks for it in that conversation. Claude does **not** run Docker lifecycle commands (`build` · `up` · `down` · `restart` · `--force-recreate` · `--renew-anon-volumes`). When a step needs one — a container restart to pick up a new top-level dir / `server/api` route / env or dep change, or an image rebuild — **stop and hand the owner the exact copy-pasteable command(s)** (he forgets them), then verify once he says it's done. Read-only container use is fine: `docker compose exec … npx nuxt typecheck`, `curl` against `:3000`.
 
 Commit format: a `[feat]` / `[fix]` tag alone on the first line, then brief lowercase `- bullet` lines. **No co-author trailer** (this overrides the default).
-
-PR format: the title is the same one-liner in that style — `[feat] - navbar route aware active`. **Leave the body empty.** The title and the commits say it; a written-up description is noise. Explain the reasoning in chat instead.
 
 **Explain the reasoning, not just the result.** The owner is comfortable reviewing frontend code but is still learning the tooling around it — Docker, git plumbing, Nuxt internals, TypeScript. Annotate commands in plain language and say *why* a non-obvious choice was made. He asks follow-up questions and expects real answers; "it works" is not one.
 
@@ -97,7 +95,7 @@ wsl -e bash -lc "cd /home/aby/projects/Pesonal && <command>"
 docker compose exec web npx nuxt typecheck
 ```
 
-Prints nothing and exits 0 on success. Run it before opening a PR — **Vite strips types without checking them**, so type errors never surface at runtime and the dev server will happily serve broken code.
+Prints nothing and exits 0 on success. Run it before committing — **Vite strips types without checking them**, so type errors never surface at runtime and the dev server will happily serve broken code.
 
 **TypeScript is pinned to `^5` deliberately.** TypeScript 7 is the native Go compiler; its npm package doesn't ship `lib/tsc`, which `vue-tsc` requires. `vue-tsc`'s peer range (`>=5.0.0`) accepts TS 7 without warning and then fails at runtime. Don't let a dependency bump move it to 7.
 
