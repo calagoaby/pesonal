@@ -58,7 +58,7 @@ Create `api/config/cors.php` with:
 
 No Sanctum is needed — there is no authentication in v1. `HandleCors` alone is sufficient. `config/cors.php` is read at boot/config-cache time, so recreating or clearing config on the API container is required after adding it.
 
-**Frontend swap (context, not our change):** `docker-compose.yml` currently sets `NUXT_PUBLIC_API_BASE: ""` for the `web` service (empty → the app hits its own in-process mock routes under `web/server/api`). When these endpoints are live the owner flips that to `NUXT_PUBLIC_API_BASE: "http://localhost:8000"` — browser-side calls go to the host-published port, so it's `localhost`, not the compose service name `api`. That env change needs `docker compose up -d web` (restart won't reload compose env). Flag this to the owner; it is not something the Laravel side does.
+**Frontend swap (context, not our change):** `docker-compose.yml` currently sets `NUXT_PUBLIC_API_BASE: ""` for the `web` service (empty → the app hits its own in-process mock routes under `web/server/api`). When these endpoints are live the owner flips that to `NUXT_PUBLIC_API_BASE: "http://localhost:8000"` — browser-side calls go to the host-published port, so it's `localhost`, not the compose service name `api`. That env change needs `docker compose up -d web` (restart won't reload compose env). Flag this to the owner; it is not something the Laravel side does. *(Incomplete: server-side renders need a second URL. See the correction under "The swap" below.)*
 
 ### 3. Response envelope — `{ data }` and `{ data, meta }`
 
@@ -747,6 +747,8 @@ Generate the month window from the clock, never from the query result rows — t
 Once the endpoints are live and seeded:
 
 1. `docker-compose.yml` → set `NUXT_PUBLIC_API_BASE: "http://localhost:8000"` on the `web` service. Browser-side calls hit the host-published port, so `localhost`, not the compose service name. Needs `docker compose up -d web` to reload (a `restart` won't pick up the env change).
+
+   > **Correction (2026-10-02, step 17): this step alone breaks every server-side render.** `localhost` is only right for the *browser*. Nuxt also fetches on the server (`useAsyncData` renders the first page), and that runs inside the `web` container, where `localhost:8000` is the container itself and is refused (`ECONNREFUSED`, verified with `docker compose exec web`). The fix that shipped: a server-only `runtimeConfig.apiBase`, set by `NUXT_API_BASE: "http://api:8000"` (the compose service name), alongside `public.apiBase: 'http://localhost:8000'` for the browser. `utils/api.ts` picks one with `import.meta.server`.
 2. Delete `web/server/api/` and `web/server/utils/mockDb.ts` — the throwaway mocks. (`web/shared/types/` stays — the frontend still uses those.)
 3. Laravel side: `php artisan migrate --seed`, then `docker compose up -d api` to pick up the new `routes/api.php` + `config/cors.php`.
 4. **Verify before believing.** Curl each endpoint and diff the JSON against the contract shape (envelope, centavos, nested category, 422/409/404/204). Then load the app and click through every screen — the dashboard (one stats call), the expense roll (filters + tear-to-load pagination), add/edit/void, categories CRUD + the 409, recurring CRUD + the toggle, and the trend line. A month with no data must still render (zero-fill), and a note must be clearable (the frontend sends `note: null`).

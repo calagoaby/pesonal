@@ -4,9 +4,9 @@ Status: `[x]` done · `[~]` in progress · `[ ]` todo. See `CLAUDE.md` for conve
 
 ## Where things stand
 
-The **frontend is real**: every screen fetches over HTTP through the data layer, nothing renders from a hardcoded array. The backend is still scaffold-only, so `web/server/api/` holds **mock routes** that return contract-shaped JSON. Those routes are throwaway — they get deleted in the final step when Laravel takes over.
+**The app runs end to end on Laravel.** Every screen fetches over HTTP through the data layer, and since step 17 every request goes to the API in `api/`. The mock routes that stood in for it in `web/server/` are deleted; they're in git history, last present at `2d7871c`.
 
-**The swap is one config value.** `runtimeConfig.public.apiBase` is empty, which means same-origin, which means the mock routes. Point it at the Laravel host and every request goes there instead. `docker-compose.yml` sets `NUXT_PUBLIC_API_BASE: ""` for the same reason.
+**The swap took two base URLs, not one.** This section used to say one config value would do. That was wrong: a server-side render runs inside the `web` container, where `localhost` is the container itself, so it reaches Laravel at `http://api:8000` (`NUXT_API_BASE`, the compose service name). The browser can't resolve service names and uses `http://localhost:8000` (`public.apiBase`). `utils/api.ts` picks one with `import.meta.server`.
 
 ## Frontend setup — done
 
@@ -32,7 +32,7 @@ Steps 1–3 stood up the data layer; 4–7 finished Add expense; 8–10 are cros
 14. `[x]` **Recurring form** — CRUD, `active` toggle, day-of-month clamp warning.
 15. `[x]` **More hub** — links Categories and Trend.
 16. `[x]` **Trend** — `GET /api/stats/trend`; dashboard sparkline card plus the drill-down screen.
-17. `[ ]` **Point at Laravel** — set `apiBase`, delete `web/server/api/`.
+17. `[x]` **Point at Laravel** — a base URL per side (server render vs browser), `web/server/` deleted.
 
 ## Decisions that aren't obvious from the code
 
@@ -74,12 +74,12 @@ Built: `SharedNavBar` · `SharedReceipt` (torn top/bottom + header) · `SharedPe
 
 ## Backend track (separate sessions)
 
-- `[ ]` Implement contract endpoints: categories, expenses (+ filters/pagination), stats (monthly + trend), recurring.
-- `[ ]` Recurring materialization (scheduled; stamp `recurring_id`; forward-only per the contract's open question).
-- `[ ]` Seed default categories (each with `color` + `emoji`).
+- `[x]` Implement contract endpoints: categories, expenses (+ filters/pagination), stats (monthly + trend), recurring. A PHPUnit feature suite locks each one: `docker compose exec api php artisan test`.
+- `[~]` Recurring materialization — `recurring:materialize` is built, tested and registered `->daily()`, but **nothing runs Laravel's scheduler yet** (no `schedule:work` process in `docker-compose.yml`), so it never fires on its own.
+- `[x]` Seed default categories (each with `color` + `emoji`). The seeder reproduces the old mock corpus.
 - `[ ]` Formalize the contract into OpenAPI once endpoints stabilize.
 
-The mock routes in `web/server/api/` are a working reference for the shapes each endpoint must return, including the 422 body.
+The Laravel API was built against the mock routes' behaviour; they're in git history at `2d7871c` if a shape is ever in doubt.
 
 ## Parking lot (post-v1)
 

@@ -18,10 +18,13 @@ export default defineNuxtConfig({
         }
     },
     runtimeConfig: {
+        // Server-side renders only. Inside the web container localhost is the container
+        // itself, so docker-compose points this at Laravel's service name. Empty falls
+        // back to public.apiBase, which is right when Nuxt runs straight on the host.
+        apiBase: '',
         public: {
-            // Empty = same origin, so calls land on the mock routes in server/api.
-            // Point it at the Laravel host to swap the real backend in.
-            apiBase: '',
+            // Where the browser reaches Laravel: its host-published port.
+            apiBase: 'http://localhost:8000',
             locale: 'en-PH',
             timezone: 'Asia/Manila'
         }

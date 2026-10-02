@@ -61,10 +61,12 @@ export async function apiDelete(path: string): Promise<void> {
 }
 
 async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
-    const { public: config } = useRuntimeConfig()
+    const config = useRuntimeConfig()
+    // A server render and the browser reach Laravel at different hosts — see nuxt.config.
+    const base = import.meta.server && config.apiBase ? config.apiBase : config.public.apiBase
 
     try {
-        return await $fetch<T>(`${config.apiBase}/api${path}`, options) as T
+        return await $fetch<T>(`${base}/api${path}`, options) as T
     } catch (error) {
         throw toRequestError(error)
     }
