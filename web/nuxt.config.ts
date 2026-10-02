@@ -28,5 +28,17 @@ export default defineNuxtConfig({
             locale: 'en-PH',
             timezone: 'Asia/Manila'
         }
+    },
+    // The source lives on the Windows drive and reaches the container over a file
+    // share that never fires change events, so both watchers poll instead: Vite's
+    // for hot reload, Nuxt's for new files and auto-imports. Once a second, because
+    // one stat pass over the share costs ~110ms.
+    vite: {
+        server: {
+            watch: { usePolling: true, interval: 1000 }
+        }
+    },
+    watchers: {
+        chokidar: { usePolling: true, interval: 1000 }
     }
 })
