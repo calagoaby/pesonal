@@ -3,8 +3,10 @@ import { listExpenses } from "~/repositories/expenses";
 import type { DailyExpense } from "~/types/Expenses";
 
 export async function useMonthExpense() {
+    const { public: config } = useRuntimeConfig()
+
     /** States */
-    const month = ref('2026-06')
+    const month = ref(currentMonthIn(config.timezone))
     /** Null means every category — the query param is dropped, not sent empty. */
     const category_id = ref<number | null>(null)
 

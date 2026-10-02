@@ -2,8 +2,10 @@ import { getMonthlyStats } from "~/repositories/stats";
 import type { CategoryRow } from "~/types/Categories";
 
 export function useMonthlyStats() {
+    const { public: config } = useRuntimeConfig()
+
     /** States */
-    const month = ref('2026-06')
+    const month = ref(currentMonthIn(config.timezone))
 
     const { data, status, error, refresh } = useAsyncData(
         'monthly-stats',

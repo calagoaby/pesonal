@@ -51,6 +51,11 @@ export function todayIn(timezone: string) {
     }).format(new Date())
 }
 
+/** This month as YYYY-MM, zone-pinned for the same reason as todayIn. */
+export function currentMonthIn(timezone: string) {
+    return todayIn(timezone).slice(0, 7)
+}
+
 /**
  * @param date_string YYYY-MM-DD
  * @return the same, shifted by delta days
