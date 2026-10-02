@@ -1,0 +1,12 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    level: 6
+    paths:
+        - app
+    # The api container's PHP CLI caps memory_limit at 128M, and Larastan's
+    # default multi-worker run OOMs a worker there. One process keeps the bare
+    # `./vendor/bin/phpstan analyse` under the cap (fine for a 23-file app).
+    parallel:
+        maximumNumberOfProcesses: 1
