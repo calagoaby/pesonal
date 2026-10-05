@@ -4,7 +4,7 @@ Status: `[x]` done · `[~]` in progress · `[ ]` todo. See `CLAUDE.md` for conve
 
 ## Where things stand
 
-**The app runs end to end on Laravel.** Every screen fetches over HTTP through the data layer, and since step 17 every request goes to the API in `api/`. The mock routes that stood in for it in `web/server/` are deleted; they're in git history, last present at `2d7871c`.
+**The app runs end to end on Laravel.** Every screen fetches over HTTP through the data layer, and since step 17 every request goes to the API in `api/`. The mock routes that stood in for it in `web/server/` are deleted; they're in git history, last present at `d59b47f`.
 
 **The swap took two base URLs, not one.** This section used to say one config value would do. That was wrong: a server-side render runs inside the `web` container, where `localhost` is the container itself, so it reaches Laravel at `http://api:8000` (`NUXT_API_BASE`, the compose service name). The browser can't resolve service names and uses `http://localhost:8000` (`public.apiBase`). `utils/api.ts` picks one with `import.meta.server`.
 
@@ -79,7 +79,7 @@ Built: `SharedNavBar` · `SharedReceipt` (torn top/bottom + header) · `SharedPe
 - `[x]` Seed default categories (each with `color` + `emoji`). The seeder reproduces the old mock corpus.
 - `[ ]` Formalize the contract into OpenAPI once endpoints stabilize.
 
-The Laravel API was built against the mock routes' behaviour; they're in git history at `2d7871c` if a shape is ever in doubt.
+The Laravel API was built against the mock routes' behaviour; they're in git history at `d59b47f` if a shape is ever in doubt.
 
 ## Parking lot (post-v1)
 
