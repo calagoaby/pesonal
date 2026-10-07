@@ -2,9 +2,9 @@
 
 Personal expense tracker. Mobile-first web app, single user, no auth, runs locally. Receipt/thermal-paper look, deadpan funny tone.
 
-Monorepo: `api/` (Laravel — intentionally swappable for another backend later) · `web/` (Nuxt 4 + PrimeVue) · `docs/` (contracts & roadmap) · `design/` (UI specs). Runs via Docker. DB is SQLite.
+Monorepo: `api/` (Laravel — intentionally swappable for another backend later) · `web/` (Nuxt 4 + PrimeVue) · `design/` (UI specs). Runs via Docker. DB is SQLite. Contracts & roadmap live **outside the repo** in `../docs/pesonal/` (`C:\Users\Aby\Documents\aby\tests\docs\pesonal\`), not in git.
 
-**The API source of truth is `docs/api-contract.md`.** Code the frontend against that document, never against Laravel specifics — the backend is a drop-in swap. Key rules: money is integer **centavos** in `amount` (`15000` = ₱150.00); currency is PHP only; every response wraps in `{ "data": ... }` (lists add `meta`); categories carry `color` + `emoji`; expenses read a nested `category` object and write `category_id`. The dashboard is one call: `GET /api/stats/monthly?month=YYYY-MM`.
+**The API source of truth is `../docs/pesonal/api-contract.md`.** Code the frontend against that document, never against Laravel specifics — the backend is a drop-in swap. Key rules: money is integer **centavos** in `amount` (`15000` = ₱150.00); currency is PHP only; every response wraps in `{ "data": ... }` (lists add `meta`); categories carry `color` + `emoji`; expenses read a nested `category` object and write `category_id`. The dashboard is one call: `GET /api/stats/monthly?month=YYYY-MM`.
 
 ## How we build the UI (read this first)
 
@@ -27,7 +27,7 @@ Commit format: a `[feat]` / `[fix]` tag alone on the first line, then brief lowe
 
 **Verify before claiming.** Run the check, read the output, then report. If something is unverified, say so.
 
-Design specs live in `design/`. Status and the screen order live in `docs/ROADMAP.md`.
+Design specs live in `design/`. Status and the screen order live in `../docs/pesonal/ROADMAP.md`.
 
 ## Frontend conventions (Nuxt 4 + PrimeVue, code in `web/app/`)
 
@@ -44,7 +44,7 @@ Design specs live in `design/`. Status and the screen order live in `docs/ROADMA
 
 - Nuxt defaults under `web/app/` (`pages/`, `components/`, `composables/`, `utils/`, `layouts/`), grouped into **feature subfolders**. The app shell (bottom nav + FAB) lives in `layouts/default.vue`, never in a page.
 - **The data layer is three thin layers, each ignorant of the one above.** `app/utils/api.ts` is the **transport**: it owns the base URLs (a server render and the browser use different ones — see the gotchas), unwraps the `{ data }` envelope, and maps the contract's error shape to `ApiRequestError` — nothing else calls `$fetch` raw, so swapping the backend touches this file alone. `app/repositories/<resource>.ts` holds **one plain exported function per endpoint** (`listExpenses`, `createExpense`, …) — paths, query params and payload types live here and nowhere else. `app/composables/` owns **reactivity** — `useAsyncData`, refs, computeds, grouping — and calls repositories, never URLs. Repositories aren't auto-imported; import them explicitly.
-- **Contract types** (`Category`, `Expense`, `MonthlyStats`, …) live in Nuxt 4's `shared/` dir; mirror `docs/api-contract.md`.
+- **Contract types** (`Category`, `Expense`, `MonthlyStats`, …) live in Nuxt 4's `shared/` dir; mirror `../docs/pesonal/api-contract.md`.
 - Pure helpers (`formatPeso`, `percent`) live in `utils/`. Graduate to `app/features/` or Nuxt Layers only if this outgrows the flat structure.
 
 ## Design tokens — Receipt Roll

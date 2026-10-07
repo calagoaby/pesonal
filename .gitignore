@@ -11,3 +11,5 @@ Thumbs.db
 # Local SQLite data — schema lives in migrations, not the data file
 api/database/*.sqlite
 api/database/*.sqlite-journal
+# Planning docs live outside the repo (../docs/pesonal)
+docs/
