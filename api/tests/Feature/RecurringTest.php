@@ -317,7 +317,7 @@ class RecurringTest extends TestCase
 
         $response->assertNoContent();
         $this->assertSame('', $response->getContent());
-        $this->assertDatabaseMissing('recurring', ['id' => $recurring->id]);
+        $this->assertSoftDeleted('recurring', ['id' => $recurring->id]);
         $this->getJson("/api/recurring/{$recurring->id}")->assertNotFound();
 
         // The contract invariant: the stamp survives its template — not nulled, not cascaded.

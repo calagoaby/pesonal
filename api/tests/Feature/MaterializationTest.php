@@ -163,4 +163,26 @@ class MaterializationTest extends TestCase
     {
         $this->artisan('recurring:materialize')->assertSuccessful();
     }
+
+    public function test_a_voided_materialized_expense_stays_voided_for_the_rest_of_the_month(): void
+    {
+        Recurring::factory()->create(['day_of_month' => 15, 'start_date' => '2026-01-01']);
+        $this->materialize(Carbon::create(2026, 6, 20));
+
+        Expense::first()->delete();
+
+        $this->assertSame(0, $this->materialize(Carbon::create(2026, 6, 21)));
+        $this->assertSame(0, Expense::count());
+        $this->assertSame(1, Expense::withTrashed()->count());
+    }
+
+    public function test_a_void_this_month_does_not_stop_next_months_charge(): void
+    {
+        Recurring::factory()->create(['day_of_month' => 15, 'start_date' => '2026-01-01']);
+        $this->materialize(Carbon::create(2026, 6, 20));
+        Expense::first()->delete();
+
+        $this->assertSame(1, $this->materialize(Carbon::create(2026, 7, 20)));
+        $this->assertSame('2026-07-15', Expense::first()->date->format('Y-m-d'));
+    }
 }

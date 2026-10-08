@@ -9,6 +9,7 @@ use App\Models\Category;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\DB;
 
 class CategoryController extends Controller
 {
@@ -53,7 +54,13 @@ class CategoryController extends Controller
             ], 409);
         }
 
-        $category->delete();
+        // Voided rows still hold the restricting foreign key. With their category gone
+        // they could never be restored anyway, so they go with it.
+        DB::transaction(function () use ($category) {
+            $category->expenses()->onlyTrashed()->forceDelete();
+            $category->recurring()->onlyTrashed()->forceDelete();
+            $category->delete();
+        });
 
         return response()->noContent();
     }

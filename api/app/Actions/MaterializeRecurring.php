@@ -33,10 +33,12 @@ class MaterializeRecurring
             // must not fire (targetDate would precede the template's start).
             $afterStart = $targetDate >= $template->start_date->format('Y-m-d');
 
-            // Idempotency by month, not by exact date: a daily run re-evaluates
-            // the same month all month long, and an already-materialized (even
-            // re-clamped) occurrence must count as done.
-            $alreadyDone = Expense::where('recurring_id', $template->id)
+            // Idempotency by month, not by exact date: the job re-evaluates the same
+            // month all month long, and an already-materialized (even re-clamped)
+            // occurrence counts as done — including a voided one, or voiding this
+            // month's rent would bring it straight back on the next run.
+            $alreadyDone = Expense::withTrashed()
+                ->where('recurring_id', $template->id)
                 ->inMonth($month)
                 ->exists();
 

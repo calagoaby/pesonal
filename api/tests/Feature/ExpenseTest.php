@@ -318,16 +318,18 @@ class ExpenseTest extends TestCase
         $this->assertSame('2026-07-02', DB::table('expenses')->where('id', $expense->id)->value('date'));
     }
 
-    public function test_destroy_returns_204_and_the_row_is_gone(): void
+    public function test_destroy_returns_204_and_hides_the_row_from_every_read(): void
     {
-        $expense = Expense::factory()->create();
+        $expense = Expense::factory()->create(['date' => '2026-06-17']);
 
         $response = $this->deleteJson("/api/expenses/{$expense->id}");
 
         $response->assertNoContent();
         $this->assertSame('', $response->getContent());
-        $this->assertDatabaseMissing('expenses', ['id' => $expense->id]);
+        // Hidden, not erased: Undo restores this same row.
+        $this->assertSoftDeleted('expenses', ['id' => $expense->id]);
         $this->getJson("/api/expenses/{$expense->id}")->assertNotFound();
+        $this->getJson('/api/expenses')->assertJsonPath('meta.total', 0);
     }
 
     public function test_timestamps_are_iso_8601_utc_with_no_fractional_seconds(): void

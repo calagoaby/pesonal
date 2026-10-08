@@ -249,6 +249,18 @@ class StatsTest extends TestCase
             range($months - 1, 0)
         );
     }
+
+    public function test_a_voided_expense_drops_out_of_the_month_totals(): void
+    {
+        Expense::factory()->create(['date' => '2026-06-10', 'amount' => 10000]);
+        $voided = Expense::factory()->create(['date' => '2026-06-11', 'amount' => 5000]);
+
+        $this->deleteJson("/api/expenses/{$voided->id}")->assertNoContent();
+
+        $data = $this->getJson('/api/stats/monthly?month=2026-06')->json('data');
+        $this->assertSame(10000, $data['total']);
+        $this->assertSame(1, array_sum(array_column($data['by_category'], 'count')));
+    }
 }
 
 /*

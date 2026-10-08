@@ -230,4 +230,19 @@ class CategoryTest extends TestCase
 
         $this->assertMatchesRegularExpression('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/', $createdAt);
     }
+
+    public function test_destroy_succeeds_when_only_voided_rows_reference_it_and_takes_them_along(): void
+    {
+        $category = Category::factory()->create();
+        $expense = Expense::factory()->create(['category_id' => $category->id]);
+        $template = Recurring::factory()->create(['category_id' => $category->id]);
+        $this->deleteJson("/api/expenses/{$expense->id}")->assertNoContent();
+        $this->deleteJson("/api/recurring/{$template->id}")->assertNoContent();
+
+        $this->deleteJson("/api/categories/{$category->id}")->assertNoContent();
+
+        $this->assertDatabaseMissing('categories', ['id' => $category->id]);
+        $this->assertDatabaseMissing('expenses', ['id' => $expense->id]);
+        $this->assertDatabaseMissing('recurring', ['id' => $template->id]);
+    }
 }
