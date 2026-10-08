@@ -78,7 +78,7 @@ One command runs everything in a single terminal, started by the owner:
 cd api && composer run dev
 ```
 
-It runs `recurring:materialize` once, then keeps three processes up through `concurrently`: `api` (`php artisan serve --port=8080`), `schedule` (`php artisan schedule:work`, which fires the standing-order job hourly) and `web` (`npm run dev` in `../web`). Ctrl+C stops all three; Windows may ask "Terminate batch job (Y/N)?" — answer Y.
+It runs `recurring:materialize` once, then keeps three processes up through `concurrently`: `api` (`php artisan serve --port=8080`), `schedule` (`php artisan schedule:work`, which fires the standing-order job hourly) and `web` (`npm run dev` in `../web`). Ctrl+C stops all three. In PowerShell or cmd, Windows may ask "Terminate batch job (Y/N)?" — answer Y; a closing "Script … returned with error code" line after Ctrl+C is expected, not a failure. If that first `recurring:materialize` fails (e.g. migrations not run yet), nothing starts — fix it or run `php artisan migrate` first.
 
 The app is `http://localhost:3000`; the API is `http://localhost:8080` (`public.apiBase` in `nuxt.config.ts`).
 
@@ -89,7 +89,7 @@ The app is `http://localhost:3000`; the API is `http://localhost:8080` (`public.
 - **Node must be 22.18+.** Nuxt pulls in Babel 8, which declares `node ^22.18.0 || >=24.11.0`; older 22.x installs with `EBADENGINE` warnings.
 - **Keep `package-lock.json` in step with `package.json`.** `npm ci` refuses to install when they disagree (that happened once: `vue-chartjs` was added without its lock entry). After adding or removing a dep, commit both files.
 - **A new top-level directory needs a dev-server restart.** Nuxt scans `shared/`, `server/`, `layouts/` at boot; HMR won't pick up a folder that didn't exist. Symptom: `#shared` alias unresolved, or a new `server/api/` route 404s.
-- **Stale Vite module graph.** If the *browser* shows an error but a direct `Invoke-WebRequest`/`curl` to the same URL returns correct HTML, the code is fine and the dev server's in-memory graph is stale — restart `npm run dev`. That disagreement between the two is the diagnostic; if both fail, it's a real bug.
+- **Stale Vite module graph.** If the *browser* shows an error but a direct `Invoke-WebRequest`/`curl` to the same URL returns correct HTML, the code is fine and the dev server's in-memory graph is stale — restart `composer run dev`. That disagreement between the two is the diagnostic; if both fail, it's a real bug.
 - **Data lives in Laravel's SQLite file.** `api/database/database.sqlite` (gitignored) survives restarts. Reset to the seed with `cd api && php artisan migrate:fresh --seed`, which wipes everything entered through the UI.
 - **Larastan needs more than PHP's default 128M.** Run it as `composer analyse` (in `api/`), which passes `--memory-limit=512M`; at 128M a cold run crashes its worker (`exit code 255`).
 
