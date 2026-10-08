@@ -8,6 +8,6 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-// Idempotent by (recurring_id, month), so the exact time isn't load-bearing;
-// a missed day self-heals on the next run.
-Schedule::command('recurring:materialize')->daily();
+// Hourly, not daily: daily means midnight, when the dev servers are rarely running.
+// The job is idempotent by (recurring_id, month), so running it often is harmless.
+Schedule::command('recurring:materialize')->hourly();
