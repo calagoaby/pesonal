@@ -1,5 +1,5 @@
 import type { Expense } from "#shared/types/Expense";
-import { createExpense, deleteExpense, updateExpense } from "~/repositories/expenses";
+import { deleteExpense, restoreExpense, updateExpense } from "~/repositories/expenses";
 import { provideExpenseForm } from "./context/ExpenseFormContext";
 
 export function useEditExpense(loaded: Expense) {
@@ -70,16 +70,11 @@ export function useEditExpense(loaded: Expense) {
         }
     }
 
-    // Undo a void. The contract has no restore, so bring the row back by creating
-    // it afresh — a new id, but the same money, which is what the user is undoing.
+    // Undo a void. The row was only hidden, so the same row comes back — re-creating it
+    // would lose recurring_id and let the standing-order job charge the month twice.
     async function restore(removed: Expense): Promise<boolean> {
         try {
-            await createExpense({
-                amount: removed.amount,
-                date: removed.date,
-                category_id: removed.category.id,
-                note: removed.note,
-            })
+            await restoreExpense(removed.id)
 
             // The roll is the screen the undo runs from, so refetch it live; the others
             // just drop their cache and refetch the next time they're shown.

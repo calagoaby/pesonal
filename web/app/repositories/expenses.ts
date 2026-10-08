@@ -21,3 +21,8 @@ export function updateExpense(id: number, payload: Partial<ExpensePayload>) {
 export function deleteExpense(id: number) {
     return apiDelete(`${resource}/${id}`)
 }
+
+// Undo of a void: brings back the same row, id and recurring_id intact.
+export function restoreExpense(id: number) {
+    return apiPost<Expense>(`${resource}/${id}/restore`, {})
+}

@@ -21,3 +21,7 @@ export function updateRecurring(id: number, payload: Partial<RecurringPayload>) 
 export function deleteRecurring(id: number) {
     return apiDelete(`${resource}/${id}`)
 }
+
+export function restoreRecurring(id: number) {
+    return apiPost<RecurringExpense>(`${resource}/${id}/restore`, {})
+}

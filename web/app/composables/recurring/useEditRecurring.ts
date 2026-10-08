@@ -1,5 +1,5 @@
 import type { RecurringExpense } from "#shared/types/Recurring";
-import { createRecurring, deleteRecurring, updateRecurring } from "~/repositories/recurring";
+import { deleteRecurring, restoreRecurring, updateRecurring } from "~/repositories/recurring";
 import { provideRecurringForm } from "./context/RecurringFormContext";
 
 export function useEditRecurring(loaded: RecurringExpense) {
@@ -75,19 +75,11 @@ export function useEditRecurring(loaded: RecurringExpense) {
         }
     }
 
-    // Undo a delete. The contract has no restore, so bring the order back by
-    // creating it afresh — a new id, but the same schedule and money.
+    // Undo a delete. The same template id comes back, so the month it already charged
+    // still counts and the job doesn't charge it again.
     async function restore(removed: RecurringExpense): Promise<boolean> {
         try {
-            await createRecurring({
-                amount: removed.amount,
-                category_id: removed.category.id,
-                day_of_month: removed.day_of_month,
-                start_date: removed.start_date,
-                note: removed.note,
-                end_date: removed.end_date,
-                active: removed.active,
-            })
+            await restoreRecurring(removed.id)
 
             // The list is the screen the undo runs from, so refetch it live.
             refreshNuxtData('recurring')
