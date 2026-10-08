@@ -2,7 +2,7 @@
 
 Personal expense tracker. Mobile-first web app, single user, no auth, runs locally. Receipt/thermal-paper look, deadpan funny tone.
 
-Monorepo: `api/` (Laravel — intentionally swappable for another backend later) · `web/` (Nuxt 4 + PrimeVue) · `design/` (UI specs). Runs via Docker. DB is SQLite. Contracts & roadmap live **outside the repo** in `../docs/pesonal/` (`C:\Users\Aby\Documents\aby\tests\docs\pesonal\`), not in git.
+Monorepo: `api/` (Laravel — intentionally swappable for another backend later) · `web/` (Nuxt 4 + PrimeVue) · `design/` (UI specs). Runs natively on Windows (see Working environment). DB is SQLite. Contracts & roadmap live **outside the repo** in `../docs/pesonal/` (`C:\Users\Aby\Documents\aby\tests\docs\pesonal\`), not in git.
 
 **The API source of truth is `../docs/pesonal/api-contract.md`.** Code the frontend against that document, never against Laravel specifics — the backend is a drop-in swap. Key rules: money is integer **centavos** in `amount` (`15000` = ₱150.00); currency is PHP only; every response wraps in `{ "data": ... }` (lists add `meta`); categories carry `color` + `emoji`; expenses read a nested `category` object and write `category_id`. The dashboard is one call: `GET /api/stats/monthly?month=YYYY-MM`.
 
@@ -19,11 +19,11 @@ The loop:
 3. Claude **verifies** the slice, then **commits it straight to `main`** in the format below. No feature branch, no PR, no waiting for approval. The owner reviews afterwards with `git log` / `git show`; anything he wants changed becomes a follow-up commit.
 4. Claude **stops and reports** what changed and why, naming the commit.
 
-**Claude commits; the owner pushes and runs the app.** Commits stay local: Claude never pushes unless the owner asks for it in that conversation. Claude does **not** run Docker lifecycle commands (`build` · `up` · `down` · `restart` · `--force-recreate` · `--renew-anon-volumes`). When a step needs one — a container restart to pick up a new top-level dir / `server/api` route / env or dep change, or an image rebuild — **stop and hand the owner the exact copy-pasteable command(s)** (he forgets them), then verify once he says it's done. Read-only container use is fine: `docker compose exec … npx nuxt typecheck`, `curl` against `:3000`.
+**Claude commits; the owner pushes and runs the app.** Commits stay local: Claude never pushes unless the owner asks for it in that conversation. Claude does **not** start, stop or restart the dev servers (`php artisan serve`, `npm run dev`) — the owner runs them in his own terminals. When a step needs one restarted — a new top-level dir, a dependency, a `nuxt.config.ts` or `.env` change — **stop and hand the owner the exact copy-pasteable command(s)** (he forgets them), then verify once he says it's done. Checks that don't touch the running servers are fine: `npx nuxt typecheck`, `php artisan test`, `curl` against `:3000` / `:8080`.
 
 Commit format: a `[feat]` / `[fix]` tag alone on the first line, then brief lowercase `- bullet` lines. **No co-author trailer** (this overrides the default).
 
-**Explain the reasoning, not just the result.** The owner is comfortable reviewing frontend code but is still learning the tooling around it — Docker, git plumbing, Nuxt internals, TypeScript. Annotate commands in plain language and say *why* a non-obvious choice was made. He asks follow-up questions and expects real answers; "it works" is not one.
+**Explain the reasoning, not just the result.** The owner is comfortable reviewing frontend code but is still learning the tooling around it — PHP and Laravel tooling, git plumbing, Nuxt internals, TypeScript. Annotate commands in plain language and say *why* a non-obvious choice was made. He asks follow-up questions and expects real answers; "it works" is not one.
 
 **Verify before claiming.** Run the check, read the output, then report. If something is unverified, say so.
 
@@ -70,34 +70,42 @@ The mockups in `design/` read in these var names — anything still literal px t
 
 ## Working environment
 
-The repo lives in **WSL** (`/home/aby/projects/Pesonal`); the assistant harness runs on **Windows** and sees it over a UNC path. WSL-installed CLIs are not on the Windows PATH, so run them through WSL:
+Everything runs **natively on Windows** — no Docker, no WSL. The repo is at `C:\Users\Aby\Documents\aby\tests\pesonal`; `git`, Node and PHP 8.4 (`C:\php84`) are all Windows installs.
+
+Two dev servers, each in its own terminal, both run by the owner:
 
 ```
-wsl -e bash -lc "cd /home/aby/projects/Pesonal && <command>"
+cd api && php artisan serve --port=8080
 ```
 
-- **`git` and `gh`** exist only in WSL. Use the form above, not Git Bash — the UNC path breaks it.
-- **`npm` on the host** needs nvm sourced first (`export NVM_DIR="$HOME/.nvm"; . "$NVM_DIR/nvm.sh"`). A bare `wsl npm` resolves to *Windows* npm, which fails on the UNC path with "UNC paths are not supported".
-- **The stack runs on Docker** (`docker compose up -d`), web on `:3000`, and live-mounts `./web` — so the running app always reflects the working tree. Don't start a second dev server; it collides on the port.
+```
+cd web && npm run dev
+```
+
+The app is `http://localhost:3000`; the API is `http://localhost:8080` (`public.apiBase` in `nuxt.config.ts`). Standing orders only materialize while `php artisan schedule:work` runs in a third terminal; nothing schedules it yet.
 
 ### Gotchas that have already cost real time
 
-- **`docker compose restart` does not reload `docker-compose.yml` env changes.** It reuses the container's existing environment. Use `docker compose up -d` to recreate.
-- **A new top-level directory needs a container restart.** Nuxt and Nitro scan `shared/`, `server/`, `layouts/` at boot; HMR won't pick up a folder that didn't exist. Symptom: `#shared` alias unresolved, or a new `server/api/` route 404s.
-- **A dependency added with `docker compose exec … npm install` lives only in the container's `node_modules` volume, never in the image.** `package.json` updates (it's host-mounted), but the image's baked `node_modules` doesn't — so the next time the anonymous volume is recreated it re-seeds from the image, the dep vanishes, and Nuxt dies at boot (`Could not load @pinia/nuxt. Is it installed?`). After adding any dep, rebuild so `package.json` drives the install, then recreate with a fresh volume: `docker compose build web && docker compose up -d --force-recreate --renew-anon-volumes web`. (Owner runs these — see the build loop.)
-- **Edits from Windows fire no file events inside the container.** The source reaches Docker's Linux VM over a file share, so the container reads the new file but Vite never hears it changed and keeps serving the old module. `nuxt.config.ts` makes both watchers (Vite's and Nuxt's) poll once a second instead, so an edit lands within about a second. If hot reload ever looks dead, check that polling config before anything else.
-- **Stale Vite module graph.** If the *browser* shows an error but a direct `Invoke-WebRequest`/`curl` to the same URL returns correct HTML, the code is fine and the dev server's in-memory graph is stale — restart the container. That disagreement between the two is the diagnostic; if both fail, it's a real bug.
-- **`.nuxt` is root-owned.** The container writes build artifacts into the mounted `./web` as root, so host commands that write there fail with `EACCES`. Run typecheck inside the container instead.
-- **A server render and the browser reach Laravel at different URLs.** SSR runs inside the `web` container, where `localhost` is the container itself (`localhost:8000` there is `ECONNREFUSED`), so it uses the compose service name, `http://api:8000` (`NUXT_API_BASE`). The browser can't resolve service names, so it uses the host port, `http://localhost:8000` (`public.apiBase`). `utils/api.ts` picks one with `import.meta.server`.
-- **Data lives in Laravel's SQLite file.** `api/database/database.sqlite` (gitignored) survives container restarts, unlike the old in-memory mocks. Reset to the seed with `docker compose exec api php artisan migrate:fresh --seed`, which wipes everything entered through the UI.
+- **Ports 8000 and 8001 belong to Homestead.** The owner's VirtualBox VM (another project, usually running) forwards them, which is why the API is on 8080. If `artisan serve` is started without `--port`, it silently drifts to the next free port and the frontend misses it.
+- **A terminal opened before an install keeps the old PATH.** After installing or switching PHP/Node, open a new terminal; an old one still finds the previous version (`php -v` saying 8.3 means a stale terminal, not a broken install).
+- **Node must be 22.18+.** Nuxt pulls in Babel 8, which declares `node ^22.18.0 || >=24.11.0`; older 22.x installs with `EBADENGINE` warnings.
+- **Keep `package-lock.json` in step with `package.json`.** `npm ci` refuses to install when they disagree (that happened once: `vue-chartjs` was added without its lock entry). After adding or removing a dep, commit both files.
+- **A new top-level directory needs a dev-server restart.** Nuxt scans `shared/`, `server/`, `layouts/` at boot; HMR won't pick up a folder that didn't exist. Symptom: `#shared` alias unresolved, or a new `server/api/` route 404s.
+- **Stale Vite module graph.** If the *browser* shows an error but a direct `Invoke-WebRequest`/`curl` to the same URL returns correct HTML, the code is fine and the dev server's in-memory graph is stale — restart `npm run dev`. That disagreement between the two is the diagnostic; if both fail, it's a real bug.
+- **Data lives in Laravel's SQLite file.** `api/database/database.sqlite` (gitignored) survives restarts. Reset to the seed with `cd api && php artisan migrate:fresh --seed`, which wipes everything entered through the UI.
+- **Larastan needs more than PHP's default 128M.** Run it as `vendor/bin/phpstan analyse --memory-limit=512M`; at 128M a cold run crashes its worker (`exit code 255`).
 
-### Typecheck
+### Checks
 
 ```
-docker compose exec web npx nuxt typecheck
+cd web && npx nuxt typecheck
 ```
 
-Prints nothing and exits 0 on success. Run it before committing — **Vite strips types without checking them**, so type errors never surface at runtime and the dev server will happily serve broken code.
+```
+cd api && php artisan test
+```
+
+The typecheck prints nothing and exits 0 on success. Run both before committing — **Vite strips types without checking them**, so type errors never surface at runtime and the dev server will happily serve broken code.
 
 **TypeScript is pinned to `^5` deliberately.** TypeScript 7 is the native Go compiler; its npm package doesn't ship `lib/tsc`, which `vue-tsc` requires. `vue-tsc`'s peer range (`>=5.0.0`) accepts TS 7 without warning and then fails at runtime. Don't let a dependency bump move it to 7.
 

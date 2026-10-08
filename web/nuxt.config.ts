@@ -18,27 +18,11 @@ export default defineNuxtConfig({
         }
     },
     runtimeConfig: {
-        // Server-side renders only. Inside the web container localhost is the container
-        // itself, so docker-compose points this at Laravel's service name. Empty falls
-        // back to public.apiBase, which is right when Nuxt runs straight on the host.
-        apiBase: '',
         public: {
-            // Where the browser reaches Laravel: its host-published port.
-            apiBase: 'http://localhost:8000',
+            // `php artisan serve --port=8080`. Not 8000: Homestead forwards 8000 and 8001.
+            apiBase: 'http://localhost:8080',
             locale: 'en-PH',
             timezone: 'Asia/Manila'
         }
-    },
-    // The source lives on the Windows drive and reaches the container over a file
-    // share that never fires change events, so both watchers poll instead: Vite's
-    // for hot reload, Nuxt's for new files and auto-imports. Once a second, because
-    // one stat pass over the share costs ~110ms.
-    vite: {
-        server: {
-            watch: { usePolling: true, interval: 1000 }
-        }
-    },
-    watchers: {
-        chokidar: { usePolling: true, interval: 1000 }
     }
 })

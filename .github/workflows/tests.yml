@@ -19,7 +19,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Mirror the Dockerfile: PHP 8.4 with the same extensions the app needs.
+      # Mirror local dev: PHP 8.4 with the same extensions the app needs.
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
