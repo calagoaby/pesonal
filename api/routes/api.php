@@ -17,10 +17,15 @@ use Illuminate\Support\Facades\Route;
 Route::bind('category', fn (string $id) => Category::find($id) ?? abort(404, 'That category is gone.'));
 Route::bind('expense', fn (string $id) => Expense::find($id) ?? abort(404, 'That entry is not on the roll.'));
 Route::bind('recurring', fn (string $id) => Recurring::find($id) ?? abort(404, 'That standing order is gone.'));
+// Restore only ever targets a voided row: a live or unknown id has nothing to bring back.
+Route::bind('voidedExpense', fn (string $id) => Expense::onlyTrashed()->find($id) ?? abort(404, 'That entry is not on the roll.'));
+Route::bind('voidedRecurring', fn (string $id) => Recurring::onlyTrashed()->find($id) ?? abort(404, 'That standing order is gone.'));
 
 Route::apiResource('categories', CategoryController::class);
 Route::apiResource('expenses', ExpenseController::class);
 Route::apiResource('recurring', RecurringController::class);
+Route::post('expenses/{voidedExpense}/restore', [ExpenseController::class, 'restore']);
+Route::post('recurring/{voidedRecurring}/restore', [RecurringController::class, 'restore']);
 
 Route::get('stats/monthly', [StatsController::class, 'monthly']);
 Route::get('stats/trend', [StatsController::class, 'trend']);

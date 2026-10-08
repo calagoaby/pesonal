@@ -341,4 +341,26 @@ class RecurringTest extends TestCase
         $this->assertMatchesRegularExpression('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/', $data['created_at']);
         $this->assertMatchesRegularExpression('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/', $data['updated_at']);
     }
+
+    public function test_restore_brings_back_the_same_template(): void
+    {
+        $recurring = Recurring::factory()->create();
+        $this->deleteJson("/api/recurring/{$recurring->id}")->assertNoContent();
+
+        $response = $this->postJson("/api/recurring/{$recurring->id}/restore");
+
+        $response->assertOk();
+        $this->assertSame(self::SHAPE, array_keys($response->json('data')));
+        $this->assertSame($recurring->id, $response->json('data.id'));
+        $this->assertCount(1, $this->getJson('/api/recurring')->json('data'));
+    }
+
+    public function test_restore_of_a_live_template_404s(): void
+    {
+        $recurring = Recurring::factory()->create();
+
+        $this->postJson("/api/recurring/{$recurring->id}/restore")
+            ->assertNotFound()
+            ->assertJsonPath('message', 'That standing order is gone.');
+    }
 }

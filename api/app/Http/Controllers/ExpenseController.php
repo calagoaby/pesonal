@@ -100,4 +100,12 @@ class ExpenseController extends Controller
 
         return response()->noContent();
     }
+
+    // Undo of a void: the same row comes back, recurring_id and all.
+    public function restore(Expense $voidedExpense): ExpenseResource
+    {
+        $voidedExpense->restore();
+
+        return ExpenseResource::make($voidedExpense->load('category'));
+    }
 }

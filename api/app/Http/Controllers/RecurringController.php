@@ -79,4 +79,12 @@ class RecurringController extends Controller
 
         return response()->noContent();
     }
+
+    // Undo of a delete: the same template id comes back, so its month's charge still counts.
+    public function restore(Recurring $voidedRecurring): RecurringResource
+    {
+        $voidedRecurring->restore();
+
+        return RecurringResource::make($voidedRecurring->load('category'));
+    }
 }

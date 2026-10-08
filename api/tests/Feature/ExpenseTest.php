@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Category;
 use App\Models\Expense;
+use App\Models\Recurring;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -340,5 +341,34 @@ class ExpenseTest extends TestCase
 
         $this->assertMatchesRegularExpression('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/', $data['created_at']);
         $this->assertMatchesRegularExpression('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/', $data['updated_at']);
+    }
+
+    public function test_restore_brings_back_the_same_row_with_its_recurring_id(): void
+    {
+        $template = Recurring::factory()->create();
+        $expense = Expense::factory()->create([
+            'category_id' => $template->category_id,
+            'recurring_id' => $template->id,
+        ]);
+        $this->deleteJson("/api/expenses/{$expense->id}")->assertNoContent();
+
+        $response = $this->postJson("/api/expenses/{$expense->id}/restore");
+
+        $response->assertOk();
+        $this->assertSame(self::SHAPE, array_keys($response->json('data')));
+        $this->assertSame($expense->id, $response->json('data.id'));
+        $this->assertSame($template->id, $response->json('data.recurring_id'));
+        $this->assertNotSoftDeleted('expenses', ['id' => $expense->id]);
+        $this->getJson('/api/expenses')->assertJsonPath('meta.total', 1);
+    }
+
+    public function test_restore_of_a_live_or_unknown_expense_404s(): void
+    {
+        $live = Expense::factory()->create();
+
+        $this->postJson("/api/expenses/{$live->id}/restore")
+            ->assertNotFound()
+            ->assertJsonPath('message', 'That entry is not on the roll.');
+        $this->postJson('/api/expenses/999999/restore')->assertNotFound();
     }
 }

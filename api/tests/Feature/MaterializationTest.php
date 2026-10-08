@@ -185,4 +185,16 @@ class MaterializationTest extends TestCase
         $this->assertSame(1, $this->materialize(Carbon::create(2026, 7, 20)));
         $this->assertSame('2026-07-15', Expense::first()->date->format('Y-m-d'));
     }
+
+    public function test_deleting_and_restoring_a_template_does_not_charge_the_month_twice(): void
+    {
+        $template = Recurring::factory()->create(['day_of_month' => 15, 'start_date' => '2026-01-01']);
+        $this->materialize(Carbon::create(2026, 6, 20));
+
+        $this->deleteJson("/api/recurring/{$template->id}")->assertNoContent();
+        $this->postJson("/api/recurring/{$template->id}/restore")->assertOk();
+
+        $this->assertSame(0, $this->materialize(Carbon::create(2026, 6, 21)));
+        $this->assertSame(1, Expense::count());
+    }
 }
