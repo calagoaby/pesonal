@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Category;
 use App\Models\Expense;
+use App\Models\Recurring;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -175,6 +176,37 @@ class CategoryTest extends TestCase
         $response->assertStatus(409);
         $this->assertSame(
             'Still tags 3 expenses. Move or delete those first, then it can go.',
+            $response->json('message')
+        );
+    }
+
+    public function test_destroy_409s_when_only_a_standing_order_uses_it(): void
+    {
+        $category = Category::factory()->create();
+        Recurring::factory()->create(['category_id' => $category->id]);
+
+        $response = $this->deleteJson("/api/categories/{$category->id}");
+
+        $response->assertStatus(409);
+        $this->assertSame(
+            'Still tags 1 standing order. Move or delete those first, then it can go.',
+            $response->json('message')
+        );
+        $this->assertArrayNotHasKey('errors', $response->json());
+        $this->assertDatabaseHas('categories', ['id' => $category->id]);
+    }
+
+    public function test_destroy_409s_naming_both_counts_when_expenses_and_standing_orders_use_it(): void
+    {
+        $category = Category::factory()->create();
+        Expense::factory()->count(2)->create(['category_id' => $category->id]);
+        Recurring::factory()->count(3)->create(['category_id' => $category->id]);
+
+        $response = $this->deleteJson("/api/categories/{$category->id}");
+
+        $response->assertStatus(409);
+        $this->assertSame(
+            'Still tags 2 expenses and 3 standing orders. Move or delete those first, then it can go.',
             $response->json('message')
         );
     }

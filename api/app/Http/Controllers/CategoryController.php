@@ -39,20 +39,27 @@ class CategoryController extends Controller
 
     public function destroy(Category $category): Response|JsonResponse
     {
-        // Refuse while any expense still points here; the count rides in the message
-        // since the error shape carries no data field.
-        $used = $category->expenses()->count();
+        // Refuse while anything still points here — the restricting foreign keys would
+        // otherwise turn the delete into a 500. Counts ride in the message, since the
+        // error shape carries no data field.
+        $blockers = array_filter([
+            $this->tally($category->expenses()->count(), 'expense', 'expenses'),
+            $this->tally($category->recurring()->count(), 'standing order', 'standing orders'),
+        ]);
 
-        if ($used > 0) {
-            $noun = $used === 1 ? 'expense' : 'expenses';
-
+        if ($blockers !== []) {
             return response()->json([
-                'message' => "Still tags {$used} {$noun}. Move or delete those first, then it can go.",
+                'message' => 'Still tags '.implode(' and ', $blockers).'. Move or delete those first, then it can go.',
             ], 409);
         }
 
         $category->delete();
 
         return response()->noContent();
+    }
+
+    private function tally(int $count, string $singular, string $plural): ?string
+    {
+        return $count > 0 ? $count.' '.($count === 1 ? $singular : $plural) : null;
     }
 }
