@@ -19,7 +19,7 @@ The loop:
 3. Claude **verifies** the slice, then **commits it straight to `main`** in the format below. No feature branch, no PR, no waiting for approval. The owner reviews afterwards with `git log` / `git show`; anything he wants changed becomes a follow-up commit.
 4. Claude **stops and reports** what changed and why, naming the commit.
 
-**Claude commits; the owner pushes and runs the app.** Commits stay local: Claude never pushes unless the owner asks for it in that conversation. Claude does **not** start, stop or restart the dev servers (`php artisan serve`, `npm run dev`) — the owner runs them in his own terminals. When a step needs one restarted — a new top-level dir, a dependency, a `nuxt.config.ts` or `.env` change — **stop and hand the owner the exact copy-pasteable command(s)** (he forgets them), then verify once he says it's done. Checks that don't touch the running servers are fine: `npx nuxt typecheck`, `php artisan test`, `curl` against `:3000` / `:8080`.
+**Claude commits; the owner pushes and runs the app.** Commits stay local: Claude never pushes unless the owner asks for it in that conversation. Claude does **not** start, stop or restart the dev servers (`composer run dev`) — the owner runs it in his own terminal. When a step needs one restarted — a new top-level dir, a dependency, a `nuxt.config.ts` or `.env` change — **stop and hand the owner the exact copy-pasteable command(s)** (he forgets them), then verify once he says it's done. Checks that don't touch the running servers are fine: `npx nuxt typecheck`, `php artisan test`, `curl` against `:3000` / `:8080`.
 
 Commit format: a `[feat]` / `[fix]` tag alone on the first line, then brief lowercase `- bullet` lines. **No co-author trailer** (this overrides the default).
 
@@ -72,17 +72,15 @@ The mockups in `design/` read in these var names — anything still literal px t
 
 Everything runs **natively on Windows** — no Docker, no WSL. The repo is at `C:\Users\Aby\Documents\aby\tests\pesonal`; `git`, Node and PHP 8.4 (`C:\php84`) are all Windows installs.
 
-Two dev servers, each in its own terminal, both run by the owner:
+One command runs everything in a single terminal, started by the owner:
 
 ```
-cd api && php artisan serve --port=8080
+cd api && composer run dev
 ```
 
-```
-cd web && npm run dev
-```
+It runs `recurring:materialize` once, then keeps three processes up through `concurrently`: `api` (`php artisan serve --port=8080`), `schedule` (`php artisan schedule:work`, which fires the standing-order job hourly) and `web` (`npm run dev` in `../web`). Ctrl+C stops all three; Windows may ask "Terminate batch job (Y/N)?" — answer Y.
 
-The app is `http://localhost:3000`; the API is `http://localhost:8080` (`public.apiBase` in `nuxt.config.ts`). Standing orders only materialize while `php artisan schedule:work` runs in a third terminal; nothing schedules it yet.
+The app is `http://localhost:3000`; the API is `http://localhost:8080` (`public.apiBase` in `nuxt.config.ts`).
 
 ### Gotchas that have already cost real time
 
@@ -93,7 +91,7 @@ The app is `http://localhost:3000`; the API is `http://localhost:8080` (`public.
 - **A new top-level directory needs a dev-server restart.** Nuxt scans `shared/`, `server/`, `layouts/` at boot; HMR won't pick up a folder that didn't exist. Symptom: `#shared` alias unresolved, or a new `server/api/` route 404s.
 - **Stale Vite module graph.** If the *browser* shows an error but a direct `Invoke-WebRequest`/`curl` to the same URL returns correct HTML, the code is fine and the dev server's in-memory graph is stale — restart `npm run dev`. That disagreement between the two is the diagnostic; if both fail, it's a real bug.
 - **Data lives in Laravel's SQLite file.** `api/database/database.sqlite` (gitignored) survives restarts. Reset to the seed with `cd api && php artisan migrate:fresh --seed`, which wipes everything entered through the UI.
-- **Larastan needs more than PHP's default 128M.** Run it as `vendor/bin/phpstan analyse --memory-limit=512M`; at 128M a cold run crashes its worker (`exit code 255`).
+- **Larastan needs more than PHP's default 128M.** Run it as `composer analyse` (in `api/`), which passes `--memory-limit=512M`; at 128M a cold run crashes its worker (`exit code 255`).
 
 ### Checks
 
@@ -103,6 +101,10 @@ cd web && npx nuxt typecheck
 
 ```
 cd api && php artisan test
+```
+
+```
+cd api && composer analyse
 ```
 
 The typecheck prints nothing and exits 0 on success. Run both before committing — **Vite strips types without checking them**, so type errors never surface at runtime and the dev server will happily serve broken code.
