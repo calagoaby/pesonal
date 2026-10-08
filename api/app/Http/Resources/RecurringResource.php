@@ -21,8 +21,9 @@ class RecurringResource extends JsonResource
             'end_date' => $this->end_date?->format('Y-m-d'), // null = open-ended
             'active' => $this->active, // real boolean
             'category' => CategoryRefResource::make($this->category),
-            'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at,
+            // Contract: ISO 8601 UTC with no fractional seconds — Laravel's default adds .000000.
+            'created_at' => $this->created_at?->toIso8601ZuluString(),
+            'updated_at' => $this->updated_at?->toIso8601ZuluString(),
         ];
     }
 }

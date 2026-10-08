@@ -221,4 +221,13 @@ class CategoryTest extends TestCase
         $this->assertSame('', $response->getContent());
         $this->assertDatabaseMissing('categories', ['id' => $category->id]);
     }
+
+    public function test_created_at_is_iso_8601_utc_with_no_fractional_seconds(): void
+    {
+        $category = Category::factory()->create();
+
+        $createdAt = $this->getJson("/api/categories/{$category->id}")->json('data.created_at');
+
+        $this->assertMatchesRegularExpression('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/', $createdAt);
+    }
 }

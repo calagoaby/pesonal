@@ -331,4 +331,14 @@ class RecurringTest extends TestCase
 
         $this->getJson('/api/expenses')->assertOk()->assertJsonPath('meta.total', 3);
     }
+
+    public function test_timestamps_are_iso_8601_utc_with_no_fractional_seconds(): void
+    {
+        $recurring = Recurring::factory()->create();
+
+        $data = $this->getJson("/api/recurring/{$recurring->id}")->json('data');
+
+        $this->assertMatchesRegularExpression('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/', $data['created_at']);
+        $this->assertMatchesRegularExpression('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/', $data['updated_at']);
+    }
 }

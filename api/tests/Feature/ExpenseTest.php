@@ -329,4 +329,14 @@ class ExpenseTest extends TestCase
         $this->assertDatabaseMissing('expenses', ['id' => $expense->id]);
         $this->getJson("/api/expenses/{$expense->id}")->assertNotFound();
     }
+
+    public function test_timestamps_are_iso_8601_utc_with_no_fractional_seconds(): void
+    {
+        $expense = Expense::factory()->create();
+
+        $data = $this->getJson("/api/expenses/{$expense->id}")->json('data');
+
+        $this->assertMatchesRegularExpression('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/', $data['created_at']);
+        $this->assertMatchesRegularExpression('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/', $data['updated_at']);
+    }
 }

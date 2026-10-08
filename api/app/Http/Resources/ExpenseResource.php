@@ -19,8 +19,9 @@ class ExpenseResource extends JsonResource
             'note' => $this->note,
             'category' => CategoryRefResource::make($this->category), // 4-field ref, never category_id
             'recurring_id' => $this->recurring_id,
-            'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at,
+            // Contract: ISO 8601 UTC with no fractional seconds — Laravel's default adds .000000.
+            'created_at' => $this->created_at?->toIso8601ZuluString(),
+            'updated_at' => $this->updated_at?->toIso8601ZuluString(),
         ];
     }
 }

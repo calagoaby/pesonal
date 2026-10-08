@@ -18,7 +18,7 @@ class CategoryResource extends JsonResource
             'name' => $this->name,
             'color' => $this->color,
             'emoji' => $this->emoji,
-            'created_at' => $this->created_at,
+            'created_at' => $this->created_at?->toIso8601ZuluString(), // contract: no fractional seconds
         ];
     }
 }
