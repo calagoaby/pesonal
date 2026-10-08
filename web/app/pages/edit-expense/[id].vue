@@ -54,7 +54,7 @@ async function record() {
 }
 
 async function voidEntry() {
-    // Capture before we leave — the undo re-creates from this snapshot on the roll.
+    // Capture before we leave — the toast and its undo outlive this page's entry.
     const removed = entry.value
 
     if (await remove()) {

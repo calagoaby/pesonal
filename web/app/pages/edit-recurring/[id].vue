@@ -60,7 +60,7 @@ async function record() {
 }
 
 async function deleteOrder() {
-    // Capture before we leave — the undo re-creates from this snapshot on the list.
+    // Capture before we leave — the toast and its undo outlive this page's entry.
     const removed = entry.value
 
     if (await remove()) {
