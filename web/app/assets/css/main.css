@@ -80,7 +80,7 @@ body {
         height: 100%;
         background-color: var(--desk);
         border-radius: 32px;
-        overflow: hidden;
+        overflow: clip; /* not hidden: hidden still scrolls on focus, and the closed sheets sit below */
         /* A transform makes .screen the containing block for position: fixed, so the
            sheets, scrims and toast stay inside the phone instead of the window. */
         transform: translateZ(0);
