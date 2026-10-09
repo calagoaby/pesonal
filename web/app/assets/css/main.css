@@ -60,23 +60,22 @@ body {
 
 /* Wider screens centre the app in a column instead of stretching it: Bootstrap's
    container steps (540 at 576, 720 at 768), capped at 720 so a receipt still reads
-   like a receipt. Phones stay full width. */
+   like a receipt. Phones stay full width. The page itself scrolls, so the scrollbar
+   sits at the window edge and the wheel works over the margins; the fixed overlays
+   (Sheet, Toast, VoidSlip) read --column-max to match the column. */
 @media (min-width: 576px) {
-    .column {
-        max-width: 540px;
-        height: 100dvh;
-        margin-inline: auto;
-        overflow: clip; /* not hidden: hidden still scrolls on focus, and the closed sheets sit below */
-        /* A transform makes the column the containing block for position: fixed, so the
-           sheets, scrims and toast span the column instead of the whole window.
-           translate(0), not translateZ(0): no forced GPU layer, so no blurry text. */
-        transform: translate(0);
-        --app-height: 100%;
+    :root {
+        --column-max: 540px;
     }
 }
 
 @media (min-width: 768px) {
-    .column {
-        max-width: 720px;
+    :root {
+        --column-max: 720px;
     }
+}
+
+.column {
+    max-width: var(--column-max, none);
+    margin-inline: auto;
 }

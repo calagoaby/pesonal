@@ -98,6 +98,9 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleKeydown))
 .slip-wrap {
     position: fixed;
     inset: 0;
+    /* Centred on the app's column on a wider screen (main.css), not the whole window. */
+    max-width: var(--column-max, none);
+    margin-inline: auto;
     z-index: 111;
     display: flex;
     align-items: center;

@@ -65,6 +65,9 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleKeydown))
     left: 0;
     right: 0;
     bottom: 0;
+    /* As wide as the app's column on a wider screen (main.css), full width on a phone. */
+    max-width: var(--column-max, none);
+    margin-inline: auto;
     z-index: 101;
     background-color: var(--paper);
     border-top: 2px solid var(--ink);
@@ -72,7 +75,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleKeydown))
     padding: 0 var(--space-l) var(--space-l);
     /* Tall content (the category sheet) scrolls inside rather than pushing its
        header off the top of a short viewport. */
-    max-height: calc(var(--app-height, 100dvh) * .9);
+    max-height: 90dvh;
     overflow-y: auto;
     transform: translateY(110%);
     transition: transform .28s ease;

@@ -27,8 +27,11 @@ const emit = defineEmits<{
    drill layout has neither, so it overrides --toast-offset to sit lower. */
 .toast {
     position: fixed;
-    left: var(--space-l);
-    right: var(--space-l);
+    /* The app column's width less its gutters (main.css); the window's on a phone. */
+    left: 0;
+    right: 0;
+    width: calc(min(100%, var(--column-max, 100%)) - 2 * var(--space-l));
+    margin-inline: auto;
     bottom: var(--toast-offset, 88px);
     z-index: 90;
     display: flex;
