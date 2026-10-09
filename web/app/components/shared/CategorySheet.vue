@@ -31,7 +31,7 @@ function pick(id: number | null) {
                 :class="{ selected: selected_id === null }"
                 @click="pick(null)"
             >
-                <span class="dot all"></span>
+                <span class="dot all"/>
                 <span class="name">{{ props.allLabel }}</span>
                 <Check class="check" />
             </button>
@@ -42,7 +42,7 @@ function pick(id: number | null) {
                 :class="{ selected: selected_id === category.id }"
                 @click="pick(category.id)"
             >
-                <span class="dot" :style="{ backgroundColor: category.color }"></span>
+                <span class="dot" :style="{ backgroundColor: category.color }"/>
                 <span class="name">{{ category.name }}</span>
                 <span class="emoji">{{ category.emoji }}</span>
                 <Check class="check" />

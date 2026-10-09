@@ -3,7 +3,7 @@
 export default defineNuxtConfig({
     compatibilityDate: '2025-07-15',
     devtools: { enabled: true },
-    modules: ['@pinia/nuxt'],
+    modules: ['@pinia/nuxt', '@nuxt/eslint'],
     css: ['~/assets/css/main.css'],
     // Fonts via <head> links (with preconnect) instead of a CSS @import.
     // @import forces: fetch CSS -> parse -> discover font -> fetch — a render-blocking

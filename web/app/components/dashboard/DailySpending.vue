@@ -22,12 +22,12 @@ const peak_hint = computed(() => peak_date.value ? `biggest: ${formatListDate(pe
         :hint="peak_hint"
     >
         <div class="bars">
-            <div v-for="(daily, index) in daily_percentages"
+            <div
+v-for="(daily, index) in daily_percentages"
                 :key="index"
                 :style="{ height: `${daily}%`}"
                 :class="{ peak: peak_index === index }"
-            >
-            </div>
+            />
         </div>
         <div class="number-labels">
             <div v-for="index in daily_percentages.length" :key="index">

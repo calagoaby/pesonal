@@ -82,7 +82,7 @@ watch(is_open, (open) => {
     <SharedSheet v-model:open="is_open" :title="is_edit ? 'Edit category' : 'New category'">
         <div class="label">Name</div>
         <div class="name-field">
-            <span class="dot" :style="{ backgroundColor: color }"></span>
+            <span class="dot" :style="{ backgroundColor: color }"/>
             <span class="emoji">{{ emoji }}</span>
             <input v-model="name" placeholder="Name it" maxlength="24">
         </div>
@@ -97,7 +97,7 @@ watch(is_open, (open) => {
                 :style="{ backgroundColor: swatch }"
                 :aria-label="swatch"
                 @click="color = swatch"
-            ></button>
+            />
         </div>
 
         <div class="label">Emoji</div>

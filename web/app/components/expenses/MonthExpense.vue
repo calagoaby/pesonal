@@ -125,7 +125,7 @@ function clearCategory() {
         </template>
 
         <template v-else>
-            <div class="daily-expenses" v-for="daily_expense in daily_expenses" :key="daily_expense.date">
+            <div v-for="daily_expense in daily_expenses" :key="daily_expense.date" class="daily-expenses">
                 <div class="date">
                     {{ formatDailyDate(daily_expense.date) }}
                 </div>
@@ -140,7 +140,7 @@ function clearCategory() {
                             {{ expense.note }}
                             <span class="cat">{{ expense.category.name }}</span>
                         </div>
-                        <div class="lead"></div>
+                        <div class="lead"/>
                         <div class="amount">{{ formatAmountWithCurrency(expense.amount) }}</div>
                     </NuxtLink>
                 </div>

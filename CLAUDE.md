@@ -111,7 +111,7 @@ The typecheck prints nothing and exits 0 on success. Run both before committing 
 
 **TypeScript is pinned to `^5` deliberately.** TypeScript 7 is the native Go compiler; its npm package doesn't ship `lib/tsc`, which `vue-tsc` requires. `vue-tsc`'s peer range (`>=5.0.0`) accepts TS 7 without warning and then fails at runtime. Don't let a dependency bump move it to 7.
 
-There is **no ESLint configured** yet, despite the convention above mentioning it.
+**Lint:** `cd web && npm run lint` (ESLint through `@nuxt/eslint`). `web/eslint.config.mjs` encodes the block order, no trailing newline and camelCase function rules. Run it with the typecheck before committing.
 
 ## Verifying your work
 

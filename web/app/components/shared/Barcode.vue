@@ -47,7 +47,7 @@ function barcodeStyle ( { index }: { index: number }): BarcodeStyle {
             v-for="(style, index) in barcode_styles"
             :key="index" 
             :style="style"
-        ></div>
+        />
     </div>
 </template>
 

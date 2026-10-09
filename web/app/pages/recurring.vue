@@ -84,7 +84,7 @@ function sinceLabel(template: RecurringExpense) {
                             {{ template.note || template.category.name }}
                             <span class="tag">{{ template.category.name }}</span>
                         </span>
-                        <span class="lead"></span>
+                        <span class="lead"/>
                         <span class="amount">{{ formatAmountWithCurrency(template.amount) }}</span>
                     </div>
                     <div class="meta">

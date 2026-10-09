@@ -84,20 +84,23 @@ function round(value: number) {
                 />
                 <template v-for="mark in marks" :key="mark.month">
                     <!-- When the peak is also the current month the current marker wins: where you stand reads before where the ceiling was. -->
-                    <circle v-if="mark.is_current"
+                    <circle
+v-if="mark.is_current"
                         :cx="mark.x" :cy="mark.y" r="3.5"
                         fill="var(--stamp)"
                         stroke="var(--stamp)"
                         stroke-width="2"
                     />
-                    <circle v-else-if="mark.is_peak"
+                    <circle
+v-else-if="mark.is_peak"
                         :cx="mark.x" :cy="mark.y" r="3.5"
                         fill="var(--hi)"
                         stroke="var(--ink)"
                         stroke-width="2"
                     />
                 </template>
-                <text v-for="mark in marks"
+                <text
+v-for="mark in marks"
                     :key="mark.month"
                     :x="mark.x" y="72"
                     text-anchor="middle"

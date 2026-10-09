@@ -99,8 +99,8 @@ async function confirmDelete() {
         </SharedNotice>
 
         <template v-else>
-            <button class="category" v-for="category in categories" :key="category.id" @click="openEdit(category)">
-                <span class="dot" :style="{ backgroundColor: category.color }"></span>
+            <button v-for="category in categories" :key="category.id" class="category" @click="openEdit(category)">
+                <span class="dot" :style="{ backgroundColor: category.color }"/>
                 <span class="emoji">{{ category.emoji }}</span>
                 <span class="name">{{ category.name }}</span>
                 <ChevronRight class="chevron" />

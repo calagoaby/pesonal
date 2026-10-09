@@ -50,7 +50,7 @@ const clamps = computed(() => day_of_month.value >= 29)
             <span class="amount">
                 <span class="peso">₱</span>
                 <span>{{ formatAmount(amount) }}</span>
-                <span class="caret"></span>
+                <span class="caret"/>
             </span>
             <span class="amount-hint">Charged every month, automatically</span>
         </button>
@@ -61,7 +61,7 @@ const clamps = computed(() => day_of_month.value >= 29)
             <span class="label">Category</span>
             <span class="value">
                 <template v-if="category">
-                    <span class="dot" :style="{ backgroundColor: category.color }"></span>
+                    <span class="dot" :style="{ backgroundColor: category.color }"/>
                     {{ category.name }}
                 </template>
                 <span v-else class="placeholder">Choose one</span>
@@ -111,7 +111,7 @@ const clamps = computed(() => day_of_month.value >= 29)
                 :aria-checked="active"
                 aria-label="Active"
                 @click="active = !active"
-            ></button>
+            />
         </div>
 
         <p v-for="(messages, field) in errors" :key="field" class="field-error">

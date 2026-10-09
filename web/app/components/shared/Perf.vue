@@ -1,5 +1,5 @@
 <template>
-    <div class="perf"></div>
+    <div class="perf"/>
 </template>
 
 <style scoped>

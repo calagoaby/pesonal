@@ -28,6 +28,7 @@ type RequestOptions = {
      * wide for it, and `Record<string, unknown>` is too narrow to accept a plain
      * payload interface — interfaces have no implicit index signature.
      */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- ofetch declares Record<string, any>
     body?: Record<string, any>
 }
 
@@ -43,12 +44,14 @@ export async function apiGetList<T>(path: string, query?: Query): Promise<{ item
     return { items: response.data, meta: response.meta }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- ofetch declares Record<string, any>
 export async function apiPost<T>(path: string, body: Record<string, any>): Promise<T> {
     const response = await request<{ data: T }>(path, { method: 'POST', body })
 
     return response.data
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- ofetch declares Record<string, any>
 export async function apiPatch<T>(path: string, body: Record<string, any>): Promise<T> {
     const response = await request<{ data: T }>(path, { method: 'PATCH', body })
 

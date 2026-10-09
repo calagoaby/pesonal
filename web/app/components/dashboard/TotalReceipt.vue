@@ -29,7 +29,7 @@ const previous_label = computed(() => formatMonthName(shiftMonth(month.value, -1
 
         <div class="tlabel">TOTAL DAMAGE</div>
         <div class="total">{{ formatAmountWithCurrency(total) }}</div>
-        <div class="stamp-row" v-if="change_pct !== null">
+        <div v-if="change_pct !== null" class="stamp-row">
             <span class="stamp" :class="{ over: !spent_less }">
                 <ArrowDownRight v-if="spent_less" />
                 <ArrowUpRight v-else />
@@ -40,12 +40,12 @@ const previous_label = computed(() => formatMonthName(shiftMonth(month.value, -1
         <SharedPerf />
         <div class="lrow">
             <div class="label">DAILY AVG</div>
-            <div class="fill"></div>
+            <div class="fill"/>
             <div class="val">{{ formatAmountWithCurrency(daily_average) }}</div>
         </div>
         <div class="lrow">
             <div class="label">TRANSACTIONS</div>
-            <div class="fill"></div>
+            <div class="fill"/>
             <div class="val">{{ transaction_count }}</div>
         </div>
 

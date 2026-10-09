@@ -86,7 +86,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleKeydown))
         <div class="amount">
             <span class="peso">₱</span>
             <span>{{ formatAmount(entry) }}</span>
-            <span class="caret"></span>
+            <span class="caret"/>
         </div>
         <div class="keys">
             <button
