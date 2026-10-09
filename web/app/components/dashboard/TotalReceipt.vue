@@ -40,12 +40,12 @@ const previous_label = computed(() => formatMonthName(shiftMonth(month.value, -1
         <SharedPerf />
         <div class="lrow">
             <div class="label">DAILY AVG</div>
-            <div class="fill"/>
+            <div class="fill" />
             <div class="val">{{ formatAmountWithCurrency(daily_average) }}</div>
         </div>
         <div class="lrow">
             <div class="label">TRANSACTIONS</div>
-            <div class="fill"/>
+            <div class="fill" />
             <div class="val">{{ transaction_count }}</div>
         </div>
 

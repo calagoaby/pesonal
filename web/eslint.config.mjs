@@ -13,6 +13,8 @@ export default withNuxt({
         // Optional props are left undefined on purpose; a default would only restate that (CLAUDE.md: comment/code only what's needed).
         'vue/require-default-prop': 'off',
         'eol-last': ['error', 'never'],
+        // House style is `<SharedPerf />`; html-self-closing's fix alone writes `<div/>`.
+        'vue/html-closing-bracket-spacing': ['error', { selfClosingTag: 'always' }],
     },
 }, {
     // Scoped to TS/Vue: the rule needs the typescript parser, which plain .mjs files don't get.

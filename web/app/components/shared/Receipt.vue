@@ -41,7 +41,7 @@ function createReceiptClip(
 
 <template>
     <div class="receipt-container">
-        <div v-if="!is_bottom" class="torn-top" :style="{ clipPath: clip_path }"/>
+        <div v-if="!is_bottom" class="torn-top" :style="{ clipPath: clip_path }" />
         <div class="roll">
             <div class="header">
                 <div class="merchant">{{ merchant }}</div>
@@ -49,7 +49,7 @@ function createReceiptClip(
             </div>
             <slot />
         </div>
-        <div v-if="is_bottom" class="torn-bottom" :style="{ clipPath: clip_path }"/>
+        <div v-if="is_bottom" class="torn-bottom" :style="{ clipPath: clip_path }" />
     </div>
 </template>
 

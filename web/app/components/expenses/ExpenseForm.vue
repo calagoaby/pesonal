@@ -43,7 +43,7 @@ const category = computed(() => categories.value.find(item => item.id === catego
             <span class="amount">
                 <span class="peso">₱</span>
                 <span>{{ formatAmount(amount) }}</span>
-                <span class="caret"/>
+                <span class="caret" />
             </span>
             <span class="amount-hint">Tap to open the keypad</span>
         </button>
@@ -54,7 +54,7 @@ const category = computed(() => categories.value.find(item => item.id === catego
             <span class="label">Category</span>
             <span class="value">
                 <template v-if="category">
-                    <span class="dot" :style="{ backgroundColor: category.color }"/>
+                    <span class="dot" :style="{ backgroundColor: category.color }" />
                     {{ category.name }}
                 </template>
                 <span v-else class="placeholder">Choose one</span>

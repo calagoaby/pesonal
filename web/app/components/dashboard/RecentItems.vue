@@ -28,7 +28,7 @@ const {
         </template>
         <div v-for="item in items" :key="item.id" class="item">
             <div class="iname">
-                <div class="dot" :style="{ backgroundColor: item.category.color }"/>
+                <div class="dot" :style="{ backgroundColor: item.category.color }" />
                 <div class="itext">
                     <span>{{ item.note }}</span>
                     <span class="isub">{{ item.category.name }} · {{ formatListDate(item.date) }}</span>

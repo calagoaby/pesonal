@@ -48,15 +48,15 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleKeydown))
 </script>
 
 <template>
-    <div class="scrim" :class="{ shown: is_open }" @click="close"/>
+    <div class="scrim" :class="{ shown: is_open }" @click="close" />
     <div class="slip-wrap" :class="{ shown: is_open }">
         <div class="slip" role="alertdialog" :aria-label="title">
             <div v-if="is_confirm" class="stamp">Void</div>
             <div class="slip-title">{{ title }}</div>
-            <div class="rule"/>
+            <div class="rule" />
             <div class="subject">
                 <span class="desc">{{ subject }}</span>
-                <span class="lead"/>
+                <span class="lead" />
                 <span v-if="amount !== undefined">{{ formatAmountWithCurrency(amount) }}</span>
             </div>
             <div class="warn">

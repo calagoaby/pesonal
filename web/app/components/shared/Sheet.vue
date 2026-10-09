@@ -27,9 +27,9 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleKeydown))
 </script>
 
 <template>
-    <div class="scrim" :class="{ shown: is_open }" @click="close"/>
+    <div class="scrim" :class="{ shown: is_open }" @click="close" />
     <div class="sheet" :class="{ shown: is_open }" role="dialog" :aria-label="title">
-        <div class="grab"/>
+        <div class="grab" />
         <div class="head">
             <span>{{ title }}</span>
             <button aria-label="Close" @click="close">

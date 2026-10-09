@@ -53,7 +53,7 @@ const total_label = computed(() => `₱${(total.value / 100000).toFixed(1)}k`)
                 <div v-for="(category, index) in category_rows" :key="index">
                     <div class="leg-row">
                         <div class="leg-name">
-                            <span class="dot" :style="{ backgroundColor: category.color }"/>
+                            <span class="dot" :style="{ backgroundColor: category.color }" />
                             <span>{{ category.name }}</span>
                         </div>
                         <div class="numbers">
@@ -66,7 +66,7 @@ const total_label = computed(() => `₱${(total.value / 100000).toFixed(1)}k`)
 class="fill" :style="{ 
                             backgroundColor: category.color, 
                             width: category.percentage + '%' 
-                        }"/>
+                        }" />
                     </div>
                 </div>
             </div>

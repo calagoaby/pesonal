@@ -42,7 +42,7 @@ const delta_label = computed(() => {
             {{ month_name }}
             <span v-if="row.is_current" class="now">this month</span>
         </span>
-        <span class="lead"/>
+        <span class="lead" />
         <span class="amount">{{ formatAmountWithCurrency(row.total) }}</span>
         <span class="delta" :class="delta_tone">{{ delta_label }}</span>
     </div>

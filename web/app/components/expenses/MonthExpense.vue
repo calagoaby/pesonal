@@ -140,7 +140,7 @@ function clearCategory() {
                             {{ expense.note }}
                             <span class="cat">{{ expense.category.name }}</span>
                         </div>
-                        <div class="lead"/>
+                        <div class="lead" />
                         <div class="amount">{{ formatAmountWithCurrency(expense.amount) }}</div>
                     </NuxtLink>
                 </div>

@@ -14,7 +14,7 @@ withDefaults(defineProps<{
 </script>
 
 <template>
-    <div class="skeleton" :style="{ width, height }"/>
+    <div class="skeleton" :style="{ width, height }" />
 </template>
 
 <style scoped>
