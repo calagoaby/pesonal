@@ -19,9 +19,13 @@ const is_month_picker_open = ref(false)
 <template>
     <div class="month-switcher">
         <div class="period">
-            <ChevronLeft class="chevron" @click="goToPreviousMonth" />
+            <button class="chevron" type="button" aria-label="Previous month" @click="goToPreviousMonth">
+                <ChevronLeft />
+            </button>
             <button class="label" @click="is_month_picker_open = true">{{ formatMonthLabel(month) }}</button>
-            <ChevronRight class="chevron" @click="goToNextMonth" />
+            <button class="chevron" type="button" aria-label="Next month" @click="goToNextMonth">
+                <ChevronRight />
+            </button>
         </div>
         <div class="text">
             printed just now
@@ -63,6 +67,11 @@ const is_month_picker_open = ref(false)
 }
 
 .chevron {
+    display: flex;
+    background: transparent;
+    border: 0;
+    padding: 0;
+    font: inherit;
     font-size: var(--text-label);
     color: var(--faded);
     cursor: pointer;

@@ -63,9 +63,13 @@ function clearCategory() {
         <SharedPerf />
 
         <div class="period-switcher">
-            <ChevronLeft class="chevron" @click="goToPreviousMonth" />
+            <button class="chevron" type="button" aria-label="Previous month" @click="goToPreviousMonth">
+                <ChevronLeft />
+            </button>
             <button class="period" @click="is_month_picker_open = true">PERIOD {{ month }}</button>
-            <ChevronRight class="chevron" @click="goToNextMonth" />
+            <button class="chevron" type="button" aria-label="Next month" @click="goToNextMonth">
+                <ChevronRight />
+            </button>
         </div>
 
         <SharedPerf />
@@ -186,7 +190,14 @@ function clearCategory() {
     gap: var(--space-xl);
     font-size: var(--text-label);
 
+    /* Buttons don't inherit font or colour by default; the icon sizes off the font. */
     .chevron {
+        display: flex;
+        background: transparent;
+        border: 0;
+        padding: 0;
+        font: inherit;
+        color: inherit;
         cursor: pointer;
     }
 }
