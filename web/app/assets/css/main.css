@@ -58,32 +58,25 @@ body {
     font-family: var(--sans);
 }
 
-/* On a desktop, show the app the way every mockup in design/ does: inside a 390px
-   phone on the desk. Touch devices match none of this and stay edge to edge. The
-   mockups' #d8d1c2 surround and #211e19 bezel snap to --perforation and --ink. */
-@media (min-width: 600px) and (hover: hover) and (pointer: fine) {
-    body {
-        background-color: var(--perforation);
-    }
-
-    .device {
-        width: 390px;
-        height: min(844px, calc(100dvh - 2 * var(--space-2xl)));
-        margin: max(var(--space-2xl), calc((100dvh - 844px) / 2)) auto;
-        padding: 10px;
-        background-color: var(--ink);
-        border-radius: 42px;
-        box-shadow: 0 30px 60px rgba(33, 30, 25, .35); /* the mockups' frame shadow, a one-off */
-    }
-
-    .screen {
-        height: 100%;
-        background-color: var(--desk);
-        border-radius: 32px;
+/* Wider screens centre the app in a column instead of stretching it: Bootstrap's
+   container steps (540 at 576, 720 at 768), capped at 720 so a receipt still reads
+   like a receipt. Phones stay full width. */
+@media (min-width: 576px) {
+    .column {
+        max-width: 540px;
+        height: 100dvh;
+        margin-inline: auto;
         overflow: clip; /* not hidden: hidden still scrolls on focus, and the closed sheets sit below */
-        /* A transform makes .screen the containing block for position: fixed, so the
-           sheets, scrims and toast stay inside the phone instead of the window. */
-        transform: translateZ(0);
+        /* A transform makes the column the containing block for position: fixed, so the
+           sheets, scrims and toast span the column instead of the whole window.
+           translate(0), not translateZ(0): no forced GPU layer, so no blurry text. */
+        transform: translate(0);
         --app-height: 100%;
+    }
+}
+
+@media (min-width: 768px) {
+    .column {
+        max-width: 720px;
     }
 }

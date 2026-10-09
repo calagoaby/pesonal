@@ -1,10 +1,8 @@
 <template>
-    <!-- Plain wrappers on a phone; main.css turns them into the mockups' phone frame on a desktop. -->
-    <div class="device">
-        <div class="screen">
-            <NuxtLayout>
-                <NuxtPage />
-            </NuxtLayout>
-        </div>
+    <!-- Full width on a phone; main.css centres it in a column on wider screens. -->
+    <div class="column">
+        <NuxtLayout>
+            <NuxtPage />
+        </NuxtLayout>
     </div>
 </template>
