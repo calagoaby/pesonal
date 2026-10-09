@@ -12,7 +12,7 @@
 .shell {
     display: flex;
     flex-direction: column;
-    height: 100dvh;
+    height: var(--app-height, 100dvh); /* the phone frame's screen on a desktop */
 
     .content {
         padding: var(--space-m) var(--space-l) 0;

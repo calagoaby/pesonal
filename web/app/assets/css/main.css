@@ -57,3 +57,33 @@ body {
     color: var(--ink);
     font-family: var(--sans);
 }
+
+/* On a desktop, show the app the way every mockup in design/ does: inside a 390px
+   phone on the desk. Touch devices match none of this and stay edge to edge. The
+   mockups' #d8d1c2 surround and #211e19 bezel snap to --perforation and --ink. */
+@media (min-width: 600px) and (hover: hover) and (pointer: fine) {
+    body {
+        background-color: var(--perforation);
+    }
+
+    .device {
+        width: 390px;
+        height: min(844px, calc(100dvh - 2 * var(--space-2xl)));
+        margin: max(var(--space-2xl), calc((100dvh - 844px) / 2)) auto;
+        padding: 10px;
+        background-color: var(--ink);
+        border-radius: 42px;
+        box-shadow: 0 30px 60px rgba(33, 30, 25, .35); /* the mockups' frame shadow, a one-off */
+    }
+
+    .screen {
+        height: 100%;
+        background-color: var(--desk);
+        border-radius: 32px;
+        overflow: hidden;
+        /* A transform makes .screen the containing block for position: fixed, so the
+           sheets, scrims and toast stay inside the phone instead of the window. */
+        transform: translateZ(0);
+        --app-height: 100%;
+    }
+}

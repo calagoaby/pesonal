@@ -72,7 +72,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleKeydown))
     padding: 0 var(--space-l) var(--space-l);
     /* Tall content (the category sheet) scrolls inside rather than pushing its
        header off the top of a short viewport. */
-    max-height: 90dvh;
+    max-height: calc(var(--app-height, 100dvh) * .9);
     overflow-y: auto;
     transform: translateY(110%);
     transition: transform .28s ease;

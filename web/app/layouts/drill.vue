@@ -13,7 +13,7 @@
 .shell {
     display: flex;
     flex-direction: column;
-    height: 100dvh;
+    height: var(--app-height, 100dvh); /* the phone frame's screen on a desktop */
     /* No nav or commit bar here, so the toast sits near the bottom edge. */
     --toast-offset: var(--space-l);
 
