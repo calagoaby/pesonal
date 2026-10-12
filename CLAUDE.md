@@ -2,7 +2,7 @@
 
 Personal expense tracker. Mobile-first web app, single user, no auth, runs locally. Receipt/thermal-paper look, deadpan funny tone.
 
-Monorepo: `api/` (Laravel — intentionally swappable for another backend later) · `web/` (Nuxt 4 + PrimeVue) · `design/` (UI specs). Runs natively on Windows (see Working environment). DB is SQLite. Contracts & roadmap live **outside the repo** in `../docs/pesonal/` (`C:\Users\Aby\Documents\aby\tests\docs\pesonal\`), not in git.
+Monorepo: `api/` (Laravel — intentionally swappable for another backend later) · `web/` (Nuxt 4) · `design/` (UI specs). Runs natively on Windows (see Working environment). DB is SQLite. Contracts & roadmap live **outside the repo** in `../docs/pesonal/` (`C:\Users\Aby\Documents\aby\tests\docs\pesonal\`), not in git.
 
 **The API source of truth is `../docs/pesonal/api-contract.md`.** Code the frontend against that document, never against Laravel specifics — the backend is a drop-in swap. Key rules: money is integer **centavos** in `amount` (`15000` = ₱150.00); currency is PHP only; every response wraps in `{ "data": ... }` (lists add `meta`); categories carry `color` + `emoji`; expenses read a nested `category` object and write `category_id`. The dashboard is one call: `GET /api/stats/monthly?month=YYYY-MM`.
 
@@ -29,7 +29,7 @@ Commit format: a `[feat]` / `[fix]` tag alone on the first line, then brief lowe
 
 Design specs live in `design/`. Status and the screen order live in `../docs/pesonal/ROADMAP.md`.
 
-## Frontend conventions (Nuxt 4 + PrimeVue, code in `web/app/`)
+## Frontend conventions (Nuxt 4, code in `web/app/`)
 
 - **SFC block order:** `<script>` → `<template>` → `<style>`. Always.
 - **Keep components thin — but don't over-split.** Lift real logic into composables; the `useXxx.ts` (logic — context access, computeds) + `useXxxUI.ts` (UI state — refs like `is_open`, handlers like `handleClick`) pair is a tool you reach for when a component has genuine UI orchestration, **not** a rule for every component. Simple local UI state can just be `ref`s in `<script setup>`. When you do extract, the component only imports and destructures; `useI18n` lives in the UI composable, destructured as `{ t: translate }`. In a composable's return, list refs/computeds first, then a blank line, then functions.
@@ -64,7 +64,7 @@ Theme: a deadpan thermal-paper receipt. Flat surfaces, dashed perforation divide
 | Radius | CSS vars: `--radius-card` 6 (paper slip) · `--radius-pill` 999 (rubber stamp · pills · FAB) |
 | Spacing | CSS vars: `--space-xs` 4 · `--space-s` 8 · `--space-m` 12 · `--space-l` 16 · `--space-xl` 20 · `--space-2xl` 24; screen gutter 16 |
 
-Signature: flat — no soft shadows; dashed perforation dividers, a torn zig-zag hero edge, barcode foot. The PrimeVue preset at `web/app/theme/pesonal-preset.ts` bakes the stamp red into the `primary` palette.
+Signature: flat — no soft shadows; dashed perforation dividers, a torn zig-zag hero edge, barcode foot. Icons are `@primeicons/vue` SVG components (`import Home from '@primeicons/vue/home'`); PrimeVue itself was removed.
 
 The mockups in `design/` read in these var names — anything still literal px there (icon sizes, hairlines, barcode art) is an intentional one-off. Snap off-scale values to the nearest step; never mint a token per pixel.
 
@@ -90,6 +90,7 @@ The app is `http://localhost:3000`; the API is `http://localhost:8080` (`public.
 - **Keep `package-lock.json` in step with `package.json`.** `npm ci` refuses to install when they disagree (that happened once: `vue-chartjs` was added without its lock entry). After adding or removing a dep, commit both files.
 - **A new top-level directory needs a dev-server restart.** Nuxt scans `shared/`, `server/`, `layouts/` at boot; HMR won't pick up a folder that didn't exist. Symptom: `#shared` alias unresolved, or a new `server/api/` route 404s.
 - **Stale Vite module graph.** If the *browser* shows an error but a direct `Invoke-WebRequest`/`curl` to the same URL returns correct HTML, the code is fine and the dev server's in-memory graph is stale — restart `composer run dev`. That disagreement between the two is the diagnostic; if both fail, it's a real bug.
+- **"504 Outdated Optimize Dep" on the first load after a fresh install.** Vite pre-bundles dependencies on first use and the page that triggered it never hydrates — it renders but ignores clicks. One browser refresh fixes it. Dev only.
 - **Data lives in Laravel's SQLite file.** `api/database/database.sqlite` (gitignored) survives restarts. Reset to the seed with `cd api && php artisan migrate:fresh --seed`, which wipes everything entered through the UI.
 - **Larastan needs more than PHP's default 128M.** Run it as `composer analyse` (in `api/`), which passes `--memory-limit=512M`; at 128M a cold run crashes its worker (`exit code 255`).
 
