@@ -7,6 +7,10 @@ defineProps<{
     title: string
 }>()
 
+const panel = useTemplateRef<HTMLElement>('panel')
+
+useReturnFocus(is_open, panel)
+
 
 /** Functions */
 function close() {
@@ -28,7 +32,8 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleKeydown))
 
 <template>
     <div class="scrim" :class="{ shown: is_open }" @click="close" />
-    <div class="sheet" :class="{ shown: is_open }" role="dialog" :aria-label="title">
+    <!-- A closed sheet is only slid off-screen, so inert takes its buttons out of the Tab order and the screen reader's view. -->
+    <div ref="panel" class="sheet" :class="{ shown: is_open }" :inert="!is_open" role="dialog" :aria-label="title" tabindex="-1">
         <div class="grab" />
         <div class="head">
             <span>{{ title }}</span>
@@ -83,6 +88,11 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleKeydown))
 
 .sheet.shown {
     transform: translateY(0);
+}
+
+/* Focus lands on the panel itself when it opens; the controls inside show their own ring. */
+.sheet:focus {
+    outline: none;
 }
 
 .grab {

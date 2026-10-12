@@ -26,6 +26,11 @@ const emit = defineEmits<{
 }>()
 
 
+const panel = useTemplateRef<HTMLElement>('panel')
+
+useReturnFocus(is_open, panel)
+
+
 /** Computed */
 const is_confirm = computed(() => props.variant === 'confirm')
 
@@ -49,8 +54,9 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleKeydown))
 
 <template>
     <div class="scrim" :class="{ shown: is_open }" @click="close" />
-    <div class="slip-wrap" :class="{ shown: is_open }">
-        <div class="slip" role="alertdialog" :aria-label="title">
+    <!-- A closed slip is only transparent, so inert takes its buttons out of the Tab order and the screen reader's view. -->
+    <div class="slip-wrap" :class="{ shown: is_open }" :inert="!is_open">
+        <div ref="panel" class="slip" role="alertdialog" :aria-label="title" tabindex="-1">
             <div v-if="is_confirm" class="stamp">Void</div>
             <div class="slip-title">{{ title }}</div>
             <div class="rule" />
@@ -125,6 +131,11 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleKeydown))
     opacity: 1;
     transform: scale(1);
     pointer-events: auto;
+}
+
+/* Focus lands on the slip itself when it opens; its buttons show their own ring. */
+.slip:focus {
+    outline: none;
 }
 
 .stamp {

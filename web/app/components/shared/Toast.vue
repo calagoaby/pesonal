@@ -18,7 +18,8 @@ const emit = defineEmits<{
             <Check />
             {{ message }}
         </span>
-        <button v-if="actionLabel" class="action" @click="emit('action')">{{ actionLabel }}</button>
+        <!-- Inert on the button, not the toast: an inert live region stops announcing. -->
+        <button v-if="actionLabel" class="action" :inert="!open" @click="emit('action')">{{ actionLabel }}</button>
     </div>
 </template>
 
