@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pesonal — Auth (Receipt Roll · design reference)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Spline+Sans+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/primeicons/7.0.0/primeicons.min.css">
+<style>
+/*
+  Auth — login, register, forgot, reset, verify email. Signed-out screens: no nav,
+  no FAB, just the receipt and a door. Social buttons are paper + ink border (no brand colours).
+  Inputs reuse the add-expense dashed-underline field. Errors are stamp red, one line, under the field.
+  Token rule: var(--…) → use that token in the app; literal px → intentional one-off.
+*/
+:root{
+  --desk:#EAE5D9;--paper:#FBF8F1;
+  --ink:#1C1A17;--faded:#8A857B;--perforation:#D8D2C4;
+  --stamp:#C8472E;--under:#2F7D52;--hi:#E8B23A;
+  --text-hero:34px;--text-title:18px;--text-body:14px;--text-label:12px;--text-micro:11px;
+  --space-xs:4px;--space-s:8px;--space-m:12px;--space-l:16px;--space-xl:20px;--space-2xl:24px;
+  --radius-card:6px;--radius-pill:999px;
+  --mono:'Spline Sans Mono',ui-monospace,monospace;
+  --sans:'Plus Jakarta Sans',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:#d8d1c2;min-height:100vh;padding:30px 16px;color:var(--ink)}
+.intro{font-size:13px;color:#7c7567;margin:0 auto 24px;text-align:center;max-width:560px;line-height:1.5}
+.intro b{color:var(--ink)}
+.grid{display:flex;flex-wrap:wrap;gap:40px 32px;justify-content:center}
+.item{display:flex;flex-direction:column;align-items:center;width:100%;max-width:390px}
+.label{font-size:13px;color:#7c7567;margin-bottom:14px;text-align:center;line-height:1.5}
+.label b{color:var(--ink)}
+.phone{width:100%;background:#211e19;border-radius:42px;padding:10px;box-shadow:0 30px 60px rgba(33,30,25,.35)}
+.screen{position:relative;background:var(--desk);border-radius:32px;overflow:hidden;display:flex;flex-direction:column;min-height:640px}
+.statusbar{display:flex;justify-content:space-between;align-items:center;padding:11px 22px 4px;font-size:13px;font-family:var(--mono);color:var(--ink)}
+.statusbar .icons{display:flex;gap:8px;align-items:center}
+.content{padding:var(--space-l) var(--space-l) var(--space-2xl);flex:1}
+.torn{height:12px;background:var(--paper);border-bottom:1px solid var(--perforation);clip-path:polygon(0% 100%,0% 55%,4% 0%,8% 55%,12% 0%,16% 55%,20% 0%,24% 55%,28% 0%,32% 55%,36% 0%,40% 55%,44% 0%,48% 55%,52% 0%,56% 55%,60% 0%,64% 55%,68% 0%,72% 55%,76% 0%,80% 55%,84% 0%,88% 55%,92% 0%,96% 55%,100% 0%,100% 100%)}
+.roll{background:var(--paper);padding:var(--space-m) var(--space-l) var(--space-l);font-family:var(--mono)}
+.rhead{text-align:center;text-transform:uppercase}
+.rhead .brand{font-size:var(--text-body);letter-spacing:3px;font-weight:600}
+.rhead .sub{font-size:var(--text-micro);letter-spacing:.16em;color:var(--faded);margin-top:var(--space-xs)}
+.perf{border-top:1.5px dashed var(--perforation);margin:var(--space-m) 0}
+.title{font-size:var(--text-title);font-weight:600;letter-spacing:.04em;text-transform:uppercase;margin:var(--space-l) 0 var(--space-xs)}
+.lede{font-family:var(--sans);font-size:var(--text-body);color:var(--faded);line-height:1.5;margin-bottom:var(--space-l)}
+.lede b{color:var(--ink);font-weight:600}
+.btn{width:100%;display:flex;align-items:center;justify-content:center;gap:var(--space-s);padding:var(--space-m) var(--space-l);border-radius:var(--radius-pill);font-family:var(--mono);font-size:var(--text-label);letter-spacing:.08em;text-transform:uppercase;font-weight:600;text-decoration:none;cursor:pointer}
+.btn.social{background:var(--paper);color:var(--ink);border:1.5px solid var(--ink);margin-bottom:var(--space-s)}
+.btn.social .mark{font-family:var(--sans);font-weight:700;font-size:var(--text-body);letter-spacing:0}
+.btn.cta{background:var(--stamp);color:#fff;border:1.5px solid var(--stamp);margin-top:var(--space-l)}
+.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--ink);margin-top:var(--space-s)}
+.btn.off{opacity:.5}
+.or{display:flex;align-items:center;gap:var(--space-m);margin:var(--space-l) 0 var(--space-s);font-size:var(--text-micro);letter-spacing:.16em;text-transform:uppercase;color:var(--faded)}
+.or::before,.or::after{content:"";flex:1;border-top:1.5px dashed var(--perforation)}
+.fld{margin-top:var(--space-m)}
+.fld .lbl{display:block;font-size:var(--text-micro);letter-spacing:.1em;text-transform:uppercase;color:var(--faded)}
+.fld .in{width:100%;border-bottom:1.5px dashed var(--perforation);padding:var(--space-s) 2px;font-family:var(--sans);font-size:var(--text-body);color:var(--ink);min-height:36px;display:flex;align-items:center}
+.fld .in .ph{color:var(--faded);opacity:.6}
+.fld.bad .in{border-bottom-color:var(--stamp)}
+.fld .err{font-family:var(--sans);font-size:var(--text-label);color:var(--stamp);margin-top:var(--space-xs);display:flex;gap:var(--space-xs);align-items:center}
+.fld .hint,.hint{font-family:var(--sans);font-size:var(--text-label);color:var(--faded);margin-top:var(--space-xs)}
+.row{display:flex;justify-content:space-between;align-items:center;margin-top:var(--space-s)}
+.lnk{font-family:var(--sans);font-size:var(--text-label);color:var(--ink);text-decoration:underline;text-underline-offset:3px}
+.lnk.faded{color:var(--faded)}
+.switch{text-align:center;margin-top:var(--space-l);font-family:var(--sans);font-size:var(--text-body);color:var(--faded)}
+.switch .lnk{font-size:var(--text-body);font-weight:600;color:var(--ink)}
+.banner{display:flex;gap:var(--space-s);align-items:flex-start;border:1.5px dashed var(--stamp);border-radius:var(--radius-card);padding:var(--space-m);margin-bottom:var(--space-m);font-family:var(--sans);font-size:var(--text-body);line-height:1.45;color:var(--stamp)}
+.banner i{margin-top:2px}
+.banner.ok{border-color:var(--under);color:var(--under)}
+.foot{text-align:center;margin-top:var(--space-xl)}
+.barcode{height:36px;width:72%;margin:var(--space-s) auto;background:repeating-linear-gradient(90deg,var(--ink) 0 2px,transparent 2px 5px,var(--ink) 5px 6px,transparent 6px 11px)}
+.foot .quip{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--perforation);margin-top:var(--space-s)}
+</style>
+</head>
+<body>
+<div class="intro"><b>Auth</b> — signed-out screens. No nav, no FAB, just the receipt and a door. Social buttons are paper with an ink border; the stamp-red CTA is the only colour that asks for anything. Errors sit under the field or in a dashed banner.</div>
+<div class="grid">
+<div class="item"><div class="label"><b>1 · /login</b> — default</div>
+<div class="phone">
+<div class="screen">
+<div class="statusbar"><span>9:41</span><span class="icons"><i class="pi pi-wifi"></i><span>100%</span></span></div>
+<div class="content">
+<div class="torn"></div>
+<div class="roll">
+<div class="rhead"><div class="brand">Pesonal</div><div class="sub">· back to the counter ·</div></div>
+<div class="perf"></div>
+<div class="title">Sign in</div>
+<div class="lede">Your receipts are waiting. Judgement is not.</div>
+<a class="btn social" href="#"><span class="mark">G</span>Continue with Google</a>
+<a class="btn social" href="#"><span class="mark">f</span>Continue with Facebook</a>
+<div class="or">or</div>
+<div class="fld"><span class="lbl">Email</span><div class="in"><span class="ph">you@example.com</span></div></div>
+<div class="fld"><span class="lbl">Password</span><div class="in"><span class="ph">••••••••</span></div></div>
+<div class="row"><span></span><a class="lnk faded" href="#">Forgot it?</a></div>
+<a class="btn cta" href="#">Sign in</a>
+<div class="switch">New here? <a class="lnk" href="#">Open a ledger</a></div>
+
+<div class="foot">
+<div class="barcode"></div>
+<div class="quip">* keep this receipt for your records *</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="item"><div class="label"><b>2 · /login?error=no_email</b> — Facebook gave no email. Same banner slot for cancelled and failed.</div>
+<div class="phone">
+<div class="screen">
+<div class="statusbar"><span>9:41</span><span class="icons"><i class="pi pi-wifi"></i><span>100%</span></span></div>
+<div class="content">
+<div class="torn"></div>
+<div class="roll">
+<div class="rhead"><div class="brand">Pesonal</div><div class="sub">· back to the counter ·</div></div>
+<div class="perf"></div>
+<div class="title">Sign in</div>
+<div class="banner"><i class="pi pi-exclamation-circle"></i><span>Facebook didn't share an email, so there's no ledger to open. Try Google or email instead.</span></div>
+<a class="btn social" href="#"><span class="mark">G</span>Continue with Google</a>
+<a class="btn social" href="#"><span class="mark">f</span>Continue with Facebook</a>
+<div class="or">or</div>
+<div class="fld"><span class="lbl">Email</span><div class="in"><span class="ph">you@example.com</span></div></div>
+<div class="fld"><span class="lbl">Password</span><div class="in"><span class="ph">••••••••</span></div></div>
+<div class="row"><span></span><a class="lnk faded" href="#">Forgot it?</a></div>
+<a class="btn cta" href="#">Sign in</a>
+<div class="switch">New here? <a class="lnk" href="#">Open a ledger</a></div>
+
+<div class="foot">
+<div class="barcode"></div>
+<div class="quip">* keep this receipt for your records *</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="item"><div class="label"><b>3 · /register</b> — field error under email</div>
+<div class="phone">
+<div class="screen">
+<div class="statusbar"><span>9:41</span><span class="icons"><i class="pi pi-wifi"></i><span>100%</span></span></div>
+<div class="content">
+<div class="torn"></div>
+<div class="roll">
+<div class="rhead"><div class="brand">Pesonal</div><div class="sub">· new account ·</div></div>
+<div class="perf"></div>
+<div class="title">Open a ledger</div>
+<div class="lede">One ledger per person. Yours starts empty, like your wallet soon will.</div>
+<a class="btn social" href="#"><span class="mark">G</span>Continue with Google</a>
+<a class="btn social" href="#"><span class="mark">f</span>Continue with Facebook</a>
+<div class="or">or</div>
+<div class="fld"><span class="lbl">Name</span><div class="in"><span class="ph">Juan dela Cruz</span></div></div>
+<div class="fld bad"><span class="lbl">Email</span><div class="in"><span>juan@example.com</span></div><div class="err"><i class="pi pi-exclamation-circle"></i>The email has already been taken.</div></div>
+<div class="fld"><span class="lbl">Password</span><div class="in"><span class="ph">••••••••</span></div><div class="hint">At least 8 characters. We won't judge the 8.</div></div>
+<div class="fld"><span class="lbl">Confirm password</span><div class="in"><span class="ph">••••••••</span></div></div>
+<a class="btn cta" href="#">Open a ledger</a>
+<div class="switch">Already have one? <a class="lnk" href="#">Sign in</a></div>
+
+<div class="foot">
+<div class="barcode"></div>
+<div class="quip">* keep this receipt for your records *</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="item"><div class="label"><b>4a · /forgot-password</b> — before submit</div>
+<div class="phone">
+<div class="screen">
+<div class="statusbar"><span>9:41</span><span class="icons"><i class="pi pi-wifi"></i><span>100%</span></span></div>
+<div class="content">
+<div class="torn"></div>
+<div class="roll">
+<div class="rhead"><div class="brand">Pesonal</div><div class="sub">· lost and found ·</div></div>
+<div class="perf"></div>
+<div class="title">Forgot it?</div>
+<div class="lede">Give us your email and we'll send a reset slip.</div>
+<div class="fld"><span class="lbl">Email</span><div class="in"><span class="ph">you@example.com</span></div></div>
+<a class="btn cta" href="#">Send reset slip</a>
+<div class="switch"><a class="lnk" href="#">Back to sign in</a></div>
+
+<div class="foot">
+<div class="barcode"></div>
+<div class="quip">* keep this receipt for your records *</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="item"><div class="label"><b>4b · /forgot-password</b> — after submit (same message whether or not the email exists)</div>
+<div class="phone">
+<div class="screen">
+<div class="statusbar"><span>9:41</span><span class="icons"><i class="pi pi-wifi"></i><span>100%</span></span></div>
+<div class="content">
+<div class="torn"></div>
+<div class="roll">
+<div class="rhead"><div class="brand">Pesonal</div><div class="sub">· lost and found ·</div></div>
+<div class="perf"></div>
+<div class="title">Forgot it?</div>
+<div class="banner ok"><i class="pi pi-check-circle"></i><span>If it's on file, a reset slip is on its way.</span></div>
+<div class="fld"><span class="lbl">Email</span><div class="in"><span>juan@example.com</span></div></div>
+<a class="btn cta off" href="#">Send reset slip</a>
+<div class="switch"><a class="lnk" href="#">Back to sign in</a></div>
+
+<div class="foot">
+<div class="barcode"></div>
+<div class="quip">* keep this receipt for your records *</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="item"><div class="label"><b>5 · /reset-password</b> — arrived from the emailed link</div>
+<div class="phone">
+<div class="screen">
+<div class="statusbar"><span>9:41</span><span class="icons"><i class="pi pi-wifi"></i><span>100%</span></span></div>
+<div class="content">
+<div class="torn"></div>
+<div class="roll">
+<div class="rhead"><div class="brand">Pesonal</div><div class="sub">· reissue ·</div></div>
+<div class="perf"></div>
+<div class="title">New password</div>
+<div class="lede">Pick one you'll remember this time.</div>
+<div class="fld"><span class="lbl">Password</span><div class="in"><span class="ph">••••••••</span></div><div class="hint">At least 8 characters.</div></div>
+<div class="fld"><span class="lbl">Confirm password</span><div class="in"><span class="ph">••••••••</span></div></div>
+<a class="btn cta" href="#">Save password</a>
+<div class="switch"><a class="lnk" href="#">Back to sign in</a></div>
+
+<div class="foot">
+<div class="barcode"></div>
+<div class="quip">* keep this receipt for your records *</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="item"><div class="label"><b>6a · /verify-email</b> — waiting</div>
+<div class="phone">
+<div class="screen">
+<div class="statusbar"><span>9:41</span><span class="icons"><i class="pi pi-wifi"></i><span>100%</span></span></div>
+<div class="content">
+<div class="torn"></div>
+<div class="roll">
+<div class="rhead"><div class="brand">Pesonal</div><div class="sub">· one more step ·</div></div>
+<div class="perf"></div>
+<div class="title">Check your inbox</div>
+<div class="lede">We sent a link to <b>juan@example.com</b>. Click it and your ledger opens. Until then, it's just paper.</div>
+<a class="btn cta" href="#" style="margin-top:var(--space-s)">Resend the link</a>
+<a class="btn ghost" href="#">Sign out</a>
+
+<div class="foot">
+<div class="barcode"></div>
+<div class="quip">* keep this receipt for your records *</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="item"><div class="label"><b>6b · /verify-email</b> — after resend</div>
+<div class="phone">
+<div class="screen">
+<div class="statusbar"><span>9:41</span><span class="icons"><i class="pi pi-wifi"></i><span>100%</span></span></div>
+<div class="content">
+<div class="torn"></div>
+<div class="roll">
+<div class="rhead"><div class="brand">Pesonal</div><div class="sub">· one more step ·</div></div>
+<div class="perf"></div>
+<div class="title">Check your inbox</div>
+<div class="banner ok"><i class="pi pi-check-circle"></i><span>Sent again. Check spam, it's shy.</span></div>
+<div class="lede">We sent a link to <b>juan@example.com</b>. Click it and your ledger opens.</div>
+<a class="btn cta off" href="#" style="margin-top:var(--space-s)">Resend the link</a>
+<div class="hint" style="text-align:center">Try again in 60 seconds.</div>
+<a class="btn ghost" href="#">Sign out</a>
+
+<div class="foot">
+<div class="barcode"></div>
+<div class="quip">* keep this receipt for your records *</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</body>
+</html>
