@@ -2,13 +2,13 @@
 
 return [
 
-    // Only API routes get CORS headers; health and web are untouched.
-    'paths' => ['api/*'],
+    // API routes plus Sanctum's CSRF cookie endpoint; health and web are untouched.
+    'paths' => ['api/*', 'sanctum/csrf-cookie'],
 
     'allowed_methods' => ['*'],
 
-    // The Nuxt dev origin. Widen when the app is served elsewhere.
-    'allowed_origins' => ['http://localhost:3000'],
+    // The Nuxt origin. Must be explicit (no wildcard) because credentials are sent.
+    'allowed_origins' => [env('FRONTEND_URL', 'http://localhost:3000')],
 
     'allowed_origins_patterns' => [],
 
@@ -18,7 +18,7 @@ return [
 
     'max_age' => 0,
 
-    // No auth, no cookies (single user) — keep false; true is incompatible with a wildcard origin.
-    'supports_credentials' => false,
+    // Cookie sessions: the browser must send and accept cookies cross-origin (:3000 -> :8080).
+    'supports_credentials' => true,
 
 ];
