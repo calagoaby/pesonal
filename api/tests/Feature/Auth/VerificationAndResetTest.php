@@ -112,6 +112,24 @@ class VerificationAndResetTest extends TestCase
         });
     }
 
+    public function test_reset_password_failure_is_the_same_for_known_and_unknown_emails(): void
+    {
+        User::factory()->create(['email' => 'aby@example.com']);
+        $expected = [
+            'message' => 'The given data was invalid.',
+            'errors' => ['email' => ['That reset slip is invalid or has expired.']],
+        ];
+
+        foreach (['aby@example.com', 'nobody@example.com'] as $email) {
+            $this->fromFrontend()->postJson('/api/auth/reset-password', [
+                'token' => 'junk-token',
+                'email' => $email,
+                'password' => 'brand new password',
+                'password_confirmation' => 'brand new password',
+            ])->assertUnprocessable()->assertExactJson($expected);
+        }
+    }
+
     public function test_reset_password_then_login_with_the_new_one_works(): void
     {
         $user = User::factory()->create(['email' => 'aby@example.com', 'password' => 'old password here']);
