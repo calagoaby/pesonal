@@ -11,7 +11,6 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Tests\Concerns\ActsAsUser;
 use Tests\TestCase;
 
@@ -228,22 +227,5 @@ class MaterializationTest extends TestCase
             $charge = Expense::withoutGlobalScope(OwnedByCurrentUser::class)->where('recurring_id', $order->id)->sole();
             $this->assertSame($order->user_id, $charge->user_id);
         }
-    }
-
-    public function test_an_order_nobody_owns_yet_is_skipped_even_with_someone_signed_in(): void
-    {
-        // Rows from before accounts existed wait for pesonal:claim; the signed-in
-        // user must not pick up their charges through the creating stamp.
-        $categoryId = DB::table('categories')->insertGetId([
-            'name' => 'Housing', 'color' => '#534F8C', 'emoji' => '🏠', 'created_at' => now(), 'updated_at' => now(),
-        ]);
-        DB::table('recurring')->insert([
-            'amount' => 1500000, 'note' => 'Rent', 'day_of_month' => 1, 'start_date' => '2026-01-01', 'end_date' => null,
-            'active' => 1, 'category_id' => $categoryId, 'created_at' => now(), 'updated_at' => now(),
-        ]);
-        $this->assertNotNull(auth()->id());
-
-        $this->assertSame(0, $this->materialize(Carbon::create(2026, 6, 15)));
-        $this->assertSame(0, DB::table('expenses')->count());
     }
 }

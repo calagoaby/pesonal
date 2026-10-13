@@ -78,7 +78,9 @@ class MaterializeRecurring
 
         // Every user's orders: the job runs for all of them, with nobody signed in.
         // Unowned ones wait for pesonal:claim; charging them would hand the expense to
-        // whoever happens to be signed in, through the creating stamp.
+        // whoever happens to be signed in, through the creating stamp. The column is
+        // NOT NULL once the require_user_id migration runs; this covers a database
+        // still waiting on it.
         return Recurring::withoutGlobalScope(OwnedByCurrentUser::class)
             ->whereNotNull('user_id')
             ->where('active', true)

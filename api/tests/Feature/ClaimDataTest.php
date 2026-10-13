@@ -2,14 +2,18 @@
 
 namespace Tests\Feature;
 
+use App\Actions\MaterializeRecurring;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Tests\Concerns\AllowsUnownedRows;
 use Tests\TestCase;
 
 class ClaimDataTest extends TestCase
 {
-    use RefreshDatabase;
+    use AllowsUnownedRows;
+    use DatabaseMigrations;
 
     private const STAMP = '2026-01-01 00:00:00';
 
@@ -157,5 +161,24 @@ class ClaimDataTest extends TestCase
         foreach ($before as $table => $rows) {
             $this->assertEquals($rows, $stamps($table), "{$table} timestamps changed");
         }
+    }
+
+    public function test_the_job_skips_an_unclaimed_order_even_with_someone_signed_in(): void
+    {
+        $this->actingAs(User::factory()->create());
+
+        // Rows from before accounts existed wait for pesonal:claim; the signed-in
+        // user must not pick up their charges through the creating stamp.
+        $categoryId = DB::table('categories')->insertGetId([
+            'name' => 'Housing', 'color' => '#534F8C', 'emoji' => '🏠', 'created_at' => now(), 'updated_at' => now(),
+        ]);
+        DB::table('recurring')->insert([
+            'amount' => 1500000, 'note' => 'Rent', 'day_of_month' => 1, 'start_date' => '2026-01-01', 'end_date' => null,
+            'active' => 1, 'category_id' => $categoryId, 'created_at' => now(), 'updated_at' => now(),
+        ]);
+        $this->assertNotNull(auth()->id());
+
+        $this->assertSame(0, (new MaterializeRecurring)->execute(Carbon::create(2026, 6, 15)));
+        $this->assertSame(0, DB::table('expenses')->count());
     }
 }
