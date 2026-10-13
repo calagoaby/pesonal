@@ -16,6 +16,8 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->statefulApi();
+        // Temporary: the data routes have no auth yet and today's frontend sends no CSRF token; removed when the transport sends X-XSRF-TOKEN (plan Task 4).
+        $middleware->validateCsrfTokens(except: ['api/categories', 'api/categories/*', 'api/expenses', 'api/expenses/*', 'api/recurring', 'api/recurring/*', 'api/stats/*']);
         // Browser navigations go to the SPA login; JSON requests still get a 401.
         $middleware->redirectGuestsTo(fn () => config('app.frontend_url').'/login');
     })
