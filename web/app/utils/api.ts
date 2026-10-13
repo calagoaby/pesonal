@@ -1,4 +1,5 @@
 import type { ApiError, ListMeta } from "#shared/types/Api";
+import { useAuth } from "~/stores/auth";
 
 /**
  * The one place that knows the base URL, the `{ data }` envelope and the error
@@ -63,14 +64,61 @@ export async function apiDelete(path: string): Promise<void> {
     await request<unknown>(path, { method: 'DELETE' })
 }
 
-async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
+// For the auth endpoints that answer `{ message }` instead of `{ data }`.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- ofetch declares Record<string, any>
+export async function apiPostRaw<T>(path: string, body: Record<string, any>): Promise<T> {
+    return await request<T>(path, { method: 'POST', body })
+}
+
+async function request<T>(path: string, options: RequestOptions = {}, isRetry = false): Promise<T> {
     const { public: config } = useRuntimeConfig()
+    const method = options.method ?? 'GET'
+    const headers: Record<string, string> = {}
+
+    if (import.meta.server) {
+        // A server render has no browser cookie jar: forward the visitor's own cookie, and send
+        // an origin so Sanctum treats the call as first-party stateful.
+        Object.assign(headers, useRequestHeaders(['cookie']), { origin: useRequestURL().origin })
+    } else if (method !== 'GET') {
+        const token = await readXsrfToken(config.apiBase)
+
+        if (token) {
+            headers['X-XSRF-TOKEN'] = token
+        }
+    }
 
     try {
-        return await $fetch<T>(`${config.apiBase}/api${path}`, options) as T
+        return await $fetch<T>(`${config.apiBase}/api${path}`, { ...options, headers, credentials: 'include' }) as T
     } catch (error) {
-        throw toRequestError(error)
+        const failure = toRequestError(error)
+
+        // 419 = the CSRF token was stale. Mint a fresh cookie and retry once.
+        if (failure.status === 419 && !isRetry && import.meta.client) {
+            await refreshXsrfCookie(config.apiBase)
+
+            return await request<T>(path, options, true)
+        }
+
+        // A 401 is a transport-level fact: the session is gone, whichever call noticed.
+        if (failure.status === 401 && !(method === 'GET' && path === '/user')) {
+            useAuth().clear()
+            await navigateTo('/login')
+        }
+
+        throw failure
     }
+}
+
+async function readXsrfToken(apiBase: string): Promise<string | null | undefined> {
+    if (!useCookie('XSRF-TOKEN').value) {
+        await refreshXsrfCookie(apiBase)
+    }
+
+    return useCookie('XSRF-TOKEN').value
+}
+
+async function refreshXsrfCookie(apiBase: string): Promise<void> {
+    await $fetch(`${apiBase}/sanctum/csrf-cookie`, { credentials: 'include' })
 }
 
 function toRequestError(error: unknown): ApiRequestError {
