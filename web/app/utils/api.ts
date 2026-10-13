@@ -71,6 +71,8 @@ export async function apiPostRaw<T>(path: string, body: Record<string, any>): Pr
 }
 
 async function request<T>(path: string, options: RequestOptions = {}, isRetry = false): Promise<T> {
+    // Captured before any await: on the server the Nuxt context is gone by the time a catch runs.
+    const nuxtApp = useNuxtApp()
     const { public: config } = useRuntimeConfig()
     const method = options.method ?? 'GET'
     const headers: Record<string, string> = {}
@@ -101,8 +103,10 @@ async function request<T>(path: string, options: RequestOptions = {}, isRetry = 
 
         // A 401 is a transport-level fact: the session is gone, whichever call noticed.
         if (failure.status === 401 && !(method === 'GET' && path === '/user')) {
-            useAuth().clear()
-            await navigateTo('/login')
+            await nuxtApp.runWithContext(() => {
+                useAuth().clear()
+                return navigateTo('/login')
+            })
         }
 
         throw failure
