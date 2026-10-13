@@ -128,6 +128,12 @@ class OwnershipTest extends TestCase
         $this->patchJson("/api/expenses/{$myExpense->id}", ['category_id' => $rows['category']->id])
             ->assertUnprocessable()
             ->assertJsonValidationErrors('category_id');
+
+        $myOrder = Recurring::factory()->create(['category_id' => $mine->id]);
+        $this->patchJson("/api/recurring/{$myOrder->id}", ['category_id' => $rows['category']->id])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('category_id');
+        $this->assertSame($mine->id, $myOrder->fresh()?->category_id);
     }
 
     public function test_two_users_can_each_own_a_category_named_food(): void

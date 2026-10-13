@@ -17,9 +17,12 @@ use Illuminate\Support\Carbon;
 /**
  * The 'date:Y-m-d' cast returns a Carbon instance; Larastan reads the formatted
  * cast as a string without this hint, so the Resource's ->format() call trips it.
+ * user_id is added in a foreach over table names, which Larastan's migration reader
+ * can't follow. Null only until pesonal:claim runs.
  *
  * @property Carbon $date
  * @property Money $amount
+ * @property int|null $user_id
  */
 #[Fillable(['amount', 'date', 'note', 'category_id', 'recurring_id'])]
 class Expense extends Model

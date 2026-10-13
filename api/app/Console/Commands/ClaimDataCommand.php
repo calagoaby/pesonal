@@ -29,14 +29,16 @@ class ClaimDataCommand extends Command
 
         // Nobody is signed in on the console, so every query opts out of the ownership
         // scope (which would otherwise match nothing) and filters by user_id by hand.
+        // Updates go through toBase(): Eloquent's update() would bump updated_at, which
+        // the app reads as "paused since" and "last changed".
         [$merged, $categories, $orders, $expenses] = DB::transaction(function () use ($user) {
             $merged = $this->mergeClashingCategories($user);
 
             return [
                 $merged,
-                Category::withoutGlobalScope(OwnedByCurrentUser::class)->whereNull('user_id')->update(['user_id' => $user->id]),
-                Recurring::withoutGlobalScope(OwnedByCurrentUser::class)->withTrashed()->whereNull('user_id')->update(['user_id' => $user->id]),
-                Expense::withoutGlobalScope(OwnedByCurrentUser::class)->withTrashed()->whereNull('user_id')->update(['user_id' => $user->id]),
+                Category::withoutGlobalScope(OwnedByCurrentUser::class)->whereNull('user_id')->toBase()->update(['user_id' => $user->id]),
+                Recurring::withoutGlobalScope(OwnedByCurrentUser::class)->withTrashed()->whereNull('user_id')->toBase()->update(['user_id' => $user->id]),
+                Expense::withoutGlobalScope(OwnedByCurrentUser::class)->withTrashed()->whereNull('user_id')->toBase()->update(['user_id' => $user->id]),
             ];
         });
 
@@ -68,10 +70,10 @@ class ClaimDataCommand extends Command
 
             Expense::withoutGlobalScope(OwnedByCurrentUser::class)->withTrashed()
                 ->where('category_id', $duplicate->id)
-                ->update(['category_id' => $target]);
+                ->toBase()->update(['category_id' => $target]);
             Recurring::withoutGlobalScope(OwnedByCurrentUser::class)->withTrashed()
                 ->where('category_id', $duplicate->id)
-                ->update(['category_id' => $target]);
+                ->toBase()->update(['category_id' => $target]);
 
             $duplicate->delete();
         }

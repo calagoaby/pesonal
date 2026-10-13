@@ -105,4 +105,57 @@ class ClaimDataTest extends TestCase
         $this->assertSame(['Food', 'Transport'], DB::table('categories')->where('user_id', $owner->id)->orderBy('name')->pluck('name')->all());
         $this->assertSame(3, DB::table('expenses')->where('user_id', $owner->id)->count());
     }
+
+    public function test_claim_takes_a_voided_standing_order_too(): void
+    {
+        $owner = User::factory()->create(['email' => 'owner@example.com']);
+        $order = $this->unownedOrder($this->unownedCategory('Housing'));
+        DB::table('recurring')->where('id', $order)->update(['deleted_at' => self::STAMP]);
+
+        $this->artisan('pesonal:claim', ['email' => 'owner@example.com'])
+            ->expectsOutput('Claimed 1 categories, 1 standing orders, 0 expenses for owner@example.com.')
+            ->assertSuccessful();
+
+        $this->assertSame($owner->id, DB::table('recurring')->where('id', $order)->value('user_id'));
+    }
+
+    public function test_claim_keeps_every_rows_timestamps(): void
+    {
+        $owner = User::factory()->create(['email' => 'owner@example.com']);
+        DB::table('categories')->insert([
+            'name' => 'Food', 'color' => '#C9692E', 'emoji' => '🍔', 'user_id' => $owner->id, 'created_at' => self::STAMP, 'updated_at' => self::STAMP,
+        ]);
+
+        // updated_at reads as "paused since" on an order and "last changed" on an expense.
+        $housing = $this->unownedCategory('Housing');
+        $paused = $this->unownedOrder($housing);
+        DB::table('recurring')->where('id', $paused)->update(['active' => 0, 'updated_at' => '2026-05-01 08:00:00']);
+        $voidedOrder = $this->unownedOrder($housing);
+        DB::table('recurring')->where('id', $voidedOrder)->update(['updated_at' => '2026-04-01 08:00:00', 'deleted_at' => '2026-04-01 08:00:00']);
+        $expense = $this->unownedExpense($housing);
+        DB::table('expenses')->where('id', $expense)->update(['updated_at' => '2026-02-01 08:00:00']);
+
+        // Rows the category-name merge re-points.
+        $unownedFood = $this->unownedCategory('Food');
+        $mergedOrder = $this->unownedOrder($unownedFood);
+        DB::table('recurring')->where('id', $mergedOrder)->update(['updated_at' => '2026-03-01 08:00:00']);
+        $mergedExpense = $this->unownedExpense($unownedFood);
+        DB::table('expenses')->where('id', $mergedExpense)->update(['updated_at' => '2026-03-02 08:00:00']);
+
+        $stamps = fn (string $table) => DB::table($table)->orderBy('id')->get(['id', 'created_at', 'updated_at'])->keyBy('id')->all();
+        $before = [
+            // The merged duplicate is deleted, so it has nothing to compare.
+            'categories' => collect($stamps('categories'))->except($unownedFood)->all(),
+            'recurring' => $stamps('recurring'),
+            'expenses' => $stamps('expenses'),
+        ];
+
+        $this->artisan('pesonal:claim', ['email' => 'owner@example.com'])->assertSuccessful();
+
+        $this->assertSame(0, DB::table('recurring')->whereNull('user_id')->count());
+        $this->assertSame(0, DB::table('expenses')->whereNull('user_id')->count());
+        foreach ($before as $table => $rows) {
+            $this->assertEquals($rows, $stamps($table), "{$table} timestamps changed");
+        }
+    }
 }

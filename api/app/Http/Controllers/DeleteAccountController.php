@@ -15,13 +15,8 @@ class DeleteAccountController extends Controller
         /** @var User $user auth:sanctum guarantees one */
         $user = $request->user();
 
-        Auth::guard('web')->logout();
-
-        if ($request->hasSession()) {
-            $request->session()->invalidate();
-            $request->session()->regenerateToken();
-        }
-
+        // Delete first: if the transaction throws, the user stays signed in with their
+        // data intact instead of signed out with it still there.
         DB::transaction(function () use ($user) {
             // The user_id foreign keys cascade, but expenses and standing orders also hold
             // a RESTRICT key to their category, and the order a database runs cascades in
@@ -35,6 +30,16 @@ class DeleteAccountController extends Controller
             // Social accounts cascade.
             $user->delete();
         });
+
+        // Not logout(): it cycles the remember token and save()s the user, which on a
+        // deleted model inserts the row straight back. With the row gone, no remember
+        // cookie can resolve anyway.
+        Auth::guard('web')->logoutCurrentDevice();
+
+        if ($request->hasSession()) {
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+        }
 
         return response()->noContent();
     }

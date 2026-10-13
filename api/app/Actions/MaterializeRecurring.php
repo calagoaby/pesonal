@@ -77,7 +77,10 @@ class MaterializeRecurring
         $date = $today->format('Y-m-d');
 
         // Every user's orders: the job runs for all of them, with nobody signed in.
+        // Unowned ones wait for pesonal:claim; charging them would hand the expense to
+        // whoever happens to be signed in, through the creating stamp.
         return Recurring::withoutGlobalScope(OwnedByCurrentUser::class)
+            ->whereNotNull('user_id')
             ->where('active', true)
             ->where('start_date', '<=', $date)
             ->where(function ($query) use ($date) {
