@@ -28,9 +28,15 @@ export const useAuth = defineStore('auth', () => {
     }
 
     async function signOut() {
-        await authRepository.logout()
-        clearNuxtData()
-        user.value = null
+        try {
+            await authRepository.logout()
+        } catch {
+            // A 401 just means already signed out; any other failure is swallowed too,
+            // because the local sign-out below has to happen regardless.
+        } finally {
+            clearNuxtData()
+            user.value = null
+        }
     }
 
     function clear() {

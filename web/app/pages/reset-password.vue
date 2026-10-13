@@ -19,6 +19,7 @@ const password_confirmation = ref('')
 // The emailed link carries both; neither has a field here, so their errors surface as a banner.
 const token = computed(() => String(route.query.token ?? ''))
 const email = computed(() => String(route.query.email ?? ''))
+const is_link_broken = computed(() => !token.value || !email.value)
 const link_error = computed(() => errors.value.email?.[0] ?? errors.value.token?.[0] ?? '')
 
 
@@ -44,10 +45,14 @@ async function handleSubmit() {
 
         <AuthHeading title="New password">Pick one you'll remember this time.</AuthHeading>
 
+        <AuthBanner v-if="is_link_broken">
+            That reset link is broken. Ask for a new one.
+            <NuxtLink to="/forgot-password" class="new-link">Get a new link</NuxtLink>
+        </AuthBanner>
         <AuthBanner v-if="link_error">{{ link_error }}</AuthBanner>
         <AuthBanner v-if="failure">{{ failure }}</AuthBanner>
 
-        <form novalidate @submit.prevent="handleSubmit">
+        <form v-if="!is_link_broken" novalidate @submit.prevent="handleSubmit">
             <AuthField
                 v-model="password"
                 label="Password"
@@ -76,3 +81,12 @@ async function handleSubmit() {
         <AuthFoot />
     </SharedReceipt>
 </template>
+
+<style scoped>
+.new-link {
+    font-weight: 600;
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+</style>

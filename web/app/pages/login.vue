@@ -22,7 +22,12 @@ const password = ref('')
 
 
 /** Computed */
-const oauth_error = computed(() => OAUTH_MESSAGES[String(route.query.error)] ?? '')
+// Own keys only: a plain object would answer `?error=constructor` with a function.
+const oauth_error = computed(() => {
+    const code = String(route.query.error)
+
+    return Object.hasOwn(OAUTH_MESSAGES, code) ? OAUTH_MESSAGES[code] : ''
+})
 
 
 /** Functions */
