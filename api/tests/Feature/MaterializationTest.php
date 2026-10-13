@@ -6,12 +6,17 @@ use App\Actions\MaterializeRecurring;
 use App\Models\Category;
 use App\Models\Expense;
 use App\Models\Recurring;
+use App\Models\Scopes\OwnedByCurrentUser;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
+use Tests\Concerns\ActsAsUser;
 use Tests\TestCase;
 
 class MaterializationTest extends TestCase
 {
+    use ActsAsUser;
     use RefreshDatabase;
 
     private function materialize(Carbon $today): int
@@ -196,5 +201,31 @@ class MaterializationTest extends TestCase
 
         $this->assertSame(0, $this->materialize(Carbon::create(2026, 6, 21)));
         $this->assertSame(1, Expense::count());
+    }
+
+    public function test_each_charge_belongs_to_its_orders_user(): void
+    {
+        $owners = [User::factory()->create(), User::factory()->create()];
+        $orders = [];
+        foreach ($owners as $owner) {
+            $category = Category::factory()->create(['user_id' => $owner->id]);
+            $orders[] = Recurring::factory()->create([
+                'user_id' => $owner->id,
+                'category_id' => $category->id,
+                'day_of_month' => 10,
+                'start_date' => '2026-01-01',
+            ]);
+        }
+
+        // The scheduler runs with nobody signed in.
+        Auth::forgetGuards();
+        $this->assertNull(auth()->id());
+
+        $this->assertSame(2, $this->materialize(Carbon::create(2026, 6, 15)));
+
+        foreach ($orders as $order) {
+            $charge = Expense::withoutGlobalScope(OwnedByCurrentUser::class)->where('recurring_id', $order->id)->sole();
+            $this->assertSame($order->user_id, $charge->user_id);
+        }
     }
 }

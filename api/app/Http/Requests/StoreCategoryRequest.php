@@ -2,13 +2,15 @@
 
 namespace App\Http\Requests;
 
+use Illuminate\Validation\Rule;
+
 class StoreCategoryRequest extends ApiFormRequest
 {
     /** @return array<string, mixed> */
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'unique:categories,name'],
+            'name' => ['required', 'string', Rule::unique('categories', 'name')->where('user_id', $this->user()->id)],
             'color' => ['required', 'regex:/^#[0-9A-Fa-f]{6}$/'],
             'emoji' => ['required', 'string'],
         ];

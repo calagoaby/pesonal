@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Casts\MoneyCast;
+use App\Models\Concerns\BelongsToUser;
 use App\Support\Money;
 use Database\Factories\RecurringFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -24,6 +25,8 @@ use Illuminate\Support\Carbon;
 #[Fillable(['amount', 'note', 'day_of_month', 'start_date', 'end_date', 'active', 'category_id'])]
 class Recurring extends Model
 {
+    use BelongsToUser;
+
     /** @use HasFactory<RecurringFactory> */
     use HasFactory;
 

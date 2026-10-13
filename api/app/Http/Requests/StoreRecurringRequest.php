@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use Illuminate\Validation\Rule;
+
 class StoreRecurringRequest extends RecurringRequest
 {
     /** @return array<string, mixed> */
@@ -12,7 +14,7 @@ class StoreRecurringRequest extends RecurringRequest
         // clamp to month length happens only at materialization.
         return [
             'amount' => ['required', $this->centavosRule()],
-            'category_id' => ['required', 'integer', 'exists:categories,id'],
+            'category_id' => ['required', 'integer', Rule::exists('categories', 'id')->where('user_id', $this->user()->id)],
             'day_of_month' => ['required', 'integer', 'between:1,31'],
             'start_date' => ['required', 'string', 'regex:/^\d{4}-\d{2}-\d{2}$/'],
             'end_date' => ['nullable', 'string', 'regex:/^\d{4}-\d{2}-\d{2}$/'],

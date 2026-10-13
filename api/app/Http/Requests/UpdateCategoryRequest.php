@@ -11,7 +11,7 @@ class UpdateCategoryRequest extends ApiFormRequest
     {
         // `sometimes` → a field is validated only when present, so PATCH stays partial.
         return [
-            'name' => ['sometimes', 'required', 'string', Rule::unique('categories', 'name')->ignore($this->route('category'))],
+            'name' => ['sometimes', 'required', 'string', Rule::unique('categories', 'name')->where('user_id', $this->user()->id)->ignore($this->route('category'))],
             'color' => ['sometimes', 'required', 'regex:/^#[0-9A-Fa-f]{6}$/'],
             'emoji' => ['sometimes', 'required', 'string'],
         ];

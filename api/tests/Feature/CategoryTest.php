@@ -6,10 +6,12 @@ use App\Models\Category;
 use App\Models\Expense;
 use App\Models\Recurring;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Concerns\ActsAsUser;
 use Tests\TestCase;
 
 class CategoryTest extends TestCase
 {
+    use ActsAsUser;
     use RefreshDatabase;
 
     private const SHAPE = ['id', 'name', 'color', 'emoji', 'created_at'];

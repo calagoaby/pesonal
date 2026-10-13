@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Casts\MoneyCast;
+use App\Models\Concerns\BelongsToUser;
 use App\Support\Money;
 use Database\Factories\ExpenseFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -23,6 +24,8 @@ use Illuminate\Support\Carbon;
 #[Fillable(['amount', 'date', 'note', 'category_id', 'recurring_id'])]
 class Expense extends Model
 {
+    use BelongsToUser;
+
     /** @use HasFactory<ExpenseFactory> */
     use HasFactory;
 

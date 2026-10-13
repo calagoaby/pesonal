@@ -7,7 +7,7 @@ use Illuminate\Database\Seeder;
 
 class ExpenseSeeder extends Seeder
 {
-    public function run(): void
+    public function run(int $userId): void
     {
         // Ported straight from mockDb.ts buildExpenses() so the app looks identical
         // after the base URL flips. Deterministic on purpose — no random values.
@@ -44,6 +44,7 @@ class ExpenseSeeder extends Seeder
                     $timestamp = sprintf('%s %02d:00:00', $date, $slot + 1);
 
                     $rows[] = [
+                        'user_id' => $userId,
                         'amount' => $template['amount'],
                         'date' => $date,
                         'note' => $template['note'],
@@ -59,6 +60,7 @@ class ExpenseSeeder extends Seeder
                     $timestamp = sprintf('%s-01 00:00:00', $m['month']);
 
                     $rows[] = [
+                        'user_id' => $userId,
                         'amount' => 1500000,
                         'date' => $m['month'].'-01',
                         'note' => 'Rent share',

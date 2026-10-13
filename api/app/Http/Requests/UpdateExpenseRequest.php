@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use Illuminate\Validation\Rule;
+
 class UpdateExpenseRequest extends ExpenseRequest
 {
     /** @return array<string, mixed> */
@@ -12,7 +14,7 @@ class UpdateExpenseRequest extends ExpenseRequest
         return [
             'amount' => ['sometimes', 'required', $this->centavosRule()],
             'date' => ['sometimes', 'required', 'string', 'regex:/^\d{4}-\d{2}-\d{2}$/'],
-            'category_id' => ['sometimes', 'required', 'integer', 'exists:categories,id'],
+            'category_id' => ['sometimes', 'required', 'integer', Rule::exists('categories', 'id')->where('user_id', $this->user()->id)],
         ];
     }
 }

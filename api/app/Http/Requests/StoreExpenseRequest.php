@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use Illuminate\Validation\Rule;
+
 class StoreExpenseRequest extends ExpenseRequest
 {
     /** @return array<string, mixed> */
@@ -12,7 +14,7 @@ class StoreExpenseRequest extends ExpenseRequest
         return [
             'amount' => ['required', $this->centavosRule()],
             'date' => ['required', 'string', 'regex:/^\d{4}-\d{2}-\d{2}$/'],
-            'category_id' => ['required', 'integer', 'exists:categories,id'],
+            'category_id' => ['required', 'integer', Rule::exists('categories', 'id')->where('user_id', $this->user()->id)],
         ];
     }
 }

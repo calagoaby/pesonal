@@ -3,7 +3,9 @@
 namespace Tests\Feature\Auth;
 
 use App\Models\User;
+use App\Support\DefaultCategories;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
@@ -50,6 +52,22 @@ class RegisterLoginTest extends TestCase
         $this->getJson('/api/user')
             ->assertOk()
             ->assertJsonPath('data.id', $response->json('data.id'));
+    }
+
+    public function test_registration_creates_the_eight_default_categories(): void
+    {
+        $id = $this->fromFrontend()->postJson('/api/auth/register', $this->registration())->assertCreated()->json('data.id');
+
+        $categories = DB::table('categories')->where('user_id', $id)->orderBy('id')->get(['name', 'color', 'emoji']);
+
+        $this->assertSame(
+            DefaultCategories::ALL,
+            $categories->map(fn (object $row) => (array) $row)->all(),
+        );
+        $this->assertSame(
+            ['Housing', 'Groceries', 'Food', 'Transport', 'Fun', 'Utilities', 'Health', 'Other'],
+            $categories->pluck('name')->all(),
+        );
     }
 
     public function test_register_rejects_a_taken_email_regardless_of_case(): void

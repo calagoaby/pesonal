@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\Category;
 use App\Models\Recurring;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -16,6 +17,8 @@ class RecurringFactory extends Factory
     public function definition(): array
     {
         return [
+            // Whoever is signed in (a test's acting user), else a fresh account.
+            'user_id' => fn () => auth()->id() ?? User::factory(),
             'amount' => 1500000, // centavos
             'note' => 'Factory standing order',
             'day_of_month' => 1,

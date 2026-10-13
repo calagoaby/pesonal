@@ -7,10 +7,12 @@ use App\Models\Expense;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Tests\Concerns\ActsAsUser;
 use Tests\TestCase;
 
 class StatsTest extends TestCase
 {
+    use ActsAsUser;
     use RefreshDatabase;
 
     private const CATEGORY_REF = ['id', 'name', 'color', 'emoji'];

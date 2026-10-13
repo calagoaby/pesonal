@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use Illuminate\Validation\Rule;
+
 class UpdateRecurringRequest extends RecurringRequest
 {
     /** @return array<string, mixed> */
@@ -11,7 +13,7 @@ class UpdateRecurringRequest extends RecurringRequest
         // it (open-ended). note and active are applied by the controller.
         return [
             'amount' => ['sometimes', 'required', $this->centavosRule()],
-            'category_id' => ['sometimes', 'required', 'integer', 'exists:categories,id'],
+            'category_id' => ['sometimes', 'required', 'integer', Rule::exists('categories', 'id')->where('user_id', $this->user()->id)],
             'day_of_month' => ['sometimes', 'required', 'integer', 'between:1,31'],
             'start_date' => ['sometimes', 'required', 'string', 'regex:/^\d{4}-\d{2}-\d{2}$/'],
             'end_date' => ['sometimes', 'nullable', 'string', 'regex:/^\d{4}-\d{2}-\d{2}$/'],

@@ -8,10 +8,12 @@ use App\Models\Recurring;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Tests\Concerns\ActsAsUser;
 use Tests\TestCase;
 
 class ExpenseTest extends TestCase
 {
+    use ActsAsUser;
     use RefreshDatabase;
 
     private const SHAPE = ['id', 'amount', 'date', 'note', 'category', 'recurring_id', 'created_at', 'updated_at'];
