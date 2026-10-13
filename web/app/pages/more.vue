@@ -5,9 +5,13 @@ import ChartLine from '@primeicons/vue/chart-line';
 import Download from '@primeicons/vue/download';
 import Upload from '@primeicons/vue/upload';
 import InfoCircle from '@primeicons/vue/info-circle';
+import SignOut from '@primeicons/vue/sign-out';
 import ChevronRight from '@primeicons/vue/chevron-right';
 import { listCategories } from '~/repositories/categories';
 import { listRecurring } from '~/repositories/recurring';
+import { useAuth } from '~/stores/auth';
+
+const auth = useAuth()
 
 // Both reads share the keys their own screens own, so landing here warms those
 // caches instead of paying for a second fetch. A failed count must not break the
@@ -20,6 +24,13 @@ const { data: recurring } = await useAsyncData('recurring', () => listRecurring(
 const category_count = computed(() => categories.value?.length ?? 0)
 const template_count = computed(() => recurring.value?.length ?? 0)
 const active_count = computed(() => (recurring.value ?? []).filter(item => item.active).length)
+
+
+/** Functions */
+async function signOut() {
+    await auth.signOut()
+    await navigateTo('/login')
+}
 </script>
 
 <template>
@@ -88,6 +99,16 @@ const active_count = computed(() => (recurring.value ?? []).filter(item => item.
             <span class="soon">Soon</span>
         </div>
 
+        <div class="section">Account</div>
+
+        <button type="button" class="destination" @click="signOut">
+            <SignOut class="lead-icon" />
+            <span class="name">
+                Sign out
+                <span class="sub">Close the ledger for now</span>
+            </span>
+        </button>
+
         <div class="foot">
             <SharedBarcode class="roll-barcode" gap="5px" height="36px" />
             <div class="count">Pesonal · v1.0</div>
@@ -118,6 +139,16 @@ const active_count = computed(() => (recurring.value ?? []).filter(item => item.
     border-top: 1.5px dashed var(--perforation);
     color: var(--ink);
     text-decoration: none;
+}
+
+button.destination {
+    width: 100%;
+    border-right: 0;
+    border-bottom: 0;
+    border-left: 0;
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
 }
 
 .name {

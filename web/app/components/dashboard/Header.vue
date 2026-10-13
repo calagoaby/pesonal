@@ -1,10 +1,24 @@
+<script setup lang="ts">
+import { useAuth } from '~/stores/auth'
+
+const auth = useAuth()
+
+
+/** Computed */
+const first_name = computed(() => auth.user?.name.trim().split(/\s+/)[0] ?? '')
+const initial = computed(() => first_name.value.charAt(0).toUpperCase())
+</script>
+
 <template>
     <header class="header">
         <div>
-            <p class="greeting">Kumusta, User</p>
+            <p class="greeting">Kumusta, {{ first_name }}</p>
             <h1 class="title">Your money this month</h1>
         </div>
-        <div class="avatar">A</div>
+        <div class="avatar">
+            <img v-if="auth.user?.avatar_url" class="avatar-img" :src="auth.user.avatar_url" alt="">
+            <template v-else>{{ initial }}</template>
+        </div>
     </header>
 </template>
 
@@ -33,6 +47,7 @@
     justify-content: center;
     width: 38px;
     height: 38px;
+    overflow: hidden;
     border: 1.5px solid var(--ink);
     border-radius: var(--radius-pill);
     background-color: var(--paper);
@@ -40,5 +55,11 @@
     font-family: var(--mono);
     font-weight: 600;
     font-size: 16px;
+}
+
+.avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 </style>
