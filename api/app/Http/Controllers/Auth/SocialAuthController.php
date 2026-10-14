@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\InvalidStateException;
+use RuntimeException;
 use Symfony\Component\HttpFoundation\RedirectResponse as SymfonyRedirect;
 use Throwable;
 
@@ -37,9 +38,16 @@ class SocialAuthController extends Controller
 
     public function callback(Request $request, string $provider, SignInWithProvider $signIn): RedirectResponse
     {
-        // The provider's access_denied: the user backed out on its screen.
+        // access_denied: the user backed out on the provider's screen. Any other error is
+        // the provider refusing us (bad credentials, a misconfigured app), worth a log line.
         if ($request->has('error')) {
-            return $this->toLogin('cancelled');
+            if ($request->query('error') === 'access_denied') {
+                return $this->toLogin('cancelled');
+            }
+
+            report(new RuntimeException("{$provider} sign-in error: ".json_encode($request->query('error'))));
+
+            return $this->toLogin('failed');
         }
 
         try {

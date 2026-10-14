@@ -15,7 +15,7 @@ class SignInWithProvider
 {
     /**
      * Find or create the account a provider sign-in belongs to. The linking rules run in
-     * order; the caller signs the returned user in.
+     * order: already linked, link, take over, create. The caller signs the returned user in.
      *
      * @throws ProviderEmailMissing
      * @throws ProviderEmailUnverified
@@ -24,7 +24,7 @@ class SignInWithProvider
     {
         $providerUserId = (string) $social->getId();
 
-        // 1. Already linked: the (provider, id) pair decides, whatever the email says now.
+        // Already linked: the (provider, id) pair decides, whatever the email says now.
         $linked = SocialAccount::query()
             ->where('provider', $provider)
             ->where('provider_user_id', $providerUserId)
@@ -35,8 +35,9 @@ class SignInWithProvider
         }
 
         $email = $social->getEmail();
+        $email = is_string($email) ? Str::lower(trim($email)) : '';
 
-        if (! is_string($email) || $email === '') {
+        if ($email === '') {
             throw new ProviderEmailMissing;
         }
 
@@ -44,13 +45,12 @@ class SignInWithProvider
             throw new ProviderEmailUnverified;
         }
 
-        $email = strtolower($email);
-
         return DB::transaction(function () use ($provider, $providerUserId, $email, $social) {
             $user = User::query()->where('email', $email)->first();
 
+            // Link: a verified account with the email only gains the social row below.
             if ($user === null) {
-                // 4. Nobody has the email: a new account, verified on arrival.
+                // Create: nobody has the email, so a new account, verified on arrival.
                 $user = new User([
                     'name' => $social->getName() ?: Str::before($email, '@'),
                     'email' => $email,
@@ -61,17 +61,17 @@ class SignInWithProvider
 
                 app(CreateDefaultCategories::class)->execute($user);
             } elseif (! $user->hasVerifiedEmail()) {
-                // 3. Take the account over. Whoever set its password never proved they own
-                // the email; the provider just did. Otherwise someone could pre-register a
-                // victim's address and share the account once the victim signs in.
+                // Take over: whoever set its password never proved they own the email; the
+                // provider just did. Otherwise someone could pre-register a victim's address
+                // and share the account once the victim signs in.
                 $user->email_verified_at = now();
                 $user->password = null;
                 $user->setRememberToken(Str::random(60));
                 $user->save();
 
-                DB::table('sessions')->where('user_id', $user->id)->delete();
+                // Only ends sessions under the database driver (today's driver).
+                DB::table(config('session.table'))->where('user_id', $user->id)->delete();
             }
-            // 2. A verified account with the email gets the link and nothing else changes.
 
             $user->social_accounts()->create([
                 'provider' => $provider,
@@ -92,7 +92,7 @@ class SignInWithProvider
 
         $raw = $social instanceof AbstractUser ? $social->getRaw() : [];
 
-        return filter_var($raw['email_verified'] ?? false, FILTER_VALIDATE_BOOLEAN);
+        return ($raw['email_verified'] ?? null) === true;
     }
 
     private function fillAvatar(User $user, SocialUser $social): User

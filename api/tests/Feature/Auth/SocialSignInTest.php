@@ -5,11 +5,13 @@ namespace Tests\Feature\Auth;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Exceptions;
 use Laravel\Socialite\Contracts\Provider;
 use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\InvalidStateException;
 use Laravel\Socialite\Two\User as SocialiteUser;
 use Mockery;
+use RuntimeException;
 use Tests\TestCase;
 
 class SocialSignInTest extends TestCase
@@ -177,6 +179,89 @@ class SocialSignInTest extends TestCase
         $this->assertSame($password, $user->password);
         $this->assertNull($user->email_verified_at);
         $this->assertSame(0, DB::table('social_accounts')->count());
+        $this->assertGuest();
+    }
+
+    public function test_the_signed_in_session_reaches_the_api(): void
+    {
+        $this->provider('google', $this->socialUser());
+
+        $this->get('/api/auth/google/callback')->assertRedirect('http://localhost:3000/');
+        $id = User::sole()->id;
+
+        // Drop the cached guard user so /api/user has to resolve it from the session.
+        $this->app['auth']->forgetGuards();
+
+        $this->fromFrontend()->getJson('/api/user')
+            ->assertOk()
+            ->assertJsonPath('data.id', $id);
+    }
+
+    public function test_a_forged_or_missing_state_is_refused(): void
+    {
+        // The real Google driver, no mock: nothing put a state in the session, so the
+        // check fails before any network call.
+        $this->get('/api/auth/google/callback?code=x&state=forged')
+            ->assertRedirect('http://localhost:3000/login?error=failed');
+        $this->get('/api/auth/google/callback?code=x')
+            ->assertRedirect('http://localhost:3000/login?error=failed');
+
+        $this->assertSame(0, User::count());
+        $this->assertGuest();
+    }
+
+    public function test_a_new_email_google_has_not_verified_is_refused(): void
+    {
+        $this->provider('google', $this->socialUser(['email_verified' => false]));
+
+        $this->get('/api/auth/google/callback')->assertRedirect('http://localhost:3000/login?error=failed');
+
+        $this->assertSame(0, User::count());
+        $this->assertGuest();
+    }
+
+    public function test_google_without_an_email_verified_flag_is_refused(): void
+    {
+        $this->provider('google', $this->socialUser(['email_verified' => null]));
+
+        $this->get('/api/auth/google/callback')->assertRedirect('http://localhost:3000/login?error=failed');
+
+        $this->assertSame(0, User::count());
+        $this->assertGuest();
+    }
+
+    public function test_an_already_linked_google_account_signs_in_even_if_the_email_is_now_unverified(): void
+    {
+        $user = User::factory()->create(['email' => 'aby@example.com']);
+        $user->social_accounts()->create(['provider' => 'google', 'provider_user_id' => 'g-1']);
+        $this->provider('google', $this->socialUser(['email_verified' => false]));
+
+        $this->get('/api/auth/google/callback')->assertRedirect('http://localhost:3000/');
+
+        $this->assertAuthenticatedAs($user);
+    }
+
+    public function test_an_email_with_surrounding_spaces_matches_the_existing_user(): void
+    {
+        $user = User::factory()->create(['email' => 'aby@example.com']);
+        $this->provider('google', $this->socialUser(['email' => '  Aby@Example.com ']));
+
+        $this->get('/api/auth/google/callback')->assertRedirect('http://localhost:3000/');
+
+        $this->assertSame(1, User::count());
+        $this->assertSame('google', $user->social_accounts()->sole()->provider);
+        $this->assertAuthenticatedAs($user);
+    }
+
+    public function test_another_provider_error_redirects_with_failed_and_is_reported(): void
+    {
+        Exceptions::fake();
+        Socialite::shouldReceive('driver')->never();
+
+        $this->get('/api/auth/google/callback?error=invalid_client')
+            ->assertRedirect('http://localhost:3000/login?error=failed');
+
+        Exceptions::assertReported(fn (RuntimeException $e) => str_contains($e->getMessage(), 'invalid_client'));
         $this->assertGuest();
     }
 
