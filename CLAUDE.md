@@ -1,6 +1,8 @@
 # Pesonal — project guide
 
-Personal expense tracker. Mobile-first web app, single user, no auth, runs locally. Receipt/thermal-paper look, deadpan funny tone.
+Personal expense tracker. Mobile-first web app, runs locally. Receipt/thermal-paper look, deadpan funny tone.
+
+**Multi-user.** Anyone can sign up and gets a private ledger: every category, expense and standing order belongs to one user, and someone else's id answers 404. Auth is **Sanctum cookie sessions** (no tokens in the browser): email + password through Fortify (`/api/auth/*`), Google and Facebook through Socialite. The data routes need a signed-in, *verified* user.
 
 Monorepo: `api/` (Laravel — intentionally swappable for another backend later) · `web/` (Nuxt 4) · `design/` (UI specs). Runs natively on Windows (see Working environment). DB is SQLite. Contracts & roadmap live **outside the repo** in `../docs/pesonal/` (`C:\Users\Aby\Documents\aby\tests\docs\pesonal\`), not in git.
 
@@ -43,7 +45,7 @@ Design specs live in `design/`. Status and the screen order live in `../docs/pes
 ## Folder structure & data layer
 
 - Nuxt defaults under `web/app/` (`pages/`, `components/`, `composables/`, `utils/`, `layouts/`), grouped into **feature subfolders**. The app shell (bottom nav + FAB) lives in `layouts/default.vue`, never in a page.
-- **The data layer is three thin layers, each ignorant of the one above.** `app/utils/api.ts` is the **transport**: it owns the base URLs (a server render and the browser use different ones — see the gotchas), unwraps the `{ data }` envelope, and maps the contract's error shape to `ApiRequestError` — nothing else calls `$fetch` raw, so swapping the backend touches this file alone. `app/repositories/<resource>.ts` holds **one plain exported function per endpoint** (`listExpenses`, `createExpense`, …) — paths, query params and payload types live here and nowhere else. `app/composables/` owns **reactivity** — `useAsyncData`, refs, computeds, grouping — and calls repositories, never URLs. Repositories aren't auto-imported; import them explicitly.
+- **The data layer is three thin layers, each ignorant of the one above.** `app/utils/api.ts` is the **transport**: it owns the base URLs (a server render and the browser use different ones — see the gotchas), sends the session cookie and the `X-XSRF-TOKEN` header (one retry on a 419), unwraps the `{ data }` envelope, and maps the contract's error shape to `ApiRequestError` — nothing else calls `$fetch` raw, so swapping the backend touches this file alone. `app/repositories/<resource>.ts` holds **one plain exported function per endpoint** (`listExpenses`, `createExpense`, …) — paths, query params and payload types live here and nowhere else. `app/composables/` owns **reactivity** — `useAsyncData`, refs, computeds, grouping — and calls repositories, never URLs. Repositories aren't auto-imported; import them explicitly.
 - **Contract types** (`Category`, `Expense`, `MonthlyStats`, …) live in Nuxt 4's `shared/` dir; mirror `../docs/pesonal/api-contract.md`.
 - Pure helpers (`formatPeso`, `percent`) live in `utils/`. Graduate to `app/features/` or Nuxt Layers only if this outgrows the flat structure.
 
@@ -82,6 +84,14 @@ It runs `recurring:materialize` once, then keeps three processes up through `con
 
 The app is `http://localhost:3000`; the API is `http://localhost:8080` (`public.apiBase` in `nuxt.config.ts`).
 
+### Accounts and sign-in
+
+- **`api/.env` keys added for auth** (also in `.env.example`): `FRONTEND_URL=http://localhost:3000` (CORS origin, and where reset/verify/social redirects land) · `SANCTUM_STATEFUL_DOMAINS=localhost:3000` (requests from here get the session) · `APP_URL=http://localhost:8080` (social callback URLs are built from it) · `SESSION_DOMAIN=` (empty, host-only cookie) · `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` · `FACEBOOK_CLIENT_ID` / `FACEBOOK_CLIENT_SECRET`. Empty provider keys send that button back to `/login?error=failed`. Any `.env` change needs a restart.
+- **Provider callback URLs** to register with Google / Meta: `http://localhost:8080/api/auth/google/callback` and `…/facebook/callback`.
+- **Mail goes to the log.** The `log` mailer writes verify and reset emails into `api/storage/logs/laravel.log`; copy the link from there (see the `&amp;` gotcha).
+- **`php artisan pesonal:claim {email}`** gives every category, standing order and expense with no owner to that account, merging same-named categories into the account's own, and keeps every row's timestamps. Only needed for data from before multi-user (or a restored old backup); `user_id` is now NOT NULL, so new rows always have an owner.
+- **`php artisan migrate:fresh --seed` wipes every account**, not just the ledger, and creates one verified demo account, `demo@pesonal.test` / `password`, owning all the seed data.
+
 ### Gotchas that have already cost real time
 
 - **Ports 8000 and 8001 belong to Homestead.** The owner's VirtualBox VM (another project, usually running) forwards them, which is why the API is on 8080. If `artisan serve` is started without `--port`, it silently drifts to the next free port and the frontend misses it.
@@ -91,8 +101,15 @@ The app is `http://localhost:3000`; the API is `http://localhost:8080` (`public.
 - **A new top-level directory needs a dev-server restart.** Nuxt scans `shared/`, `server/`, `layouts/` at boot; HMR won't pick up a folder that didn't exist. Symptom: `#shared` alias unresolved, or a new `server/api/` route 404s.
 - **Stale Vite module graph.** If the *browser* shows an error but a direct `Invoke-WebRequest`/`curl` to the same URL returns correct HTML, the code is fine and the dev server's in-memory graph is stale — restart `composer run dev`. That disagreement between the two is the diagnostic; if both fail, it's a real bug.
 - **"504 Outdated Optimize Dep" on the first load after a fresh install.** Vite pre-bundles dependencies on first use and the page that triggered it never hydrates — it renders but ignores clicks. One browser refresh fixes it. Dev only.
-- **Data lives in Laravel's SQLite file.** `api/database/database.sqlite` (gitignored) survives restarts. Reset to the seed with `cd api && php artisan migrate:fresh --seed`, which wipes everything entered through the UI.
+- **Data lives in Laravel's SQLite file.** `api/database/database.sqlite` (gitignored) survives restarts. Reset to the seed with `cd api && php artisan migrate:fresh --seed`, which wipes everything entered through the UI — accounts and login sessions included (sessions live in the same file).
 - **Larastan needs more than PHP's default 128M.** Run it as `composer analyse` (in `api/`), which passes `--memory-limit=512M`; at 128M a cold run crashes its worker (`exit code 255`).
+- **Larastan's result cache can hide errors.** A "0 errors" straight after a migration change may be a cache hit; run `vendor/bin/phpstan clear-result-cache` before trusting it.
+- **Windows PHP ships no CA bundle.** Any outbound HTTPS from PHP fails with `cURL error 60 … unable to get local issuer certificate` — first seen on the social sign-in token exchange (Composer brings its own bundle, which hid it). Fix: `cacert.pem` from curl.se into `C:\php84\extras\ssl\`, point `curl.cainfo` and `openssl.cafile` in `C:\php84\php.ini` at it, restart.
+- **Links copied from `laravel.log` need `&amp;` → `&`.** The log holds the email's HTML, so signed links read `…&amp;signature=…`; pasted as-is they fail with "Invalid signature."
+- **The social routes live in `routes/web.php`, not `api.php`** (still at `/api/auth/{provider}/…`). They're top-level browser navigations with no `Origin` header, so Sanctum's stateful check would give them no session, and Socialite's state check needs one.
+- **Sanctum only gives a session to requests from the frontend.** In tests, chain `$this->fromFrontend()` (sets `Origin`/`Referer` to `:3000`) or the session never starts; and after register/login/logout call `$this->app['auth']->forgetGuards()` before re-reading `/api/user`, or the cached guard user makes the test prove nothing. PHPUnit also skips CSRF — probe 419s with curl and an `Origin: http://localhost:3000` header.
+- **`SessionGuard::logout()` after deleting the user re-inserts the row** (it cycles the remember token and `save()`s the deleted model). Use `logoutCurrentDevice()`, as `DeleteAccountController` does.
+- **SQLite `->change()` rebuilds the table (copy → drop → rename) and Laravel runs SQLite migrations without a transaction**, so a failure mid-way loses the table. Follow `2026_10_13_000004_require_user_id_on_ledger_tables.php`: foreign keys off *outside* a transaction (the pragma is ignored inside one), rebuild in one transaction, `PRAGMA foreign_key_check` before committing.
 
 ### Checks
 
