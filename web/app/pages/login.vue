@@ -8,11 +8,13 @@ const auth = useAuth()
 const route = useRoute()
 const { is_submitting, failure, submit, fieldError } = useAuthForm()
 
-// Where the social callback sends a failed round trip: /login?error=<reason>.
+// Where the API sends a browser back: /login?error=<reason> (a failed social round trip, or a
+// verify link opened while signed out).
 const OAUTH_MESSAGES: Record<string, string> = {
     cancelled: 'Sign-in cancelled. No harm done.',
     no_email: 'Facebook didn\'t share an email, so there\'s no ledger to open. Try Google or email instead.',
-    failed: 'Sign-in didn\'t go through. Try again.'
+    failed: 'Sign-in didn\'t go through. Try again.',
+    verify_signed_out: 'Sign in first, then open the link in your email again.'
 }
 
 

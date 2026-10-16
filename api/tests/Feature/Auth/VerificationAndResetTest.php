@@ -57,6 +57,40 @@ class VerificationAndResetTest extends TestCase
         $this->assertTrue($user->fresh()->hasVerifiedEmail());
     }
 
+    public function test_a_signed_out_browser_opening_the_verify_link_is_sent_to_sign_in(): void
+    {
+        $user = User::factory()->unverified()->create();
+
+        $this->get($this->verifyUrl($user))
+            ->assertRedirect('http://localhost:3000/login?error=verify_signed_out');
+
+        $this->assertFalse($user->fresh()->hasVerifiedEmail());
+    }
+
+    public function test_a_signed_out_json_call_to_the_verify_link_still_answers_401_json(): void
+    {
+        $user = User::factory()->unverified()->create();
+
+        $this->getJson($this->verifyUrl($user))
+            ->assertUnauthorized()
+            ->assertExactJson(['message' => 'Unauthenticated.']);
+    }
+
+    public function test_a_signed_out_browser_on_another_api_route_still_gets_json_401(): void
+    {
+        $this->get('/api/user')
+            ->assertUnauthorized()
+            ->assertExactJson(['message' => 'Unauthenticated.']);
+    }
+
+    private function verifyUrl(User $user): string
+    {
+        return URL::temporarySignedRoute('verification.verify', now()->addHour(), [
+            'id' => $user->id,
+            'hash' => sha1($user->email),
+        ]);
+    }
+
     public function test_resend_answers_202(): void
     {
         Notification::fake();

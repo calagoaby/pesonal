@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\EnsureEmailIsVerified;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -25,6 +26,12 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*'),
         );
+
+        // The verify link is opened from an email, so a signed-out browser lands on sign-in instead of
+        // the bare JSON 401 every api/* route renders. JSON callers still get the 401.
+        $exceptions->render(fn (AuthenticationException $e, Request $request) => $request->is('api/auth/email/verify/*') && ! $request->expectsJson()
+            ? redirect()->away(config('app.frontend_url').'/login?error=verify_signed_out')
+            : null);
 
         $exceptions->render(fn (ThrottleRequestsException $e, Request $request) => $request->is('api/*')
             ? response()->json(['message' => 'Too many tries. Take a breath, try again in a minute.'], 429, $e->getHeaders())
