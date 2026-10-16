@@ -11,6 +11,7 @@ use App\Http\Responses\RegisterResponse;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Laravel\Fortify\Contracts\FailedPasswordResetLinkRequestResponse;
@@ -45,5 +46,17 @@ class FortifyServiceProvider extends ServiceProvider
 
             return Limit::perMinute(5)->by($throttleKey);
         });
+
+        RateLimiter::for('auth-mail', fn (Request $request) => Limit::perMinute(6)->by((string) $request->ip()));
+
+        // Fortify registers these routes itself, and the router only loads (or un-caches) its routes
+        // during the booted callbacks, so wait a round past them.
+        $this->app->booted(fn () => $this->app->booted(function () {
+            foreach (Route::getRoutes()->getRoutes() as $route) {
+                if (in_array($route->getName(), ['register.store', 'password.email'], true)) {
+                    $route->middleware('throttle:auth-mail');
+                }
+            }
+        }));
     }
 }

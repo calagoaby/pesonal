@@ -47,7 +47,7 @@
         "dev": [
             "Composer\\Config::disableProcessTimeout",
             "@php artisan recurring:materialize",
-            "npx --yes concurrently@9 -c \"#93c5fd,#c4b5fd,#fdba74\" \"php artisan serve --port=8080\" \"php artisan schedule:work\" \"npm --prefix ../web run dev\" --names=api,schedule,web --kill-others"
+            "npx --yes concurrently@9 -c \"#93c5fd,#c4b5fd,#fdba74,#86efac\" \"php artisan serve --port=8080\" \"php artisan schedule:work\" \"php artisan queue:listen --tries=1\" \"npm --prefix ../web run dev\" --names=api,schedule,queue,web --kill-others"
         ],
         "analyse": [
             "@php vendor/bin/phpstan analyse --memory-limit=512M"

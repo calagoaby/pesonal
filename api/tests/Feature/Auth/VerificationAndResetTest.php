@@ -4,8 +4,9 @@ namespace Tests\Feature\Auth;
 
 use App\Models\Invitation;
 use App\Models\User;
+use App\Notifications\QueuedResetPassword;
+use App\Notifications\QueuedVerifyEmail;
 use Illuminate\Auth\Notifications\ResetPassword;
-use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification;
@@ -42,7 +43,7 @@ class VerificationAndResetTest extends TestCase
             'password_confirmation' => 'correct horse battery',
         ])->assertCreated();
 
-        Notification::assertSentTo(User::where('email', 'aby@example.com')->firstOrFail(), VerifyEmail::class);
+        Notification::assertSentTo(User::where('email', 'aby@example.com')->firstOrFail(), QueuedVerifyEmail::class);
     }
 
     public function test_the_signed_link_verifies_the_user_and_redirects_to_the_frontend(): void
@@ -102,7 +103,7 @@ class VerificationAndResetTest extends TestCase
             ->postJson('/api/auth/email/verification-notification')
             ->assertStatus(202);
 
-        Notification::assertSentTo($user, VerifyEmail::class);
+        Notification::assertSentTo($user, QueuedVerifyEmail::class);
     }
 
     public function test_verified_api_middleware_blocks_unverified_users_with_the_contract_message(): void
@@ -145,7 +146,7 @@ class VerificationAndResetTest extends TestCase
                 ->assertExactJson(['message' => self::FORGOT_COPY]);
         }
 
-        Notification::assertSentToTimes($user, ResetPassword::class, 1);
+        Notification::assertSentToTimes($user, QueuedResetPassword::class, 1);
     }
 
     public function test_the_reset_link_points_at_the_frontend(): void
@@ -155,7 +156,7 @@ class VerificationAndResetTest extends TestCase
 
         $this->fromFrontend()->postJson('/api/auth/forgot-password', ['email' => 'aby@example.com'])->assertOk();
 
-        Notification::assertSentTo($user, ResetPassword::class, function (ResetPassword $notification) use ($user) {
+        Notification::assertSentTo($user, QueuedResetPassword::class, function (ResetPassword $notification) use ($user) {
             $url = $notification->toMail($user)->actionUrl;
 
             return str_starts_with($url, 'http://localhost:3000/reset-password?token=')
