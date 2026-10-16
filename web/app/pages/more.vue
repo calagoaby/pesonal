@@ -6,12 +6,15 @@ import Download from '@primeicons/vue/download';
 import Upload from '@primeicons/vue/upload';
 import InfoCircle from '@primeicons/vue/info-circle';
 import SignOut from '@primeicons/vue/sign-out';
+import Trash from '@primeicons/vue/trash';
 import ChevronRight from '@primeicons/vue/chevron-right';
 import { listCategories } from '~/repositories/categories';
 import { listRecurring } from '~/repositories/recurring';
 import { useAuth } from '~/stores/auth';
+import { useToaster } from '~/stores/toaster';
 
 const auth = useAuth()
+const toaster = useToaster()
 
 // Both reads share the keys their own screens own, so landing here warms those
 // caches instead of paying for a second fetch. A failed count must not break the
@@ -19,6 +22,10 @@ const auth = useAuth()
 const { data: categories } = await useAsyncData('categories', () => listCategories())
 const { data: recurring } = await useAsyncData('recurring', () => listRecurring())
 
+
+/** States */
+const is_delete_slip_open = ref(false)
+const is_deleting = ref(false)
 
 /** Computed */
 const category_count = computed(() => categories.value?.length ?? 0)
@@ -30,6 +37,30 @@ const active_count = computed(() => (recurring.value ?? []).filter(item => item.
 async function signOut() {
     await auth.signOut()
     await navigateTo('/login')
+}
+
+async function confirmDelete() {
+    if (is_deleting.value) {
+        return
+    }
+
+    is_deleting.value = true
+
+    try {
+        await auth.deleteAccount()
+        is_delete_slip_open.value = false
+        toaster.show({ message: 'Account deleted. The receipt has been shredded.' })
+        await navigateTo('/login')
+    } catch (error) {
+        is_delete_slip_open.value = false
+
+        // A 401 was already cleared and sent to /login by the transport.
+        if (!(error instanceof ApiRequestError && error.status === 401)) {
+            toaster.show({ message: "Couldn't delete the account. Nothing was removed." })
+        }
+    } finally {
+        is_deleting.value = false
+    }
 }
 </script>
 
@@ -109,12 +140,31 @@ async function signOut() {
             </span>
         </button>
 
+        <button type="button" class="destination" @click="is_delete_slip_open = true">
+            <Trash class="lead-icon danger" />
+            <span class="name">
+                Delete my account
+                <span class="sub">Shred the whole roll</span>
+            </span>
+            <ChevronRight class="chevron" />
+        </button>
+
         <div class="foot">
             <SharedBarcode class="roll-barcode" gap="5px" height="36px" />
             <div class="count">Pesonal · v1.0</div>
             <div class="quip">* keep this receipt for your records *</div>
         </div>
     </SharedReceipt>
+
+    <SharedVoidSlip
+        v-model:open="is_delete_slip_open"
+        title="Delete account"
+        subject="Your whole ledger"
+        :detail="auth.user?.email"
+        warning="Every expense, standing order and category goes with it. No undo, no reprint."
+        confirm-label="Delete everything"
+        @confirm="confirmDelete"
+    />
 </template>
 
 <style scoped>
@@ -181,6 +231,10 @@ button.destination {
     height: 16px;
     color: var(--faded);
     flex: none;
+}
+
+.destination :deep(.lead-icon.danger) {
+    color: var(--stamp);
 }
 
 .destination :deep(.chevron) {

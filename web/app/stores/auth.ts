@@ -39,6 +39,24 @@ export const useAuth = defineStore('auth', () => {
         }
     }
 
+    // Clears on success and on a 401 (the session is gone either way), but not in a
+    // `finally` like signOut(): any other failure deleted nothing and keeps the session.
+    async function deleteAccount() {
+        try {
+            await authRepository.deleteAccount()
+        } catch (error) {
+            if (error instanceof ApiRequestError && error.status === 401) {
+                clearNuxtData()
+                clear()
+            }
+
+            throw error
+        }
+
+        clearNuxtData()
+        clear()
+    }
+
     function clear() {
         user.value = null
         loaded.value = true
@@ -53,6 +71,7 @@ export const useAuth = defineStore('auth', () => {
         signIn,
         signUp,
         signOut,
+        deleteAccount,
         clear
     }
 })
