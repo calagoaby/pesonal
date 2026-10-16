@@ -85,6 +85,8 @@ async function handleSubmit() {
 
         <AuthSwitch>Already have one? <NuxtLink to="/login">Sign in</NuxtLink></AuthSwitch>
 
+        <AuthSwitch class="faded"><NuxtLink to="/privacy">Privacy</NuxtLink></AuthSwitch>
+
         <AuthFoot />
     </SharedReceipt>
 </template>

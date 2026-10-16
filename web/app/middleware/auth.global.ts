@@ -1,5 +1,7 @@
 import { useAuth } from '~/stores/auth'
 
+// Reachable in every auth state: signed out, unverified, or signed in.
+const OPEN = ['/privacy']
 const PUBLIC = ['/login', '/register', '/forgot-password', '/reset-password']
 
 export default defineNuxtRouteMiddleware(async (to) => {
@@ -7,6 +9,10 @@ export default defineNuxtRouteMiddleware(async (to) => {
 
     if (!auth.loaded) {
         await auth.load()
+    }
+
+    if (OPEN.includes(to.path)) {
+        return
     }
 
     const is_public = PUBLIC.includes(to.path)

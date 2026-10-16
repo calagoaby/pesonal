@@ -22,7 +22,9 @@ export default defineNuxtConfig({
             // `php artisan serve --port=8080`. Not 8000: Homestead forwards 8000 and 8001.
             apiBase: 'http://localhost:8080',
             locale: 'en-PH',
-            timezone: 'Asia/Manila'
+            timezone: 'Asia/Manila',
+            // Shown on /privacy; empty falls back to "reply to the invite". Set via NUXT_PUBLIC_CONTACT_EMAIL.
+            contactEmail: ''
         }
     }
 })

@@ -85,6 +85,8 @@ async function handleSubmit() {
 
         <AuthSwitch>New here? <NuxtLink to="/register">Open a ledger</NuxtLink></AuthSwitch>
 
+        <AuthSwitch class="faded"><NuxtLink to="/privacy">Privacy</NuxtLink></AuthSwitch>
+
         <AuthFoot />
     </SharedReceipt>
 </template>

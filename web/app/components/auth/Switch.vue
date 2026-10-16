@@ -18,5 +18,15 @@
         text-decoration: underline;
         text-underline-offset: 3px;
     }
+
+    &.faded {
+        margin-top: var(--space-s);
+
+        :deep(a) {
+            font-size: var(--text-label);
+            font-weight: 400;
+            color: var(--faded);
+        }
+    }
 }
 </style>

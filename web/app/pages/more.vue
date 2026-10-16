@@ -121,14 +121,14 @@ async function confirmDelete() {
 
         <div class="section">About</div>
 
-        <div class="destination">
+        <NuxtLink to="/privacy" class="destination">
             <InfoCircle class="lead-icon" />
             <span class="name">
-                About Pesonal
-                <span class="sub">v1.0 · one user, no auth, no judgment</span>
+                About &amp; privacy
+                <span class="sub">What we keep, who sees it</span>
             </span>
-            <span class="soon">Soon</span>
-        </div>
+            <ChevronRight class="chevron" />
+        </NuxtLink>
 
         <div class="section">Account</div>
 
