@@ -2,8 +2,10 @@
 
 namespace Tests\Feature\Auth;
 
+use App\Models\Invitation;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Exceptions;
 use Laravel\Socialite\Contracts\Provider;
@@ -52,8 +54,15 @@ class SocialSignInTest extends TestCase
         Socialite::shouldReceive('driver')->with($name)->andReturn($provider);
     }
 
+    // Only a brand-new account needs its email on the list; linking and taking over don't.
+    private function invite(string $email = 'aby@example.com'): void
+    {
+        Invitation::create(['email' => $email]);
+    }
+
     public function test_a_new_google_user_is_created_verified_with_defaults_and_signed_in(): void
     {
+        $this->invite();
         $this->provider('google', $this->socialUser());
 
         $this->get('/api/auth/google/callback')->assertRedirect('http://localhost:3000/');
@@ -74,6 +83,7 @@ class SocialSignInTest extends TestCase
 
     public function test_a_new_facebook_user_is_created_without_an_email_verified_flag(): void
     {
+        $this->invite();
         $this->provider('facebook', $this->socialUser(['id' => 'fb-1', 'email_verified' => null]));
 
         $this->get('/api/auth/facebook/callback')->assertRedirect('http://localhost:3000/');
@@ -154,6 +164,49 @@ class SocialSignInTest extends TestCase
         $this->assertAuthenticatedAs($user);
     }
 
+    public function test_a_first_sign_in_with_an_uninvited_email_is_refused(): void
+    {
+        // Someone else being invited must not let this email through.
+        $this->invite('friend@example.com');
+        $this->provider('google', $this->socialUser());
+
+        $this->get('/api/auth/google/callback')->assertRedirect('http://localhost:3000/login?error=not_invited');
+
+        $this->assertSame(0, User::count());
+        $this->assertSame(0, DB::table('social_accounts')->count());
+        $this->assertSame(0, DB::table('categories')->count());
+        $this->assertGuest();
+    }
+
+    public function test_an_invited_email_matches_whatever_its_case_and_spacing(): void
+    {
+        $this->invite(' ABY@example.com ');
+        $this->provider('facebook', $this->socialUser(['id' => 'fb-1', 'email' => ' Aby@Example.com', 'email_verified' => null]));
+
+        $this->get('/api/auth/facebook/callback')->assertRedirect('http://localhost:3000/');
+
+        $this->assertAuthenticatedAs(User::sole());
+    }
+
+    public function test_linking_and_taking_over_need_no_invitation(): void
+    {
+        $verified = User::factory()->create(['email' => 'aby@example.com']);
+        $unverified = User::factory()->unverified()->create(['email' => 'other@example.com']);
+
+        $this->provider('google', $this->socialUser());
+        $this->get('/api/auth/google/callback')->assertRedirect('http://localhost:3000/');
+        $this->assertAuthenticatedAs($verified);
+
+        Auth::logout();
+        $this->provider('facebook', $this->socialUser(['id' => 'fb-1', 'email' => 'other@example.com', 'email_verified' => null]));
+        $this->get('/api/auth/facebook/callback')->assertRedirect('http://localhost:3000/');
+        $this->assertAuthenticatedAs($unverified);
+
+        $this->assertSame(0, Invitation::count());
+        $this->assertSame(2, User::count());
+        $this->assertTrue($unverified->refresh()->hasVerifiedEmail());
+    }
+
     public function test_a_provider_without_an_email_is_refused(): void
     {
         $this->provider('facebook', $this->socialUser(['id' => 'fb-1', 'email' => null, 'email_verified' => null]));
@@ -184,6 +237,7 @@ class SocialSignInTest extends TestCase
 
     public function test_the_signed_in_session_reaches_the_api(): void
     {
+        $this->invite();
         $this->provider('google', $this->socialUser());
 
         $this->get('/api/auth/google/callback')->assertRedirect('http://localhost:3000/');

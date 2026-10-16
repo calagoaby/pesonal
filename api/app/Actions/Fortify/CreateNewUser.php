@@ -3,7 +3,9 @@
 namespace App\Actions\Fortify;
 
 use App\Actions\CreateDefaultCategories;
+use App\Models\Invitation;
 use App\Models\User;
+use Closure;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -21,14 +23,17 @@ class CreateNewUser implements CreatesNewUsers
      */
     public function create(array $input): User
     {
-        // Lower-case before the unique check so Aby@Example.com collides with aby@example.com.
+        // Normalize before the checks so Aby@Example.com collides with aby@example.com
+        // and matches an invitation for it.
         if (isset($input['email']) && is_string($input['email'])) {
-            $input['email'] = strtolower($input['email']);
+            $input['email'] = Invitation::normalize($input['email']);
         }
 
         Validator::make($input, [
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', Rule::unique(User::class)],
+            // bail + the invite check before unique: an uninvited visitor can't use the
+            // form to learn which emails already have an account.
+            'email' => ['bail', 'required', 'string', 'email', 'max:255', $this->invited(...), Rule::unique(User::class)],
             'password' => $this->passwordRules(),
         ])->validate();
 
@@ -44,5 +49,12 @@ class CreateNewUser implements CreatesNewUsers
 
             return $user;
         });
+    }
+
+    private function invited(string $attribute, mixed $value, Closure $fail): void
+    {
+        if (! is_string($value) || ! Invitation::isInvited($value)) {
+            $fail('This ledger is invite-only. Ask whoever sent you here to add your email.');
+        }
     }
 }

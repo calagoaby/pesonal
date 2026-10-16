@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Auth;
 
+use App\Models\Invitation;
 use App\Models\User;
 use App\Support\DefaultCategories;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -25,6 +26,9 @@ class RegisterLoginTest extends TestCase
         // uncompromised() calls the pwned-passwords API; an empty body means "not breached".
         // A closure so a test can swap the body (the first matching fake wins, so re-faking can't).
         Http::fake(['api.pwnedpasswords.com/*' => fn () => Http::response($this->pwnedBody)]);
+
+        // Sign-up is invite-only; InvitationTest covers the refusal.
+        Invitation::create(['email' => 'aby@example.com']);
     }
 
     /** @return array<string, string> */

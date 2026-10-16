@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Actions\SignInWithProvider;
 use App\Exceptions\ProviderEmailMissing;
+use App\Exceptions\ProviderEmailNotInvited;
 use App\Exceptions\ProviderEmailUnverified;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
@@ -54,6 +55,8 @@ class SocialAuthController extends Controller
             $user = $signIn->execute($provider, Socialite::driver($provider)->user());
         } catch (ProviderEmailMissing) {
             return $this->toLogin('no_email');
+        } catch (ProviderEmailNotInvited) {
+            return $this->toLogin('not_invited');
         } catch (InvalidStateException|ProviderEmailUnverified) {
             // A stale or replayed callback (back button, a second tab), or an email the
             // provider hasn't proven: nothing to fix on our side, so nothing to report.

@@ -3,7 +3,9 @@
 namespace App\Actions;
 
 use App\Exceptions\ProviderEmailMissing;
+use App\Exceptions\ProviderEmailNotInvited;
 use App\Exceptions\ProviderEmailUnverified;
+use App\Models\Invitation;
 use App\Models\SocialAccount;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -18,6 +20,7 @@ class SignInWithProvider
      * order: already linked, link, take over, create. The caller signs the returned user in.
      *
      * @throws ProviderEmailMissing
+     * @throws ProviderEmailNotInvited
      * @throws ProviderEmailUnverified
      */
     public function execute(string $provider, SocialUser $social): User
@@ -51,6 +54,11 @@ class SignInWithProvider
             // Link: a verified account with the email only gains the social row below.
             if ($user === null) {
                 // Create: nobody has the email, so a new account, verified on arrival.
+                // Sign-up is invite-only; the other branches reach an existing account.
+                if (! Invitation::isInvited($email)) {
+                    throw new ProviderEmailNotInvited;
+                }
+
                 $user = new User([
                     'name' => $social->getName() ?: Str::before($email, '@'),
                     'email' => $email,

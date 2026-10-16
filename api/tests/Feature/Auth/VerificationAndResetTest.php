@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Auth;
 
+use App\Models\Invitation;
 use App\Models\User;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Auth\Notifications\VerifyEmail;
@@ -32,6 +33,7 @@ class VerificationAndResetTest extends TestCase
     public function test_register_sends_a_verification_email(): void
     {
         Notification::fake();
+        Invitation::create(['email' => 'aby@example.com']);
 
         $this->fromFrontend()->postJson('/api/auth/register', [
             'name' => 'Aby',

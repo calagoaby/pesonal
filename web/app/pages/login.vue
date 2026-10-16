@@ -13,6 +13,7 @@ const { is_submitting, failure, submit, fieldError } = useAuthForm()
 const OAUTH_MESSAGES: Record<string, string> = {
     cancelled: 'Sign-in cancelled. No harm done.',
     no_email: 'Facebook didn\'t share an email, so there\'s no ledger to open. Try Google or email instead.',
+    not_invited: 'This ledger is invite-only, and that email isn\'t on the list. Ask whoever sent you here to add it.',
     failed: 'Sign-in didn\'t go through. Try again.',
     verify_signed_out: 'Sign in first, then open the link in your email again.'
 }
