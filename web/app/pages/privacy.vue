@@ -59,7 +59,7 @@ function goBack() {
         <section class="psec">
             <div class="shdr">Contact</div>
             <a v-if="contactEmail" class="addr" :href="`mailto:${contactEmail}`">{{ contactEmail }}</a>
-            <p v-else>Reply to the invite that got you here. Same inbox, same deadpan.</p>
+            <p v-else>Ask whoever invited you. They know where to find us.</p>
         </section>
 
         <AuthFoot />

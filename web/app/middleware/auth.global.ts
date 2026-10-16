@@ -7,12 +7,21 @@ const PUBLIC = ['/login', '/register', '/forgot-password', '/reset-password']
 export default defineNuxtRouteMiddleware(async (to) => {
     const auth = useAuth()
 
-    if (!auth.loaded) {
-        await auth.load()
+    if (OPEN.includes(to.path)) {
+        // Must render even with the API down; load() only warms the signed-in Back target.
+        if (!auth.loaded) {
+            try {
+                await auth.load()
+            } catch {
+                // API unreachable: render anyway
+            }
+        }
+
+        return
     }
 
-    if (OPEN.includes(to.path)) {
-        return
+    if (!auth.loaded) {
+        await auth.load()
     }
 
     const is_public = PUBLIC.includes(to.path)
