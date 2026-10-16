@@ -37,8 +37,9 @@ return Application::configure(basePath: dirname(__DIR__))
             ? response()->json(['message' => 'Too many tries. Take a breath, try again in a minute.'], 429, $e->getHeaders())
             : null);
 
-        // Pin the contract's literal 422 message, as ApiFormRequest does for the data routes.
+        // Pin the contract's literal 422 message, as ApiFormRequest does for the data routes. The
+        // status comes from the exception: Fortify's LockoutResponse throws one with 429.
         $exceptions->render(fn (ValidationException $e, Request $request) => $request->is('api/*')
-            ? response()->json(['message' => 'The given data was invalid.', 'errors' => $e->errors()], 422)
+            ? response()->json(['message' => 'The given data was invalid.', 'errors' => $e->errors()], $e->status)
             : null);
     })->create();

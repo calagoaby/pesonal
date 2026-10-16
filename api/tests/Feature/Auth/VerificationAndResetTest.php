@@ -131,6 +131,21 @@ class VerificationAndResetTest extends TestCase
             ->assertExactJson(['message' => self::FORGOT_COPY]);
     }
 
+    public function test_a_throttled_forgot_password_answers_the_same_and_sends_nothing_more(): void
+    {
+        Notification::fake();
+        $user = User::factory()->create(['email' => 'aby@example.com']);
+
+        // The second ask inside the broker's 60-second throttle comes back RESET_THROTTLED.
+        foreach ([1, 2] as $_) {
+            $this->fromFrontend()->postJson('/api/auth/forgot-password', ['email' => 'aby@example.com'])
+                ->assertOk()
+                ->assertExactJson(['message' => self::FORGOT_COPY]);
+        }
+
+        Notification::assertSentToTimes($user, ResetPassword::class, 1);
+    }
+
     public function test_the_reset_link_points_at_the_frontend(): void
     {
         Notification::fake();

@@ -5,6 +5,7 @@ namespace Tests\Feature\Auth;
 use App\Models\User;
 use App\Support\DefaultCategories;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
@@ -108,7 +109,51 @@ class RegisterLoginTest extends TestCase
             ->assertOk()
             ->assertJsonPath('data.email', 'aby@example.com');
 
-        $this->getJson('/api/user')->assertOk();
+        // Without this the cached guard user answers, and the test proves nothing about the session.
+        $this->app['auth']->forgetGuards();
+
+        $this->fromFrontend()->getJson('/api/user')
+            ->assertOk()
+            ->assertJsonPath('data.email', 'aby@example.com');
+    }
+
+    public function test_login_with_remember_sets_a_cookie_that_signs_in_on_its_own(): void
+    {
+        User::factory()->create(['email' => 'aby@example.com', 'password' => 'correct horse battery']);
+        $recaller = Auth::guard('web')->getRecallerName();
+
+        $response = $this->fromFrontend()
+            ->postJson('/api/auth/login', ['email' => 'aby@example.com', 'password' => 'correct horse battery', 'remember' => true])
+            ->assertOk()
+            ->assertCookie($recaller);
+
+        // A fresh browser session: no signed-in guard, an empty session, only the remember cookie.
+        $this->app['auth']->forgetGuards();
+        $this->app['session.store']->flush();
+
+        $this->fromFrontend()
+            ->withCredentials()->withCookie($recaller, (string) $response->getCookie($recaller)?->getValue())
+            ->getJson('/api/user')
+            ->assertOk()
+            ->assertJsonPath('data.email', 'aby@example.com');
+    }
+
+    public function test_login_without_remember_sets_no_remember_cookie(): void
+    {
+        User::factory()->create(['email' => 'aby@example.com', 'password' => 'correct horse battery']);
+
+        $this->fromFrontend()
+            ->postJson('/api/auth/login', ['email' => 'aby@example.com', 'password' => 'correct horse battery'])
+            ->assertOk()
+            ->assertCookieMissing(Auth::guard('web')->getRecallerName());
+    }
+
+    public function test_login_with_a_non_string_email_is_422_not_500(): void
+    {
+        $this->fromFrontend()
+            ->postJson('/api/auth/login', ['email' => ['aby@example.com'], 'password' => 'correct horse battery'])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('email');
     }
 
     public function test_login_is_case_insensitive_on_email(): void

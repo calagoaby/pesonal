@@ -73,7 +73,8 @@ return [
     |
     */
 
-    'home' => env('FRONTEND_URL'),
+    // Same key and default as app.frontend_url; an env read, so config load order can't matter.
+    'home' => env('FRONTEND_URL', 'http://localhost:3000'),
 
     /*
     |--------------------------------------------------------------------------

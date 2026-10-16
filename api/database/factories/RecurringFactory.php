@@ -25,7 +25,8 @@ class RecurringFactory extends Factory
             'start_date' => '2026-01-01',
             'end_date' => null,
             'active' => true,
-            'category_id' => Category::factory(),
+            // Closures run in key order, so user_id is already an id here: the category gets the row's owner.
+            'category_id' => fn (array $attributes) => Category::factory()->state(['user_id' => $attributes['user_id']]),
         ];
     }
 }

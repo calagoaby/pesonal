@@ -22,7 +22,8 @@ class ExpenseFactory extends Factory
             'amount' => 15000, // centavos
             'date' => '2026-06-15',
             'note' => 'Factory expense',
-            'category_id' => Category::factory(),
+            // Closures run in key order, so user_id is already an id here: the category gets the row's owner.
+            'category_id' => fn (array $attributes) => Category::factory()->state(['user_id' => $attributes['user_id']]),
             'recurring_id' => null,
         ];
     }

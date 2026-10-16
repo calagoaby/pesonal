@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Password;
 
 class DeleteAccountController extends Controller
 {
@@ -27,6 +28,8 @@ class DeleteAccountController extends Controller
             }
             // API tokens hang off a polymorphic key, which no foreign key can cascade.
             $user->tokens()->delete();
+            // Reset tokens are keyed by email; left behind, one would outlive the account.
+            Password::broker()->deleteToken($user);
             // Social accounts cascade.
             $user->delete();
         });
