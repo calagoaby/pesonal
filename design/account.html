@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pesonal — Account and privacy (Receipt Roll · design reference)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Spline+Sans+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/primeicons/7.0.0/primeicons.min.css">
+<style>
+/*
+  Account — deleting an account, and the privacy page.
+  1 More hub, new Account section (About & privacy, Delete my account)
+  2 Void slip, confirm variant → SharedVoidSlip (title, subject, detail, warning, confirm-label)
+  3 /login after deletion, with a toast (no undo: it is gone)
+  4 /privacy — signed out, so the auth layout: no nav, no FAB
+  Token rule: var(--…) → use that token in the app; literal px → intentional one-off.
+*/
+:root{
+  --desk:#EAE5D9;--paper:#FBF8F1;
+  --ink:#1C1A17;--faded:#8A857B;--perforation:#D8D2C4;
+  --stamp:#C8472E;--under:#2F7D52;--hi:#E8B23A;
+  --text-hero:34px;--text-title:18px;--text-body:14px;--text-label:12px;--text-micro:11px;
+  --space-xs:4px;--space-s:8px;--space-m:12px;--space-l:16px;--space-xl:20px;--space-2xl:24px;
+  --radius-card:6px;--radius-pill:999px;
+  --mono:'Spline Sans Mono',ui-monospace,monospace;
+  --sans:'Plus Jakarta Sans',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:#d8d1c2;min-height:100vh;padding:30px 16px;color:var(--ink)}
+.intro{font-size:13px;color:#7c7567;margin:0 auto 24px;text-align:center;max-width:560px;line-height:1.5}
+.intro b,.label b{color:var(--ink)}
+.grid{display:flex;flex-wrap:wrap;gap:40px 32px;justify-content:center;align-items:flex-start}
+.item{display:flex;flex-direction:column;align-items:center;width:100%;max-width:390px}
+.label{font-size:13px;color:#7c7567;margin-bottom:14px;text-align:center;line-height:1.5}
+.phone{width:100%;background:#211e19;border-radius:42px;padding:10px;box-shadow:0 30px 60px rgba(33,30,25,.35)}
+.screen{position:relative;background:var(--desk);border-radius:32px;overflow:hidden;display:flex;flex-direction:column;min-height:760px}
+.page{display:flex;flex-direction:column;flex:1}
+.page.dim{opacity:.5}
+.statusbar{display:flex;justify-content:space-between;align-items:center;padding:11px 22px 4px;font-size:13px;font-family:var(--mono);color:var(--ink)}
+.statusbar .icons{display:flex;gap:8px;align-items:center}
+.content{padding:var(--space-l) var(--space-l) var(--space-2xl);flex:1}
+.torn{height:12px;background:var(--paper);border-bottom:1px solid var(--perforation);clip-path:polygon(0% 100%,0% 55%,4% 0%,8% 55%,12% 0%,16% 55%,20% 0%,24% 55%,28% 0%,32% 55%,36% 0%,40% 55%,44% 0%,48% 55%,52% 0%,56% 55%,60% 0%,64% 55%,68% 0%,72% 55%,76% 0%,80% 55%,84% 0%,88% 55%,92% 0%,96% 55%,100% 0%,100% 100%)}
+.roll{background:var(--paper);padding:var(--space-m) var(--space-l) var(--space-l);font-family:var(--mono)}
+.rhead{text-align:center;text-transform:uppercase}
+.rhead .brand{font-size:var(--text-body);letter-spacing:3px;font-weight:600}
+.rhead .sub{font-size:var(--text-micro);letter-spacing:.16em;color:var(--faded);margin-top:var(--space-xs)}
+.perf{border-top:1.5px dashed var(--perforation);margin:var(--space-m) 0}
+.shdr{font-size:var(--text-micro);letter-spacing:.1em;text-transform:uppercase;color:var(--faded);margin:var(--space-l) 0 var(--space-xs)}
+.dest{display:flex;align-items:center;gap:var(--space-m);padding:var(--space-m) 2px;border-top:1.5px dashed var(--perforation);color:var(--ink);text-decoration:none}
+.dest i.lead-icon{font-size:16px;color:var(--faded);width:18px;text-align:center}
+.dest .nm{flex:1;font-family:var(--sans);font-size:var(--text-body)}
+.dest .sub{font-family:var(--sans);font-size:var(--text-label);color:var(--faded);display:block;margin-top:2px}
+.dest i.chev{font-size:var(--text-label);color:var(--perforation)}
+.soon{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--faded);border:1px solid var(--perforation);border-radius:var(--radius-pill);padding:2px var(--space-s)}
+.foot{text-align:center;margin-top:var(--space-xl)}
+.barcode{height:36px;width:72%;margin:var(--space-s) auto;background:repeating-linear-gradient(90deg,var(--ink) 0 2px,transparent 2px 5px,var(--ink) 5px 6px,transparent 6px 11px)}
+.foot .count{font-size:var(--text-micro);letter-spacing:.14em;text-transform:uppercase;color:var(--faded)}
+.foot .quip{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--perforation);margin-top:var(--space-s)}
+.nav{display:flex;align-items:center;justify-content:space-between;background:var(--paper);border-top:1.5px dashed var(--perforation);padding:var(--space-m) var(--space-l) var(--space-l)}
+.navitem{display:flex;flex-direction:column;align-items:center;gap:var(--space-xs);flex:1;font-size:var(--text-micro);color:var(--faded);font-weight:500;text-decoration:none}
+.navitem.active{color:var(--ink);font-weight:600}
+.navitem i{font-size:20px}
+.fab{width:54px;height:54px;border-radius:var(--radius-pill);background:var(--stamp);color:#fff;display:flex;align-items:center;justify-content:center;margin-top:-26px;border:3px solid var(--paper);box-shadow:0 8px 18px rgba(200,71,46,.32);font-size:24px;text-decoration:none}
+/* void slip — as components.html */
+.scrim{position:absolute;inset:0;background:rgba(28,26,23,.45)}
+.slipwrap{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:var(--space-xl)}
+.slip{background:var(--paper);width:100%;padding:var(--space-l);border-radius:var(--radius-card);position:relative}
+.slip .stitle{font-family:var(--mono);font-size:var(--text-label);letter-spacing:.14em;text-transform:uppercase;text-align:center;font-weight:600}
+.slip .rule{border-top:1.5px dashed var(--perforation);margin:var(--space-m) 0}
+.slip .subj{display:flex;align-items:baseline;font-family:var(--mono);font-size:var(--text-body)}
+.slip .subj .d{font-family:var(--sans)}
+.slip .subj .l{flex:1;border-bottom:1.5px dotted var(--perforation);margin:0 var(--space-s);transform:translateY(-3px)}
+.slip .warn{font-size:var(--text-label);color:var(--faded);text-align:center;margin-top:var(--space-m);line-height:1.5}
+.voidstamp{position:absolute;top:var(--space-l);right:var(--space-l);border:2px solid var(--stamp);color:var(--stamp);font-family:var(--mono);font-size:var(--text-micro);font-weight:600;letter-spacing:2px;padding:2px var(--space-s);border-radius:var(--radius-card);transform:rotate(-12deg);opacity:.9}
+.acts{display:flex;gap:var(--space-s);margin-top:var(--space-l)}
+.abtn{flex:1;border:0;border-radius:var(--radius-pill);padding:var(--space-m);font-family:var(--mono);font-size:var(--text-label);font-weight:600;letter-spacing:.12em;text-transform:uppercase;text-align:center;text-decoration:none}
+.abtn.ghost{background:transparent;color:var(--faded);border:1px solid var(--perforation)}
+.abtn.danger{background:var(--stamp);color:#fff}
+/* toast — as components.html */
+.toast{position:absolute;left:var(--space-l);right:var(--space-l);bottom:var(--space-l);background:var(--paper);border:1.5px dashed var(--perforation);border-radius:var(--radius-card);padding:var(--space-m) var(--space-l);display:flex;align-items:center;font-family:var(--mono);font-size:var(--text-label);box-shadow:0 10px 24px rgba(33,30,25,.18)}
+.toast .ok{display:flex;align-items:center;gap:var(--space-s);letter-spacing:.1em;text-transform:uppercase}
+.toast .ok i{color:var(--under)}
+/* auth layout — as auth.html */
+.title{font-size:var(--text-title);font-weight:600;letter-spacing:.04em;text-transform:uppercase;margin:var(--space-l) 0 var(--space-xs)}
+.lede{font-family:var(--sans);font-size:var(--text-body);color:var(--faded);line-height:1.5;margin-bottom:var(--space-l)}
+.btn{width:100%;display:flex;align-items:center;justify-content:center;gap:var(--space-s);padding:var(--space-m) var(--space-l);border-radius:var(--radius-pill);font-family:var(--mono);font-size:var(--text-label);letter-spacing:.08em;text-transform:uppercase;font-weight:600;text-decoration:none}
+.btn.social{background:var(--paper);color:var(--ink);border:1.5px solid var(--ink);margin-bottom:var(--space-s)}
+.btn.social .mark{font-family:var(--sans);font-weight:700;font-size:var(--text-body);letter-spacing:0}
+.btn.cta{background:var(--stamp);color:#fff;border:1.5px solid var(--stamp);margin-top:var(--space-l)}
+.or{display:flex;align-items:center;gap:var(--space-m);margin:var(--space-l) 0 var(--space-s);font-size:var(--text-micro);letter-spacing:.16em;text-transform:uppercase;color:var(--faded)}
+.or::before,.or::after{content:"";flex:1;border-top:1.5px dashed var(--perforation)}
+.fld{margin-top:var(--space-m)}
+.fld .lbl{display:block;font-size:var(--text-micro);letter-spacing:.1em;text-transform:uppercase;color:var(--faded)}
+.fld .in{width:100%;border-bottom:1.5px dashed var(--perforation);padding:var(--space-s) 2px;font-family:var(--sans);font-size:var(--text-body);color:var(--ink);min-height:36px;display:flex;align-items:center}
+.fld .in .ph{color:var(--faded);opacity:.6}
+.row{display:flex;justify-content:space-between;align-items:center;margin-top:var(--space-s)}
+.lnk{font-family:var(--sans);font-size:var(--text-label);color:var(--ink);text-decoration:underline;text-underline-offset:3px}
+.lnk.faded{color:var(--faded)}
+.switch{text-align:center;margin-top:var(--space-l);font-family:var(--sans);font-size:var(--text-body);color:var(--faded)}
+.switch .lnk{font-size:var(--text-body);font-weight:600}
+.switch .lnk.faded{font-size:var(--text-label);font-weight:400;color:var(--faded)}
+/* privacy page */
+.back{display:inline-flex;align-items:center;gap:var(--space-xs);font-family:var(--sans);font-size:var(--text-label);color:var(--faded);text-decoration:none;margin-top:var(--space-s)}
+.psec{margin-top:var(--space-l)}
+.psec .shdr{margin:0 0 var(--space-xs)}
+.psec p,.psec li{font-family:var(--sans);font-size:var(--text-body);line-height:1.5}
+.psec ul{list-style:none;border-top:1.5px dashed var(--perforation)}
+.psec li{padding:var(--space-s) 2px;border-bottom:1.5px dashed var(--perforation)}
+.addr{display:inline-block;margin-top:var(--space-xs);font-family:var(--mono);font-size:var(--text-body);color:var(--stamp);border:1.5px dashed var(--stamp);border-radius:var(--radius-card);padding:var(--space-s) var(--space-m)}
+.note{font-family:var(--sans);font-size:var(--text-label);color:var(--faded);margin-top:var(--space-xs)}
+</style>
+</head>
+<body>
+<div class="intro"><b>Account</b> — deleting an account, and the privacy page. The void slip is the shared one in confirm mode, so it maps 1:1 onto <b>SharedVoidSlip</b>. The privacy page is signed out, so it sits on the auth layout: no nav, no FAB.</div>
+<div class="grid">
+
+<div class="item" id="more"><div class="label"><b>1 · /more</b> — new <b>Account</b> section replaces About. Both rows lead on.</div>
+<div class="phone"><div class="screen"><div class="page">
+<div class="statusbar"><span>9:41</span><span class="icons"><i class="pi pi-wifi"></i><span>100%</span></span></div>
+<div class="content">
+<div class="torn"></div>
+<div class="roll">
+<div class="rhead"><div class="brand">Pesonal</div><div class="sub">· back of the receipt ·</div></div>
+<div class="perf"></div>
+<div class="shdr">Manage</div>
+<a class="dest" href="categories.html"><i class="pi pi-tags lead-icon"></i><span class="nm">Categories<span class="sub">8 in use · colors and emoji</span></span><i class="pi pi-chevron-right chev"></i></a>
+<a class="dest" href="recurring.html"><i class="pi pi-sync lead-icon"></i><span class="nm">Recurring<span class="sub">6 standing orders · 5 active</span></span><i class="pi pi-chevron-right chev"></i></a>
+<div class="shdr">Insights</div>
+<a class="dest" href="trend.html"><i class="pi pi-chart-line lead-icon"></i><span class="nm">Spending trend<span class="sub">Last 6 months, in one line</span></span><i class="pi pi-chevron-right chev"></i></a>
+<div class="shdr">Data</div>
+<a class="dest" href="#"><i class="pi pi-download lead-icon"></i><span class="nm">Export to CSV<span class="sub">Take your damage elsewhere</span></span><span class="soon">Soon</span></a>
+<a class="dest" href="#"><i class="pi pi-upload lead-icon"></i><span class="nm">Import<span class="sub">Bulk-add past regrets</span></span><span class="soon">Soon</span></a>
+<div class="shdr">Account</div>
+<a class="dest" href="#privacy"><i class="pi pi-info-circle lead-icon"></i><span class="nm">About &amp; privacy<span class="sub">What we keep, who sees it</span></span><i class="pi pi-chevron-right chev"></i></a>
+<a class="dest" href="#void"><i class="pi pi-trash lead-icon" style="color:var(--stamp)"></i><span class="nm">Delete my account<span class="sub">Shred the whole roll</span></span><i class="pi pi-chevron-right chev"></i></a>
+<div class="foot"><div class="barcode"></div><div class="count">Pesonal · v1.0</div><div class="quip">* keep this receipt for your records *</div></div>
+</div>
+</div>
+<div class="nav">
+<a class="navitem" href="dashboard.html"><i class="pi pi-home"></i>Home</a>
+<a class="navitem" href="expenses.html"><i class="pi pi-receipt"></i>Expenses</a>
+<div style="flex:1;display:flex;justify-content:center"><a class="fab" href="add-expense.html"><i class="pi pi-plus"></i></a></div>
+<a class="navitem" href="recurring.html"><i class="pi pi-sync"></i>Recurring</a>
+<a class="navitem active" href="more.html"><i class="pi pi-ellipsis-h"></i>More</a>
+</div>
+</div></div></div>
+</div>
+
+<div class="item" id="void"><div class="label"><b>2 · Delete account</b> — void slip, confirm mode. Detail is the account's email.</div>
+<div class="phone"><div class="screen">
+<div class="page dim">
+<div class="statusbar"><span>9:41</span><span class="icons"><i class="pi pi-wifi"></i><span>100%</span></span></div>
+<div class="content">
+<div class="torn"></div>
+<div class="roll">
+<div class="rhead"><div class="brand">Pesonal</div><div class="sub">· back of the receipt ·</div></div>
+<div class="perf"></div>
+<div class="shdr">Account</div>
+<a class="dest" href="#"><i class="pi pi-info-circle lead-icon"></i><span class="nm">About &amp; privacy<span class="sub">What we keep, who sees it</span></span><i class="pi pi-chevron-right chev"></i></a>
+<a class="dest" href="#"><i class="pi pi-trash lead-icon" style="color:var(--stamp)"></i><span class="nm">Delete my account<span class="sub">Shred the whole roll</span></span><i class="pi pi-chevron-right chev"></i></a>
+</div>
+</div>
+</div>
+<div class="scrim"></div>
+<div class="slipwrap"><div class="slip">
+<div class="voidstamp">Void</div>
+<div class="stitle">Delete account</div>
+<div class="rule"></div>
+<div class="subj"><span class="d">Your whole ledger</span><span class="l"></span></div>
+<div class="warn">juan@example.com<br>Every expense, standing order and category goes with it. No undo, no reprint.</div>
+<div class="acts"><a class="abtn ghost" href="#more">Keep</a><a class="abtn danger" href="#login">Delete everything</a></div>
+</div></div>
+</div></div>
+</div>
+
+<div class="item" id="login"><div class="label"><b>3 · /login</b> — after deletion. Toast, no undo: it is gone.</div>
+<div class="phone"><div class="screen">
+<div class="statusbar"><span>9:41</span><span class="icons"><i class="pi pi-wifi"></i><span>100%</span></span></div>
+<div class="content">
+<div class="torn"></div>
+<div class="roll">
+<div class="rhead"><div class="brand">Pesonal</div><div class="sub">· back to the counter ·</div></div>
+<div class="perf"></div>
+<div class="title">Sign in</div>
+<div class="lede">Your receipts are waiting. Judgement is not.</div>
+<a class="btn social" href="#"><span class="mark">G</span>Continue with Google</a>
+<a class="btn social" href="#"><span class="mark">f</span>Continue with Facebook</a>
+<div class="or">or</div>
+<div class="fld"><span class="lbl">Email</span><div class="in"><span class="ph">you@example.com</span></div></div>
+<div class="fld"><span class="lbl">Password</span><div class="in"><span class="ph">••••••••</span></div></div>
+<div class="row"><span></span><a class="lnk faded" href="#">Forgot it?</a></div>
+<a class="btn cta" href="#">Sign in</a>
+<div class="switch">New here? <a class="lnk" href="#">Open a ledger</a></div>
+<div class="switch" style="margin-top:var(--space-s)"><a class="lnk faded" href="#privacy">Privacy</a></div>
+<div class="foot"><div class="barcode"></div><div class="quip">* keep this receipt for your records *</div></div>
+</div>
+</div>
+<div class="toast"><span class="ok"><i class="pi pi-check"></i>Account deleted. The receipt has been shredded.</span></div>
+</div></div>
+</div>
+
+<div class="item" id="privacy"><div class="label"><b>4 · /privacy</b> — signed out, auth layout. Reachable from /login and from More.</div>
+<div class="phone"><div class="screen">
+<div class="statusbar"><span>9:41</span><span class="icons"><i class="pi pi-wifi"></i><span>100%</span></span></div>
+<div class="content">
+<div class="torn"></div>
+<div class="roll">
+<div class="rhead"><div class="brand">Pesonal</div><div class="sub">· the fine print ·</div></div>
+<div class="perf"></div>
+<a class="back" href="#login"><i class="pi pi-arrow-left"></i>Back</a>
+<div class="title">Privacy</div>
+<div class="lede">The short version, in plain words.</div>
+<div class="psec"><div class="shdr">What we keep</div>
+<ul><li>Your name and email</li><li>Your profile picture, if you sign in with Google or Facebook</li><li>Your expenses, standing orders and categories</li></ul></div>
+<div class="psec"><div class="shdr">Who sees it</div>
+<p>Only you. Each ledger is private. Nothing is sold or shared.</p></div>
+<div class="psec"><div class="shdr">Sign-in providers</div>
+<p>Google and Facebook only confirm who you are. They never see your ledger.</p></div>
+<div class="psec"><div class="shdr">Deleting it</div>
+<p>More → Delete my account removes everything at once. Or email us and we'll do it for you.</p></div>
+<div class="psec"><div class="shdr">Contact</div>
+<span class="addr">privacy@&lt;domain&gt;</span>
+<div class="note">Placeholder. Filled in at deploy, once the domain is bought.</div></div>
+<div class="foot"><div class="barcode"></div><div class="quip">* keep this receipt for your records *</div></div>
+</div>
+</div>
+</div></div>
+</div>
+
+</div>
+</body>
+</html>
