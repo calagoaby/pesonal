@@ -2,7 +2,7 @@
 
 Personal expense tracker. Mobile-first web app, runs locally. Receipt/thermal-paper look, deadpan funny tone.
 
-**Multi-user.** Anyone can sign up and gets a private ledger: every category, expense and standing order belongs to one user, and someone else's id answers 404. Auth is **Sanctum cookie sessions** (no tokens in the browser): email + password through Fortify (`/api/auth/*`), Google and Facebook through Socialite. The data routes need a signed-in, *verified* user.
+**Multi-user, invite-only.** Sign-up is closed to strangers: the owner adds an email with `pesonal:invite`, and only then can that person register (or sign in with Google/Facebook for the first time). An invited person gets a private ledger: every category, expense and standing order belongs to one user, and someone else's id answers 404. Auth is **Sanctum cookie sessions** (no tokens in the browser): email + password through Fortify (`/api/auth/*`), Google and Facebook through Socialite. The data routes need a signed-in, *verified* user.
 
 Monorepo: `api/` (Laravel — intentionally swappable for another backend later) · `web/` (Nuxt 4) · `design/` (UI specs). Runs natively on Windows (see Working environment). DB is SQLite. Contracts & roadmap live **outside the repo** in `../docs/pesonal/` (`C:\Users\Aby\Documents\aby\tests\docs\pesonal\`), not in git.
 
@@ -80,7 +80,7 @@ One command runs everything in a single terminal, started by the owner:
 cd api && composer run dev
 ```
 
-It runs `recurring:materialize` once, then keeps three processes up through `concurrently`: `api` (`php artisan serve --port=8080`), `schedule` (`php artisan schedule:work`, which fires the standing-order job hourly) and `web` (`npm run dev` in `../web`). Ctrl+C stops all three. In PowerShell or cmd, Windows may ask "Terminate batch job (Y/N)?" — answer Y; a closing "Script … returned with error code" line after Ctrl+C is expected, not a failure. If that first `recurring:materialize` fails (e.g. migrations not run yet), nothing starts — fix it or run `php artisan migrate` first.
+It runs `recurring:materialize` once, then keeps four processes up through `concurrently`: `api` (`php artisan serve --port=8080`), `schedule` (`php artisan schedule:work`, which fires the standing-order job hourly), `queue` (`php artisan queue:listen --tries=1`, which sends the queued verify and reset mail) and `web` (`npm run dev` in `../web`). Ctrl+C stops all four. In PowerShell or cmd, Windows may ask "Terminate batch job (Y/N)?" — answer Y; a closing "Script … returned with error code" line after Ctrl+C is expected, not a failure. If that first `recurring:materialize` fails (e.g. migrations not run yet), nothing starts — fix it or run `php artisan migrate` first.
 
 The app is `http://localhost:3000`; the API is `http://localhost:8080` (`public.apiBase` in `nuxt.config.ts`).
 
@@ -88,7 +88,8 @@ The app is `http://localhost:3000`; the API is `http://localhost:8080` (`public.
 
 - **`api/.env` keys added for auth** (also in `.env.example`): `FRONTEND_URL=http://localhost:3000` (CORS origin, and where reset/verify/social redirects land) · `SANCTUM_STATEFUL_DOMAINS=localhost:3000` (requests from here get the session) · `APP_URL=http://localhost:8080` (social callback URLs are built from it) · `SESSION_DOMAIN=` (empty, host-only cookie) · `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` · `FACEBOOK_CLIENT_ID` / `FACEBOOK_CLIENT_SECRET`. Empty provider keys send that button back to `/login?error=failed`. Any `.env` change needs a restart.
 - **Provider callback URLs** to register with Google / Meta: `http://localhost:8080/api/auth/google/callback` and `…/facebook/callback`.
-- **Mail goes to the log.** The `log` mailer writes verify and reset emails into `api/storage/logs/laravel.log`; copy the link from there (see the `&amp;` gotcha).
+- **Mail goes to the log, via the queue.** Verify and reset mail is queued, so it reaches `api/storage/logs/laravel.log` only once the `queue` process runs it (no worker, no email); copy the link from there (see the `&amp;` gotcha).
+- **Sign-up is invite-only.** `php artisan pesonal:invite {email}` adds an email to the list (case-insensitive), `pesonal:invites` lists it and shows who has opened an account, `pesonal:uninvite {email}` removes one. Registering locally needs `pesonal:invite <email>` first, or the form answers 422 `This ledger is invite-only…`. First-time Google/Facebook sign-in with an uninvited email lands on `/login?error=not_invited`. Existing accounts are unaffected by an uninvite. `register` and `forgot-password` share one 6/min-per-IP budget (`auth-mail`); past it is a 429.
 - **`php artisan pesonal:claim {email}`** gives every category, standing order and expense with no owner to that account, merging same-named categories into the account's own, and keeps every row's timestamps. Only needed for data from before multi-user (or a restored old backup); `user_id` is now NOT NULL, so new rows always have an owner.
 - **`php artisan migrate:fresh --seed` wipes every account**, not just the ledger, and creates one verified demo account, `demo@pesonal.test` / `password`, owning all the seed data.
 
@@ -98,6 +99,8 @@ The app is `http://localhost:3000`; the API is `http://localhost:8080` (`public.
 - **A terminal opened before an install keeps the old PATH.** After installing or switching PHP/Node, open a new terminal; an old one still finds the previous version (`php -v` saying 8.3 means a stale terminal, not a broken install).
 - **Node must be 22.18+.** Nuxt pulls in Babel 8, which declares `node ^22.18.0 || >=24.11.0`; older 22.x installs with `EBADENGINE` warnings.
 - **Keep `package-lock.json` in step with `package.json`.** `npm ci` refuses to install when they disagree (that happened once: `vue-chartjs` was added without its lock entry). After adding or removing a dep, commit both files.
+- **`APP_ROUTES_CACHE` must be a relative path on Windows.** An absolute `C:/...` value is treated as relative and prefixed with the app folder.
+- **`/privacy` is open in every auth state** (the guard's `OPEN` list in `middleware/auth.global.ts`), signed in or out, even with the API down.
 - **A new top-level directory needs a dev-server restart.** Nuxt scans `shared/`, `server/`, `layouts/` at boot; HMR won't pick up a folder that didn't exist. Symptom: `#shared` alias unresolved, or a new `server/api/` route 404s.
 - **Stale Vite module graph.** If the *browser* shows an error but a direct `Invoke-WebRequest`/`curl` to the same URL returns correct HTML, the code is fine and the dev server's in-memory graph is stale — restart `composer run dev`. That disagreement between the two is the diagnostic; if both fail, it's a real bug.
 - **"504 Outdated Optimize Dep" on the first load after a fresh install.** Vite pre-bundles dependencies on first use and the page that triggered it never hydrates — it renders but ignores clicks. One browser refresh fixes it. Dev only.
