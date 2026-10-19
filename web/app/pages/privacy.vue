@@ -38,6 +38,7 @@ function goBack() {
                 <li>Your name and email</li>
                 <li>Your profile picture, if you sign in with Google or Facebook</li>
                 <li>Your expenses, standing orders and categories</li>
+                <li>The IP address and browser of each signed-in session, so you stay signed in</li>
             </ul>
         </section>
 
@@ -53,7 +54,7 @@ function goBack() {
 
         <section class="psec">
             <div class="shdr">Deleting it</div>
-            <p>More → Delete my account removes everything at once. Or email us and we'll do it for you.</p>
+            <p>More → Delete my account removes everything at once.<template v-if="contactEmail"> Or email us and we'll do it for you.</template></p>
         </section>
 
         <section class="psec">

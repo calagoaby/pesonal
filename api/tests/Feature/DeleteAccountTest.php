@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Category;
 use App\Models\Expense;
+use App\Models\Invitation;
 use App\Models\Recurring;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -52,6 +53,23 @@ class DeleteAccountTest extends TestCase
         $this->app['auth']->forgetGuards();
 
         $this->fromFrontend()->getJson('/api/user')->assertUnauthorized();
+    }
+
+    public function test_delete_account_removes_the_users_sessions_and_invitation(): void
+    {
+        $user = User::factory()->create(['email' => 'Friend@Example.com']);
+        $other = User::factory()->create(['email' => 'other@example.com']);
+        Invitation::create(['email' => 'friend@example.com']);
+        Invitation::create(['email' => 'other@example.com']);
+        foreach ([$user->id => 'mine', $other->id => 'theirs'] as $id => $sid) {
+            DB::table('sessions')->insert(['id' => $sid, 'user_id' => $id, 'payload' => '', 'last_activity' => time()]);
+        }
+
+        $this->fromFrontend()->actingAs($user)->deleteJson('/api/user')->assertNoContent();
+
+        $this->assertSame(0, DB::table('sessions')->where('user_id', $user->id)->count());
+        $this->assertSame(1, DB::table('sessions')->where('user_id', $other->id)->count());
+        $this->assertSame(['other@example.com'], Invitation::pluck('email')->all());
     }
 
     public function test_delete_account_removes_a_pending_password_reset_token(): void

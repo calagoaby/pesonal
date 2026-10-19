@@ -23,7 +23,7 @@ export default defineNuxtConfig({
             apiBase: 'http://localhost:8080',
             locale: 'en-PH',
             timezone: 'Asia/Manila',
-            // Shown on /privacy; empty falls back to "reply to the invite". Set via NUXT_PUBLIC_CONTACT_EMAIL.
+            // Shown on /privacy; empty falls back to "Ask whoever invited you". Set via NUXT_PUBLIC_CONTACT_EMAIL.
             contactEmail: ''
         }
     }

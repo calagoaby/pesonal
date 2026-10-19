@@ -49,14 +49,14 @@ class FortifyServiceProvider extends ServiceProvider
 
         RateLimiter::for('auth-mail', fn (Request $request) => Limit::perMinute(6)->by((string) $request->ip()));
 
-        // Fortify registers these routes itself, and the router only loads (or un-caches) its routes
-        // during the booted callbacks, so wait a round past them.
-        $this->app->booted(fn () => $this->app->booted(function () {
+        // Fortify registers these routes itself during boot, so attach once routes have loaded. Under
+        // route:cache the middleware is baked into the cache file at cache time.
+        $this->app->booted(function () {
             foreach (Route::getRoutes()->getRoutes() as $route) {
                 if (in_array($route->getName(), ['register.store', 'password.email'], true)) {
                     $route->middleware('throttle:auth-mail');
                 }
             }
-        }));
+        });
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Invitation;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -30,6 +31,10 @@ class DeleteAccountController extends Controller
             $user->tokens()->delete();
             // Reset tokens are keyed by email; left behind, one would outlive the account.
             Password::broker()->deleteToken($user);
+            // Signed-in sessions (IP and browser) go too. Only applies under the database session driver, as in SignInWithProvider.
+            DB::table(config('session.table'))->where('user_id', $user->id)->delete();
+            // A returning friend needs a fresh pesonal:invite.
+            Invitation::query()->where('email', Invitation::normalize($user->email))->delete();
             // Social accounts cascade.
             $user->delete();
         });
