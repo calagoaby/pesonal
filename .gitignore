@@ -13,3 +13,6 @@ api/database/*.sqlite
 api/database/*.sqlite-journal
 # Planning docs live outside the repo (../docs/pesonal)
 docs/
+
+# Graphify
+graphify-out
