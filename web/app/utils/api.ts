@@ -31,6 +31,7 @@ type RequestOptions = {
      */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- ofetch declares Record<string, any>
     body?: Record<string, any>
+    onResponse?: (context: { response: { status: number } }) => void
 }
 
 export async function apiGet<T>(path: string, query?: Query): Promise<T> {
@@ -50,6 +51,21 @@ export async function apiPost<T>(path: string, body: Record<string, any>): Promi
     const response = await request<{ data: T }>(path, { method: 'POST', body })
 
     return response.data
+}
+
+// For a POST whose status code carries meaning, e.g. 201 created vs 200 already there.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- ofetch declares Record<string, any>
+export async function apiPostWithStatus<T>(path: string, body: Record<string, any>): Promise<{ data: T, status: number }> {
+    let status = 0
+    const response = await request<{ data: T }>(path, {
+        method: 'POST',
+        body,
+        onResponse: ({ response }) => {
+            status = response.status
+        },
+    })
+
+    return { data: response.data, status }
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- ofetch declares Record<string, any>

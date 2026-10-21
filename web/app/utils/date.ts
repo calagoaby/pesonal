@@ -152,6 +152,28 @@ export function formatTimestamp(
 }
 
 /**
+ * A timestamp's calendar day, day first whatever order the locale prefers
+ * (en-PH alone would print "Jun 17").
+ * @param iso an ISO 8601 timestamp
+ * @return 17 Jun
+ */
+export function formatDayMonth(
+    iso: string,
+    locale: string,
+    timezone: string,
+) {
+    const parts = new Intl.DateTimeFormat(locale, {
+        timeZone: timezone,
+        day: 'numeric',
+        month: 'short',
+    }).formatToParts(new Date(iso))
+    const day = parts.find(part => part.type === 'day')?.value ?? ''
+    const month = parts.find(part => part.type === 'month')?.value ?? ''
+
+    return `${day} ${month}`
+}
+
+/**
  * @param month_string YYYY-MM
  * @return June 2026
  */

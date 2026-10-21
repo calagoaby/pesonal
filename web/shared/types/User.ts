@@ -4,6 +4,7 @@ export interface User {
     email: string
     avatar_url: string | null
     email_verified: boolean
+    is_admin: boolean
 }
 
 /** Types, not interfaces, so they satisfy the fetch layer's body index signature. */

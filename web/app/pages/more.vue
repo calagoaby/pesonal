@@ -7,6 +7,7 @@ import Upload from '@primeicons/vue/upload';
 import InfoCircle from '@primeicons/vue/info-circle';
 import SignOut from '@primeicons/vue/sign-out';
 import Trash from '@primeicons/vue/trash';
+import UserPlus from '@primeicons/vue/user-plus';
 import ChevronRight from '@primeicons/vue/chevron-right';
 import { listCategories } from '~/repositories/categories';
 import { listRecurring } from '~/repositories/recurring';
@@ -148,6 +149,19 @@ async function confirmDelete() {
             </span>
             <ChevronRight class="chevron" />
         </button>
+
+        <template v-if="auth.user?.is_admin">
+            <div class="section">Admin</div>
+
+            <NuxtLink to="/admin/invites" class="destination">
+                <UserPlus class="lead-icon" />
+                <span class="name">
+                    Invites
+                    <span class="sub">Who gets a ledger</span>
+                </span>
+                <ChevronRight class="chevron" />
+            </NuxtLink>
+        </template>
 
         <div class="foot">
             <SharedBarcode class="roll-barcode" gap="5px" height="36px" />

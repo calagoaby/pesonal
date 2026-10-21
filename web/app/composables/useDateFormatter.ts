@@ -23,6 +23,10 @@ export function useDateFormatter() {
         return formatTimestamp(iso, config.locale, config.timezone)
     }
 
+    function formatStampDay(iso: string) {
+        return formatDayMonth(iso, config.locale, config.timezone)
+    }
+
     function formatMonthAndYear(date: string) {
         return formatMonthShort(date, config.locale)
     }
@@ -42,6 +46,7 @@ export function useDateFormatter() {
         formatFieldDate,
         formatListDate,
         formatStamp,
+        formatStampDay,
         formatMonthAndYear,
         formatMonthName,
         formatMonthAbbrev
