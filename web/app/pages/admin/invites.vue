@@ -81,7 +81,7 @@ async function confirmRemove() {
                 <ExclamationTriangle />
             </template>
             Couldn't fetch the guest list.<br>
-            Nobody was added or removed — this screen just came up blank.
+            Try again in a moment.
             <template #action>
                 <button class="act" @click="refresh()">Try again</button>
             </template>

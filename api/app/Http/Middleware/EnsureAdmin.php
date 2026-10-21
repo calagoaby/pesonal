@@ -11,7 +11,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 // Stands in for auth:sanctum on the admin routes. Anyone who isn't an admin, signed in or
-// not, gets exactly what a route that doesn't exist answers — not a 401 or 403 that would
+// not, gets the same status and JSON body as a route that doesn't exist — not a 401 or 403 that would
 // say there's something here. Runs ahead of throttling and route-model binding (priority
 // list in bootstrap/app.php), so neither a 429 nor a binding's 404 can tell them apart.
 class EnsureAdmin

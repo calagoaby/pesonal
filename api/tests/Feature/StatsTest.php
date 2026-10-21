@@ -99,7 +99,6 @@ class StatsTest extends TestCase
         $this->assertSame($expectedDates, array_column($daily, 'date'));
     }
 
-    // KNOWN FAILURE — a real bug, not a test problem. See the note at the foot of this file.
     // Rows written through the model must land as bare dates, or the per-day keys never
     // match and every day reads 0 (see the date cast on Expense).
     public function test_monthly_daily_carries_each_days_total(): void
