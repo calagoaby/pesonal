@@ -78,6 +78,60 @@ class ExpenseTest extends TestCase
         $this->assertSame(1, $response->json('meta.total'));
     }
 
+    public function test_month_filter_matches_only_that_month(): void
+    {
+        $category = Category::factory()->create();
+        Expense::factory()->create(['category_id' => $category->id, 'date' => '2026-05-31']);
+        $first = Expense::factory()->create(['category_id' => $category->id, 'date' => '2026-06-01']);
+        $last = Expense::factory()->create(['category_id' => $category->id, 'date' => '2026-06-30']);
+        Expense::factory()->create(['category_id' => $category->id, 'date' => '2026-07-01']);
+
+        $response = $this->getJson('/api/expenses?month=2026-06');
+
+        $response->assertOk();
+        $this->assertSame([$last->id, $first->id], array_column($response->json('data'), 'id'));
+        $this->assertSame(2, $response->json('meta.total'));
+    }
+
+    /** @return array<string, array{string}> */
+    public static function malformedMonths(): array
+    {
+        return [
+            'month thirteen' => ['2026-13'],
+            'unpadded month' => ['2026-6'],
+            'garbage' => ['garbage'],
+            'empty' => [''],
+        ];
+    }
+
+    // '2026-13' must not roll over into 2027-01 (with 2026-12 as its baseline), and
+    // '2026-6' must not prefix-match June. The HTTP layer reads an empty ?month= as "no
+    // filter" (expenses) or "this month" (stats), so '' is checked on the scope itself.
+    #[DataProvider('malformedMonths')]
+    public function test_malformed_month_matches_nothing(string $month): void
+    {
+        foreach (['2026-06-15', '2026-12-15', '2027-01-15'] as $date) {
+            Expense::factory()->create(['date' => $date, 'amount' => 10000]);
+        }
+
+        $this->assertSame(0, Expense::query()->inMonth($month)->count());
+
+        if ($month === '') {
+            return;
+        }
+
+        $expenses = $this->getJson('/api/expenses?month='.urlencode($month));
+        $expenses->assertOk();
+        $this->assertSame(0, $expenses->json('meta.total'));
+
+        $stats = $this->getJson('/api/stats/monthly?month='.urlencode($month));
+        $stats->assertOk();
+        $stats->assertJsonPath('data.total', 0);
+        $stats->assertJsonPath('data.previous_total', 0);
+        $this->assertSame([], $stats->json('data.by_category'));
+        $this->assertSame([], $stats->json('data.daily'));
+    }
+
     public function test_index_with_a_malformed_month_matches_nothing_but_still_reports_last_page_one(): void
     {
         Expense::factory()->count(3)->create();

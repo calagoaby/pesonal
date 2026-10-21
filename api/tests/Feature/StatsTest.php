@@ -241,6 +241,38 @@ class StatsTest extends TestCase
         $this->assertIsList($response->json('data'));
     }
 
+    public function test_trend_crosses_a_year_boundary(): void
+    {
+        $this->travelTo(Carbon::parse('2027-01-15'));
+        Expense::factory()->create(['date' => '2026-11-03', 'amount' => 40000]);
+        Expense::factory()->create(['date' => '2026-11-30', 'amount' => 5000]);
+        Expense::factory()->create(['date' => '2027-01-02', 'amount' => 70000]);
+        Expense::factory()->create(['date' => '2026-10-31', 'amount' => 99900]); // before the window
+
+        $data = $this->getJson('/api/stats/trend?months=3')->assertOk()->json('data');
+
+        $this->assertSame(['2026-11', '2026-12', '2027-01'], array_column($data, 'month'));
+        $this->assertSame([45000, 0, 70000], array_column($data, 'total')); // assertSame: ints, not '45000'
+    }
+
+    public function test_aggregates_are_integers(): void
+    {
+        $this->seedCorpus();
+
+        $data = $this->getJson('/api/stats/monthly?month=2026-06')->assertOk()->json('data');
+
+        $this->assertIsInt($data['total']);
+        $this->assertIsInt($data['previous_total']);
+        $this->assertNotEmpty($data['by_category']);
+        foreach ($data['by_category'] as $row) {
+            $this->assertIsInt($row['total']);
+            $this->assertIsInt($row['count']);
+        }
+        foreach ($data['daily'] as $day) {
+            $this->assertIsInt($day['total']);
+        }
+    }
+
     /** @return array<int, string> oldest → newest, ending on the current month */
     private function expectedWindow(int $months): array
     {

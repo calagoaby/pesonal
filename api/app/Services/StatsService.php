@@ -5,7 +5,7 @@ namespace App\Services;
 use App\Http\Resources\CategoryRefResource;
 use App\Models\Category;
 use App\Models\Expense;
-use Carbon\Carbon;
+use App\Support\Month;
 use Illuminate\Support\Collection;
 
 class StatsService
@@ -15,7 +15,7 @@ class StatsService
      */
     public function monthly(string $month): array
     {
-        $monthDate = $this->parseMonth($month); // null when unparseable → all-zero, never a 500
+        $monthDate = Month::start($month); // null when unparseable → all-zero, never a 500
 
         $total = $this->sumForMonth($month);
 
@@ -52,14 +52,21 @@ class StatsService
         $window = collect(range($months - 1, 0))
             ->map(fn (int $step) => $anchor->copy()->subMonthsNoOverflow($step)->format('Y-m'));
 
-        // One grouped query over the window, then zero-fill so the line stays contiguous.
-        // Alias the raw 'YYYY-MM' prefix (ym) so the lookup key is a plain string, never the
-        // Carbon the date cast would hand back.
-        $sums = Expense::query()
+        // One query grouped by day over the window, folded into months here: no substr or
+        // date function, so it reads the same on SQLite and Postgres. Then zero-fill so the
+        // line stays contiguous. The raw 'date' alias (ymd) keeps the key a plain string,
+        // never the Carbon the date cast would hand back.
+        $days = Expense::query()
             ->where('date', '>=', $window->first().'-01')
-            ->selectRaw('substr(date, 1, 7) as ym, SUM(amount) as total')
-            ->groupBy('ym')
-            ->pluck('total', 'ym');
+            ->selectRaw('date as ymd, SUM(amount) as total')
+            ->groupBy('date')
+            ->pluck('total', 'ymd');
+
+        $sums = [];
+        foreach ($days as $ymd => $total) {
+            $ym = substr((string) $ymd, 0, 7);
+            $sums[$ym] = ($sums[$ym] ?? 0) + (int) $total; // Postgres hands SUM back as a string
+        }
 
         return $window->map(fn (string $ym) => [
             'month' => $ym,
@@ -122,18 +129,5 @@ class StatsService
         }
 
         return $daily;
-    }
-
-    private function parseMonth(string $month): ?Carbon
-    {
-        if (! preg_match('/^\d{4}-\d{2}$/', $month)) {
-            return null;
-        }
-
-        try {
-            return Carbon::createFromFormat('Y-m', $month)->startOfMonth();
-        } catch (\Throwable) {
-            return null;
-        }
     }
 }

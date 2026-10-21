@@ -59,7 +59,18 @@ class RequireUserIdMigrationTest extends TestCase
             $this->assertTrue($this->userIdIsRequired($table), "{$table}.user_id should be NOT NULL");
         }
         $this->assertSame(1, DB::table('categories')->count());
-        $this->assertSame([], DB::select('PRAGMA foreign_key_check'));
+
+        // The SQLite rebuild copies each table, so check its foreign key came along and
+        // every row still resolves. Plain schema and query calls, not PRAGMA
+        // foreign_key_check, so the same check runs on Postgres.
+        foreach (['categories', 'expenses', 'recurring'] as $table) {
+            $this->assertContains(
+                ['user_id'],
+                array_column(Schema::getForeignKeys($table), 'columns'),
+                "{$table}.user_id lost its foreign key",
+            );
+            $this->assertSame(0, DB::table($table)->whereNotIn('user_id', DB::table('users')->select('id'))->count());
+        }
     }
 
     public function test_a_category_without_an_owner_is_refused(): void

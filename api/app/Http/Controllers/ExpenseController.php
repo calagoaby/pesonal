@@ -19,7 +19,7 @@ class ExpenseController extends Controller
             ->orderByDesc('date')
             ->orderByDesc('id');
 
-        // A malformed month simply matches nothing (date LIKE '2026-06%'); not an error.
+        // A malformed month simply matches nothing (see Expense::scopeInMonth); not an error.
         if ($request->filled('month')) {
             $query->inMonth($request->query('month'));
         }

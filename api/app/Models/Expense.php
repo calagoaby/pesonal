@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Casts\MoneyCast;
 use App\Models\Concerns\BelongsToUser;
 use App\Support\Money;
+use App\Support\Month;
 use Database\Factories\ExpenseFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
@@ -47,13 +48,27 @@ class Expense extends Model
 
     /**
      * Match rows whose date falls in the given 'YYYY-MM' month. A malformed month
-     * simply matches nothing (LIKE 'garbage%'); it is never an error.
+     * simply matches nothing; it is never an error.
+     *
+     * A half-open range, not BETWEEN first AND last: SQLite compares dates as text, and
+     * a row written before the 'date:Y-m-d' cast ('2026-06-30 00:00:00') sorts after
+     * '2026-06-30' but before '2026-07-01'. And unlike LIKE, which Postgres only takes on
+     * a date column through a ::text cast, a range can use the (date, id) index.
      *
      * @param  Builder<Expense>  $query
      */
     public function scopeInMonth(Builder $query, string $month): void
     {
-        $query->where('date', 'like', "{$month}%");
+        $start = Month::start($month);
+
+        if ($start === null) {
+            $query->whereRaw('1 = 0');
+
+            return;
+        }
+
+        $query->where('date', '>=', $start->format('Y-m-d'))
+            ->where('date', '<', $start->copy()->addMonthNoOverflow()->format('Y-m-d'));
     }
 
     /** @return BelongsTo<Category, $this> */
