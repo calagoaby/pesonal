@@ -92,9 +92,11 @@ class AdminInvitationsTest extends TestCase
     {
         Sanctum::actingAs($this->admin());
 
-        $this->fromFrontend()->deleteJson('/api/admin/invitations/999')
-            ->assertNotFound()
-            ->assertJsonPath('message', 'That invite is gone.');
+        foreach (['999', 'abc', '99999999999999999999'] as $id) {
+            $this->fromFrontend()->deleteJson("/api/admin/invitations/{$id}")
+                ->assertNotFound()
+                ->assertJsonPath('message', 'That invite is gone.');
+        }
     }
 
     public function test_a_malformed_email_is_a_field_error(): void
@@ -143,6 +145,10 @@ class AdminInvitationsTest extends TestCase
             $this->assertLooksMissing(
                 $this->fromFrontend()->deleteJson('/api/admin/invitations/999'),
                 'api/admin/invitations/999',
+            );
+            $this->assertLooksMissing(
+                $this->fromFrontend()->deleteJson('/api/admin/invitations/abc'),
+                'api/admin/invitations/abc',
             );
         }
 
@@ -199,7 +205,10 @@ class AdminInvitationsTest extends TestCase
 
         config(['pesonal.admin_emails' => ' , ']);
         $this->assertFalse(Admins::isAdminEmail(''));
-        $this->assertFalse(Admins::isAdmin(new User(['email' => ''])));
+        // Verified, so it's the empty email that keeps it out, not the verification check.
+        $blank = new User(['email' => '']);
+        $blank->email_verified_at = now();
+        $this->assertFalse(Admins::isAdmin($blank));
         $this->assertFalse(Admins::isAdmin(null));
     }
 

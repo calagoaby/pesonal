@@ -25,12 +25,22 @@ Route::delete('user', DeleteAccountController::class)->middleware('auth:sanctum'
 // validation — binding resolves in middleware, ahead of the controller. Auth runs
 // before binding (middleware priority), so the ownership scope already applies and
 // another user's id 404s exactly like one that doesn't exist.
-Route::bind('category', fn (string $id) => Category::find($id) ?? abort(404, 'That category is gone.'));
-Route::bind('expense', fn (string $id) => Expense::find($id) ?? abort(404, 'That entry is not on the roll.'));
-Route::bind('recurring', fn (string $id) => Recurring::find($id) ?? abort(404, 'That standing order is gone.'));
+// Only a positive id that fits a bigint reaches the query: Postgres errors on 'abc' (or a
+// number past bigint) where SQLite just finds nothing, so anything else is the same 404.
+$bindId = function (string $parameter, Closure $find, string $message): void {
+    Route::bind($parameter, function (string $value) use ($find, $message) {
+        $id = filter_var($value, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+
+        return ($id === false ? null : $find($id)) ?? abort(404, $message);
+    });
+};
+
+$bindId('category', fn (int $id) => Category::find($id), 'That category is gone.');
+$bindId('expense', fn (int $id) => Expense::find($id), 'That entry is not on the roll.');
+$bindId('recurring', fn (int $id) => Recurring::find($id), 'That standing order is gone.');
 // Restore only ever targets a voided row: a live or unknown id has nothing to bring back.
-Route::bind('voidedExpense', fn (string $id) => Expense::onlyTrashed()->find($id) ?? abort(404, 'That entry is not on the roll.'));
-Route::bind('voidedRecurring', fn (string $id) => Recurring::onlyTrashed()->find($id) ?? abort(404, 'That standing order is gone.'));
+$bindId('voidedExpense', fn (int $id) => Expense::onlyTrashed()->find($id), 'That entry is not on the roll.');
+$bindId('voidedRecurring', fn (int $id) => Recurring::onlyTrashed()->find($id), 'That standing order is gone.');
 
 // The ledger needs a signed-in, verified user. auth:sanctum comes first because
 // verified.api lets a missing user through.
@@ -49,7 +59,7 @@ Route::middleware(['auth:sanctum', 'verified.api'])->group(function () {
 // resolves the user itself and answers everyone else a missing-route 404. It runs before the
 // throttle and the binding below (middleware priority), so a probe can't tell either way.
 // Invitation has no owner scope: the list is the admin's, not any one ledger's.
-Route::bind('invitation', fn (string $id) => Invitation::find($id) ?? abort(404, 'That invite is gone.'));
+$bindId('invitation', fn (int $id) => Invitation::find($id), 'That invite is gone.');
 
 Route::middleware(['admin', 'throttle:30,1'])->prefix('admin')->group(function () {
     Route::get('invitations', [InvitationController::class, 'index']);
