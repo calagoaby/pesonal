@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureAdmin;
 use App\Http\Middleware\EnsureEmailIsVerified;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
@@ -7,6 +8,7 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Middleware\ThrottleRequests;
 use Illuminate\Validation\ValidationException;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -18,7 +20,10 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->statefulApi();
-        $middleware->alias(['verified.api' => EnsureEmailIsVerified::class]);
+        $middleware->alias(['verified.api' => EnsureEmailIsVerified::class, 'admin' => EnsureAdmin::class]);
+        // admin answers non-admins with a missing-route 404, so it has to run before the throttle
+        // (a 429 would give the route away) and before binding (an unknown id's own 404 would too).
+        $middleware->prependToPriorityList(before: ThrottleRequests::class, prepend: EnsureAdmin::class);
         // Browser navigations go to the SPA login; JSON requests still get a 401.
         $middleware->redirectGuestsTo(fn () => config('app.frontend_url').'/login');
     })

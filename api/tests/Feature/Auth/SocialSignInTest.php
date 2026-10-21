@@ -178,6 +178,20 @@ class SocialSignInTest extends TestCase
         $this->assertGuest();
     }
 
+    public function test_an_admin_email_signs_up_with_either_provider_without_an_invite(): void
+    {
+        config(['pesonal.admin_emails' => 'aby@example.com, boss@example.com']);
+        $this->provider('google', $this->socialUser());
+        $this->provider('facebook', $this->socialUser(['id' => 'fb-1', 'email' => 'Boss@Example.com', 'email_verified' => null]));
+
+        $this->get('/api/auth/google/callback')->assertRedirect('http://localhost:3000/');
+        $this->app['auth']->forgetGuards();
+        $this->get('/api/auth/facebook/callback')->assertRedirect('http://localhost:3000/');
+
+        $this->assertSame(['aby@example.com', 'boss@example.com'], User::orderBy('email')->pluck('email')->all());
+        $this->assertSame(0, Invitation::count());
+    }
+
     public function test_an_invited_email_matches_whatever_its_case_and_spacing(): void
     {
         $this->invite(' ABY@example.com ');

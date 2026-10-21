@@ -47,7 +47,7 @@ class RegisterLoginTest extends TestCase
         $response = $this->fromFrontend()->postJson('/api/auth/register', $this->registration());
 
         $response->assertCreated();
-        $this->assertSame(['id', 'name', 'email', 'avatar_url', 'email_verified'], array_keys($response->json('data')));
+        $this->assertSame(['id', 'name', 'email', 'avatar_url', 'email_verified', 'is_admin'], array_keys($response->json('data')));
         $this->assertFalse($response->json('data.email_verified'));
 
         // Drop the cached guard user: the test app is one process, so the model would still say

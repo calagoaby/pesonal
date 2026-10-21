@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\InvitationController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DeleteAccountController;
 use App\Http\Controllers\ExpenseController;
@@ -8,6 +9,7 @@ use App\Http\Controllers\StatsController;
 use App\Http\Resources\UserResource;
 use App\Models\Category;
 use App\Models\Expense;
+use App\Models\Invitation;
 use App\Models\Recurring;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -41,4 +43,16 @@ Route::middleware(['auth:sanctum', 'verified.api'])->group(function () {
 
     Route::get('stats/monthly', [StatsController::class, 'monthly']);
     Route::get('stats/trend', [StatsController::class, 'trend']);
+});
+
+// The owner's invite list. Not under auth:sanctum, which would answer a stranger 401: admin
+// resolves the user itself and answers everyone else a missing-route 404. It runs before the
+// throttle and the binding below (middleware priority), so a probe can't tell either way.
+// Invitation has no owner scope: the list is the admin's, not any one ledger's.
+Route::bind('invitation', fn (string $id) => Invitation::find($id) ?? abort(404, 'That invite is gone.'));
+
+Route::middleware(['admin', 'throttle:30,1'])->prefix('admin')->group(function () {
+    Route::get('invitations', [InvitationController::class, 'index']);
+    Route::post('invitations', [InvitationController::class, 'store']);
+    Route::delete('invitations/{invitation}', [InvitationController::class, 'destroy']);
 });

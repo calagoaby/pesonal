@@ -1,6 +1,8 @@
 <?php
 
 return [
+    // Comma-separated. Read through App\Support\Admins, which normalizes and drops blanks.
+    'admin_emails' => env('ADMIN_EMAILS', ''),
     'pagination' => [
         'default_per_page' => 20,
         'max_per_page' => 100,

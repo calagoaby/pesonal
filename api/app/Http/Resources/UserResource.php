@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use App\Models\User;
+use App\Support\Admins;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -18,6 +19,7 @@ class UserResource extends JsonResource
             'email' => $this->email,
             'avatar_url' => $this->avatar_url,
             'email_verified' => $this->email_verified_at !== null,
+            'is_admin' => Admins::isAdmin($this->resource),
         ];
     }
 }
