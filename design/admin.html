@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pesonal — Admin invites (Receipt Roll · design reference)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Spline+Sans+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/primeicons/7.0.0/primeicons.min.css">
+<style>
+/*
+  Admin invites: the owner's invite list. Reached from More, Admin section (admins only).
+  1 More hub, new Admin section
+  2 Invites, drill layout (back bar, no nav): email field, the list
+  3 After inviting: toast; 3b the field error
+  4 Remove: void slip, confirm mode (title, subject, warning, confirm-label)
+  5 Empty state
+  Token rule: var(--...) -> use that token in the app; literal px -> intentional one-off.
+*/
+:root{
+  --desk:#EAE5D9;--paper:#FBF8F1;
+  --ink:#1C1A17;--faded:#8A857B;--perforation:#D8D2C4;
+  --stamp:#C8472E;--under:#2F7D52;--hi:#E8B23A;
+  --text-hero:34px;--text-title:18px;--text-body:14px;--text-label:12px;--text-micro:11px;
+  --space-xs:4px;--space-s:8px;--space-m:12px;--space-l:16px;--space-xl:20px;--space-2xl:24px;
+  --radius-card:6px;--radius-pill:999px;
+  --mono:'Spline Sans Mono',ui-monospace,monospace;
+  --sans:'Plus Jakarta Sans',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:#d8d1c2;min-height:100vh;padding:30px 16px;color:var(--ink)}
+.intro{font-size:13px;color:#7c7567;margin:0 auto 24px;text-align:center;max-width:560px;line-height:1.5}
+.intro b,.label b{color:var(--ink)}
+.grid{display:flex;flex-wrap:wrap;gap:40px 32px;justify-content:center;align-items:flex-start}
+.item{display:flex;flex-direction:column;align-items:center;width:100%;max-width:390px}
+.label{font-size:13px;color:#7c7567;margin-bottom:14px;text-align:center;line-height:1.5}
+.phone{width:100%;background:#211e19;border-radius:42px;padding:10px;box-shadow:0 30px 60px rgba(33,30,25,.35)}
+.screen{position:relative;background:var(--desk);border-radius:32px;overflow:hidden;display:flex;flex-direction:column;height:760px}
+.page{display:flex;flex-direction:column;flex:1}
+.page.dim{opacity:.5}
+.statusbar{display:flex;justify-content:space-between;align-items:center;padding:11px 22px 4px;font-size:13px;font-family:var(--mono);color:var(--ink)}
+.statusbar .icons{display:flex;gap:8px;align-items:center}
+.content{padding:var(--space-l) var(--space-l) var(--space-2xl);flex:1}
+.torn{height:12px;background:var(--paper);border-bottom:1px solid var(--perforation);clip-path:polygon(0% 100%,0% 55%,4% 0%,8% 55%,12% 0%,16% 55%,20% 0%,24% 55%,28% 0%,32% 55%,36% 0%,40% 55%,44% 0%,48% 55%,52% 0%,56% 55%,60% 0%,64% 55%,68% 0%,72% 55%,76% 0%,80% 55%,84% 0%,88% 55%,92% 0%,96% 55%,100% 0%,100% 100%)}
+.roll{background:var(--paper);padding:var(--space-m) var(--space-l) var(--space-l);font-family:var(--mono)}
+.rhead{text-align:center;text-transform:uppercase}
+.rhead .brand{font-size:var(--text-body);letter-spacing:3px;font-weight:600}
+.rhead .sub{font-size:var(--text-micro);letter-spacing:.16em;color:var(--faded);margin-top:var(--space-xs)}
+.perf{border-top:1.5px dashed var(--perforation);margin:var(--space-m) 0}
+.shdr{font-size:var(--text-micro);letter-spacing:.1em;text-transform:uppercase;color:var(--faded);margin:var(--space-l) 0 var(--space-xs)}
+.dest{display:flex;align-items:center;gap:var(--space-m);padding:var(--space-m) 2px;border-top:1.5px dashed var(--perforation);color:var(--ink);text-decoration:none}
+.dest i.lead-icon{font-size:16px;color:var(--faded);width:18px;text-align:center}
+.dest .nm{flex:1;font-family:var(--sans);font-size:var(--text-body)}
+.dest .sub{font-family:var(--sans);font-size:var(--text-label);color:var(--faded);display:block;margin-top:2px}
+.dest i.chev{font-size:var(--text-label);color:var(--perforation)}
+.soon{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--faded);border:1px solid var(--perforation);border-radius:var(--radius-pill);padding:2px var(--space-s)}
+.foot{text-align:center;margin-top:var(--space-xl)}
+.barcode{height:36px;width:72%;margin:var(--space-s) auto;background:repeating-linear-gradient(90deg,var(--ink) 0 2px,transparent 2px 5px,var(--ink) 5px 6px,transparent 6px 11px)}
+.foot .count{font-size:var(--text-micro);letter-spacing:.14em;text-transform:uppercase;color:var(--faded)}
+.foot .quip{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--perforation);margin-top:var(--space-s)}
+.nav{display:flex;align-items:center;justify-content:space-between;background:var(--paper);border-top:1.5px dashed var(--perforation);padding:var(--space-m) var(--space-l) var(--space-l)}
+.navitem{display:flex;flex-direction:column;align-items:center;gap:var(--space-xs);flex:1;font-size:var(--text-micro);color:var(--faded);font-weight:500;text-decoration:none}
+.navitem.active{color:var(--ink);font-weight:600}
+.navitem i{font-size:20px}
+.fab{width:54px;height:54px;border-radius:var(--radius-pill);background:var(--stamp);color:#fff;display:flex;align-items:center;justify-content:center;margin-top:-26px;border:3px solid var(--paper);box-shadow:0 8px 18px rgba(200,71,46,.32);font-size:24px;text-decoration:none}
+/* void slip — as components.html */
+.scrim{position:absolute;inset:0;background:rgba(28,26,23,.45)}
+.slipwrap{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:var(--space-xl)}
+.slip{background:var(--paper);width:100%;padding:var(--space-l);border-radius:var(--radius-card);position:relative}
+.slip .stitle{font-family:var(--mono);font-size:var(--text-label);letter-spacing:.14em;text-transform:uppercase;text-align:center;font-weight:600}
+.slip .rule{border-top:1.5px dashed var(--perforation);margin:var(--space-m) 0}
+.slip .subj{display:flex;align-items:baseline;font-family:var(--mono);font-size:var(--text-body)}
+.slip .subj .d{font-family:var(--sans)}
+.slip .subj .l{flex:1;border-bottom:1.5px dotted var(--perforation);margin:0 var(--space-s);transform:translateY(-3px)}
+.slip .warn{font-size:var(--text-label);color:var(--faded);text-align:center;margin-top:var(--space-m);line-height:1.5}
+.voidstamp{position:absolute;top:var(--space-l);right:var(--space-l);border:2px solid var(--stamp);color:var(--stamp);font-family:var(--mono);font-size:var(--text-micro);font-weight:600;letter-spacing:2px;padding:2px var(--space-s);border-radius:var(--radius-card);transform:rotate(-12deg);opacity:.9}
+.acts{display:flex;gap:var(--space-s);margin-top:var(--space-l)}
+.abtn{flex:1;border:0;border-radius:var(--radius-pill);padding:var(--space-m);font-family:var(--mono);font-size:var(--text-label);font-weight:600;letter-spacing:.12em;text-transform:uppercase;text-align:center;text-decoration:none}
+.abtn.ghost{background:transparent;color:var(--faded);border:1px solid var(--perforation)}
+.abtn.danger{background:var(--stamp);color:#fff}
+/* toast — as components.html */
+.toast{position:absolute;left:var(--space-l);right:var(--space-l);bottom:var(--space-l);background:var(--paper);border:1.5px dashed var(--perforation);border-radius:var(--radius-card);padding:var(--space-m) var(--space-l);display:flex;align-items:center;font-family:var(--mono);font-size:var(--text-label);box-shadow:0 10px 24px rgba(33,30,25,.18)}
+.toast .ok{display:flex;align-items:center;gap:var(--space-s);letter-spacing:.1em;text-transform:uppercase}
+.toast .ok i{color:var(--under)}
+/* drill layout, as categories.html */
+.content{overflow-y:auto}
+.backbar{display:flex;align-items:center;gap:var(--space-s);padding:0 var(--space-xs) var(--space-s);font-family:var(--mono);font-size:var(--text-label);letter-spacing:.14em;text-transform:uppercase;color:var(--faded);text-decoration:none}
+.backbar i{color:var(--ink);font-size:var(--text-label)}
+.title{font-size:var(--text-title);font-weight:600;letter-spacing:.04em;text-transform:uppercase;margin:var(--space-l) 0 var(--space-xs)}
+.lede{font-family:var(--sans);font-size:var(--text-body);color:var(--faded);line-height:1.5;margin-bottom:var(--space-l)}
+.invite{display:flex;align-items:flex-start;gap:var(--space-s)}
+.invite .fld{flex:1}
+.fld .lbl{display:block;font-size:var(--text-micro);letter-spacing:.1em;text-transform:uppercase;color:var(--faded)}
+.fld .in{width:100%;border-bottom:1.5px dashed var(--perforation);padding:var(--space-s) 2px;font-family:var(--sans);font-size:var(--text-body);color:var(--ink);min-height:36px;display:flex;align-items:center}
+.fld .in .ph{color:var(--faded);opacity:.6}
+.fld.bad .in{border-bottom-color:var(--stamp)}
+.err{font-family:var(--sans);font-size:var(--text-label);color:var(--stamp);margin-top:var(--space-xs)}
+.btn{display:flex;align-items:center;justify-content:center;margin-top:var(--space-m);padding:var(--space-m) var(--space-l);border-radius:var(--radius-pill);font-family:var(--mono);font-size:var(--text-label);letter-spacing:.08em;text-transform:uppercase;font-weight:600;text-decoration:none;background:var(--stamp);color:#fff;border:1.5px solid var(--stamp)}
+.invs{margin-top:var(--space-l)}
+.inv{display:flex;align-items:center;gap:var(--space-m);padding:var(--space-m) 2px;border-top:1.5px dashed var(--perforation)}
+.inv .who{flex:1;min-width:0;font-family:var(--sans);font-size:var(--text-body);overflow-wrap:anywhere}
+.inv .when{display:block;font-size:var(--text-label);color:var(--faded);margin-top:2px}
+.stamp{font-size:9px;letter-spacing:.1em;text-transform:uppercase;border-radius:var(--radius-pill);padding:2px var(--space-s);border:1px solid var(--perforation);color:var(--faded);white-space:nowrap}
+.stamp.has{border-color:var(--under);color:var(--under)}
+.rm{font-family:var(--sans);font-size:var(--text-label);color:var(--stamp);text-decoration:underline;text-underline-offset:3px}
+.empty{text-align:center;padding:var(--space-2xl) 0 var(--space-l);border-top:1.5px dashed var(--perforation);margin-top:var(--space-l);font-family:var(--sans);font-size:var(--text-body);color:var(--faded)}
+.fld{margin-top:0}
+</style>
+</head>
+<body>
+<div class="intro"><b>Admin invites</b> — the owner's guest list. Reached from More, admins only. The Remove slip is the shared void slip in confirm mode. Drill layout, so no nav and no FAB.</div>
+<div class="grid">
+
+<div class="item" id="more"><div class="label"><b>1 · /more</b> — new <b>Admin</b> section, last, after Account. Shown only to admins; everyone else never sees it.</div>
+<div class="phone"><div class="screen"><div class="page"><div class="statusbar"><span>9:41</span><span class="icons"><i class="pi pi-wifi"></i><span>100%</span></span></div><div class="content"><div class="torn"></div>
+<div class="roll">
+<div class="rhead"><div class="brand">Pesonal</div><div class="sub">· back of the receipt ·</div></div>
+<div class="perf"></div>
+<div class="shdr">About</div>
+<a class="dest" href="#"><i class="pi pi-info-circle lead-icon"></i><span class="nm">About &amp; privacy<span class="sub">What we keep, who sees it</span></span><i class="pi pi-chevron-right chev"></i></a>
+<div class="shdr">Account</div>
+<a class="dest" href="#"><i class="pi pi-sign-out lead-icon"></i><span class="nm">Sign out<span class="sub">Close the ledger for now</span></span></a>
+<a class="dest" href="#"><i class="pi pi-trash lead-icon" style="color:var(--stamp)"></i><span class="nm">Delete my account<span class="sub">Shred the whole roll</span></span><i class="pi pi-chevron-right chev"></i></a>
+<div class="shdr">Admin</div>
+<a class="dest" href="#list"><i class="pi pi-user-plus lead-icon"></i><span class="nm">Invites<span class="sub">Who gets a ledger</span></span><i class="pi pi-chevron-right chev"></i></a>
+</div></div><div class="nav">
+<a class="navitem" href="dashboard.html"><i class="pi pi-home"></i>Home</a>
+<a class="navitem" href="expenses.html"><i class="pi pi-receipt"></i>Expenses</a>
+<div style="flex:1;display:flex;justify-content:center"><a class="fab" href="add-expense.html"><i class="pi pi-plus"></i></a></div>
+<a class="navitem" href="recurring.html"><i class="pi pi-sync"></i>Recurring</a>
+<a class="navitem active" href="more.html"><i class="pi pi-ellipsis-h"></i>More</a>
+</div></div></div></div>
+</div>
+
+<div class="item" id="list"><div class="label"><b>2 · /admin</b> — drill layout: back bar, no nav. Email, <b>Invite</b>, then the list.</div>
+<div class="phone"><div class="screen"><div class="statusbar"><span>9:41</span><span class="icons"><i class="pi pi-wifi"></i><span>100%</span></span></div><div class="content"><a class="backbar" href="more.html"><i class="pi pi-chevron-left"></i>More</a><div class="torn"></div>
+<div class="roll">
+<div class="rhead"><div class="brand">Pesonal</div><div class="sub">· who gets a ledger ·</div></div>
+<div class="perf"></div>
+<div class="title">Invites</div>
+<div class="lede">Only these emails can open a ledger.</div>
+<div class="invite"><div class="fld"><span class="lbl">Email</span><div class="in"><span class="ph">name@example.com</span></div></div><a class="btn" href="#">Invite</a></div>
+<div class="invs">
+<div class="inv"><span class="who">juan@example.com<span class="when">invited 14 Oct</span></span><span class="stamp has">has a ledger</span><a class="rm" href="#remove">Remove</a></div>
+<div class="inv"><span class="who">maria.santos@example.com<span class="when">invited 16 Oct</span></span><span class="stamp has">has a ledger</span><a class="rm" href="#remove">Remove</a></div>
+<div class="inv"><span class="who">tito.ben@example.com<span class="when">invited 19 Oct</span></span><span class="stamp">not yet</span><a class="rm" href="#remove">Remove</a></div>
+<div class="inv"><span class="who">ate.jo@example.com<span class="when">invited 20 Oct</span></span><span class="stamp">not yet</span><a class="rm" href="#remove">Remove</a></div>
+</div>
+<div class="foot"><div class="barcode"></div><div class="count">4 invited · 2 with a ledger</div><div class="quip">* the guest list is short on purpose *</div></div></div></div></div></div>
+</div>
+
+<div class="item" id="invited"><div class="label"><b>3 · After inviting</b> — the new email lands on top. A repeat toasts <b>Already on the list.</b> instead and adds nothing.</div>
+<div class="phone"><div class="screen"><div class="statusbar"><span>9:41</span><span class="icons"><i class="pi pi-wifi"></i><span>100%</span></span></div><div class="content"><a class="backbar" href="more.html"><i class="pi pi-chevron-left"></i>More</a><div class="torn"></div>
+<div class="roll">
+<div class="rhead"><div class="brand">Pesonal</div><div class="sub">· who gets a ledger ·</div></div>
+<div class="perf"></div>
+<div class="title">Invites</div>
+<div class="lede">Only these emails can open a ledger.</div>
+<div class="invite"><div class="fld"><span class="lbl">Email</span><div class="in"><span class="ph">name@example.com</span></div></div><a class="btn" href="#">Invite</a></div>
+<div class="invs">
+<div class="inv"><span class="who">new@example.com<span class="when">invited 21 Oct</span></span><span class="stamp">not yet</span><a class="rm" href="#remove">Remove</a></div>
+<div class="inv"><span class="who">juan@example.com<span class="when">invited 14 Oct</span></span><span class="stamp has">has a ledger</span><a class="rm" href="#remove">Remove</a></div>
+<div class="inv"><span class="who">maria.santos@example.com<span class="when">invited 16 Oct</span></span><span class="stamp has">has a ledger</span><a class="rm" href="#remove">Remove</a></div>
+<div class="inv"><span class="who">tito.ben@example.com<span class="when">invited 19 Oct</span></span><span class="stamp">not yet</span><a class="rm" href="#remove">Remove</a></div>
+<div class="inv"><span class="who">ate.jo@example.com<span class="when">invited 20 Oct</span></span><span class="stamp">not yet</span><a class="rm" href="#remove">Remove</a></div>
+</div>
+<div class="foot"><div class="barcode"></div><div class="count">5 invited · 2 with a ledger</div><div class="quip">* the guest list is short on purpose *</div></div></div></div><div class="toast"><span class="ok"><i class="pi pi-check"></i>Invited new@example.com.</span></div></div></div>
+</div>
+
+<div class="item" id="error"><div class="label"><b>3b · Field error</b> — not an email: the field turns stamp red and nothing is added.</div>
+<div class="phone"><div class="screen"><div class="statusbar"><span>9:41</span><span class="icons"><i class="pi pi-wifi"></i><span>100%</span></span></div><div class="content"><a class="backbar" href="more.html"><i class="pi pi-chevron-left"></i>More</a><div class="torn"></div>
+<div class="roll">
+<div class="rhead"><div class="brand">Pesonal</div><div class="sub">· who gets a ledger ·</div></div>
+<div class="perf"></div>
+<div class="title">Invites</div>
+<div class="lede">Only these emails can open a ledger.</div>
+<div class="invite"><div class="fld bad"><span class="lbl">Email</span><div class="in">tito.ben@</div><div class="err">That isn't an email address.</div></div><a class="btn" href="#">Invite</a></div>
+<div class="invs">
+<div class="inv"><span class="who">juan@example.com<span class="when">invited 14 Oct</span></span><span class="stamp has">has a ledger</span><a class="rm" href="#remove">Remove</a></div>
+<div class="inv"><span class="who">maria.santos@example.com<span class="when">invited 16 Oct</span></span><span class="stamp has">has a ledger</span><a class="rm" href="#remove">Remove</a></div>
+<div class="inv"><span class="who">tito.ben@example.com<span class="when">invited 19 Oct</span></span><span class="stamp">not yet</span><a class="rm" href="#remove">Remove</a></div>
+<div class="inv"><span class="who">ate.jo@example.com<span class="when">invited 20 Oct</span></span><span class="stamp">not yet</span><a class="rm" href="#remove">Remove</a></div>
+</div>
+<div class="foot"><div class="barcode"></div><div class="count">4 invited · 2 with a ledger</div><div class="quip">* the guest list is short on purpose *</div></div></div></div></div></div>
+</div>
+
+<div class="item" id="remove"><div class="label"><b>4 · Remove</b> — void slip, confirm mode, so it maps 1:1 onto <b>SharedVoidSlip</b>: title, subject, warning, confirm-label.</div>
+<div class="phone"><div class="screen"><div class="page dim"><div class="statusbar"><span>9:41</span><span class="icons"><i class="pi pi-wifi"></i><span>100%</span></span></div><div class="content"><a class="backbar" href="more.html"><i class="pi pi-chevron-left"></i>More</a><div class="torn"></div>
+<div class="roll">
+<div class="rhead"><div class="brand">Pesonal</div><div class="sub">· who gets a ledger ·</div></div>
+<div class="perf"></div>
+<div class="title">Invites</div>
+<div class="lede">Only these emails can open a ledger.</div>
+<div class="invite"><div class="fld"><span class="lbl">Email</span><div class="in"><span class="ph">name@example.com</span></div></div><a class="btn" href="#">Invite</a></div>
+<div class="invs">
+<div class="inv"><span class="who">juan@example.com<span class="when">invited 14 Oct</span></span><span class="stamp has">has a ledger</span><a class="rm" href="#remove">Remove</a></div>
+<div class="inv"><span class="who">maria.santos@example.com<span class="when">invited 16 Oct</span></span><span class="stamp has">has a ledger</span><a class="rm" href="#remove">Remove</a></div>
+<div class="inv"><span class="who">tito.ben@example.com<span class="when">invited 19 Oct</span></span><span class="stamp">not yet</span><a class="rm" href="#remove">Remove</a></div>
+</div>
+</div></div></div><div class="scrim"></div><div class="slipwrap"><div class="slip"><div class="voidstamp">Void</div><div class="stitle">Remove invite</div><div class="rule"></div><div class="subj"><span class="d">tito.ben@example.com</span><span class="l"></span></div><div class="warn">An account they already opened keeps working.</div><div class="acts"><a class="abtn ghost" href="#list">Keep</a><a class="abtn danger" href="#list">Remove</a></div></div></div></div></div>
+</div>
+
+<div class="item" id="empty"><div class="label"><b>5 · Empty</b> — nobody invited yet.</div>
+<div class="phone"><div class="screen"><div class="statusbar"><span>9:41</span><span class="icons"><i class="pi pi-wifi"></i><span>100%</span></span></div><div class="content"><a class="backbar" href="more.html"><i class="pi pi-chevron-left"></i>More</a><div class="torn"></div>
+<div class="roll">
+<div class="rhead"><div class="brand">Pesonal</div><div class="sub">· who gets a ledger ·</div></div>
+<div class="perf"></div>
+<div class="title">Invites</div>
+<div class="lede">Only these emails can open a ledger.</div>
+<div class="invite"><div class="fld"><span class="lbl">Email</span><div class="in"><span class="ph">name@example.com</span></div></div><a class="btn" href="#">Invite</a></div>
+<div class="empty">Nobody is invited yet.</div><div class="foot"><div class="barcode"></div><div class="count">0 invited</div><div class="quip">* the guest list is short on purpose *</div></div></div></div></div></div>
+</div>
+
+</div>
+</body>
+</html>
