@@ -12,7 +12,7 @@ class Month
      */
     public static function start(string $month): ?Carbon
     {
-        if (! preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', $month)) {
+        if (! preg_match('/^\d{4}-(0[1-9]|1[0-2])\z/', $month)) {
             return null;
         }
 

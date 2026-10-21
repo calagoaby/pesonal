@@ -100,6 +100,8 @@ class StatsTest extends TestCase
     }
 
     // KNOWN FAILURE — a real bug, not a test problem. See the note at the foot of this file.
+    // Rows written through the model must land as bare dates, or the per-day keys never
+    // match and every day reads 0 (see the date cast on Expense).
     public function test_monthly_daily_carries_each_days_total(): void
     {
         $this->seedCorpus();
@@ -296,20 +298,3 @@ class StatsTest extends TestCase
         $this->assertSame(1, array_sum(array_column($data['by_category'], 'count')));
     }
 }
-
-/*
- * test_monthly_daily_carries_each_days_total fails against the current code, and the
- * failure is the app's, not the test's.
- *
- * `expenses.date` has a `date` cast, but Eloquent writes it with the model's datetime
- * format, so a row created through the model — which is every row the API creates —
- * lands in SQLite as '2026-06-01 00:00:00'. The seeder is the only clean-looking data
- * in the app: it uses Expense::insert(), which bypasses casts and stores '2026-06-01'.
- *
- * StatsController::daily() groups on the raw `date` column and looks the sums up by
- * keys it builds with sprintf('%s-%02d'), so the datetime-shaped keys never match and
- * every one of those days silently reads 0. `total`, `by_category` and the expense
- * month filter all use LIKE '2026-06%' and trend uses substr(date, 1, 7), so they are
- * unaffected — which is why the same response reports total 150000 over a daily that
- * sums to 0. Reproduced live: POST /api/expenses then GET /api/stats/monthly.
- */

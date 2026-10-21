@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Category;
 use App\Models\Expense;
 use App\Models\Recurring;
+use App\Support\Month;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -130,6 +131,16 @@ class ExpenseTest extends TestCase
         $stats->assertJsonPath('data.previous_total', 0);
         $this->assertSame([], $stats->json('data.by_category'));
         $this->assertSame([], $stats->json('data.daily'));
+    }
+
+    // A bare $ in the month regex also matches before a final "\n", and Carbon then throws.
+    // Only callers of the scope can hit it: TrimStrings strips the newline off ?month=.
+    public function test_a_month_with_a_trailing_newline_is_malformed(): void
+    {
+        Expense::factory()->create(['date' => '2026-06-15']);
+
+        $this->assertNull(Month::start("2026-06\n"));
+        $this->assertSame(0, Expense::query()->inMonth("2026-06\n")->count());
     }
 
     public function test_index_with_a_malformed_month_matches_nothing_but_still_reports_last_page_one(): void

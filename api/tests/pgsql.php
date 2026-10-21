@@ -14,19 +14,27 @@ use Dotenv\Parser\Parser;
 
 require __DIR__.'/../vendor/autoload.php';
 
-$path = __DIR__.'/../.env.testing.pgsql';
+// PESONAL_PGSQL_ENV points at another file, e.g. a malformed copy to check the error path.
+$path = getenv('PESONAL_PGSQL_ENV') ?: __DIR__.'/../.env.testing.pgsql';
 
 if (! is_file($path)) {
     fwrite(STDERR, "Missing api/.env.testing.pgsql (DB_CONNECTION=pgsql, DB_HOST, DB_PORT, DB_DATABASE, DB_USERNAME, DB_PASSWORD).\n");
     exit(1);
 }
 
+// The parser's exception quotes the offending line, which may be the password line, so
+// its message is never printed.
 $database = [];
-foreach ((new Parser)->parse((string) file_get_contents($path)) as $entry) {
-    $value = $entry->getValue();
-    if (str_starts_with($entry->getName(), 'DB_') && $value->isDefined()) {
-        $database[$entry->getName()] = $value->get()->getChars();
+try {
+    foreach ((new Parser)->parse((string) file_get_contents($path)) as $entry) {
+        $value = $entry->getValue();
+        if (str_starts_with($entry->getName(), 'DB_') && $value->isDefined()) {
+            $database[$entry->getName()] = $value->get()->getChars();
+        }
     }
+} catch (Throwable) {
+    fwrite(STDERR, "api/.env.testing.pgsql could not be parsed.\n");
+    exit(1);
 }
 
 if (($database['DB_CONNECTION'] ?? null) !== 'pgsql') {
