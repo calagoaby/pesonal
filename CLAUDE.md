@@ -89,6 +89,7 @@ The app is `http://localhost:3000`; the API is `http://localhost:8080` (`public.
 - **`api/.env` keys added for auth** (also in `.env.example`): `FRONTEND_URL=http://localhost:3000` (CORS origin, and where reset/verify/social redirects land) · `SANCTUM_STATEFUL_DOMAINS=localhost:3000` (requests from here get the session) · `APP_URL=http://localhost:8080` (social callback URLs are built from it) · `SESSION_DOMAIN=` (empty, host-only cookie) · `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` · `FACEBOOK_CLIENT_ID` / `FACEBOOK_CLIENT_SECRET`. Empty provider keys send that button back to `/login?error=failed`. Any `.env` change needs a restart.
 - **Provider callback URLs** to register with Google / Meta: `http://localhost:8080/api/auth/google/callback` and `…/facebook/callback`.
 - **Mail goes to the log, via the queue.** Verify and reset mail is queued, so it reaches `api/storage/logs/laravel.log` only once the `queue` process runs it (no worker, no email); copy the link from there (see the `&amp;` gotcha).
+- **`ADMIN_EMAILS`** (comma-separated, in `api/.env`; restart after a change) names the owner(s). An admin email counts as invited, and a *verified* admin sees More → Admin → Invites, which lists, adds and removes invites through `/api/admin/*`. To everyone else (signed out, unverified, not on the list) those routes answer the same 404 as a route that doesn't exist. There is no database flag: taking admin away is an `.env` edit.
 - **Sign-up is invite-only.** `php artisan pesonal:invite {email}` adds an email to the list (case-insensitive), `pesonal:invites` lists it and shows who has opened an account, `pesonal:uninvite {email}` removes one. Registering locally needs `pesonal:invite <email>` first, or the form answers 422 `This ledger is invite-only…`. First-time Google/Facebook sign-in with an uninvited email lands on `/login?error=not_invited`. Existing accounts are unaffected by an uninvite. `register` and `forgot-password` share one 6/min-per-IP budget (`auth-mail`); past it is a 429.
 - **`php artisan pesonal:claim {email}`** gives every category, standing order and expense with no owner to that account, merging same-named categories into the account's own, and keeps every row's timestamps. Only needed for data from before multi-user (or a restored old backup); `user_id` is now NOT NULL, so new rows always have an owner.
 - **`php artisan migrate:fresh --seed` wipes every account**, not just the ledger, and creates one verified demo account, `demo@pesonal.test` / `password`, owning all the seed data.
@@ -112,7 +113,18 @@ The app is `http://localhost:3000`; the API is `http://localhost:8080` (`public.
 - **The social routes live in `routes/web.php`, not `api.php`** (still at `/api/auth/{provider}/…`). They're top-level browser navigations with no `Origin` header, so Sanctum's stateful check would give them no session, and Socialite's state check needs one.
 - **Sanctum only gives a session to requests from the frontend.** In tests, chain `$this->fromFrontend()` (sets `Origin`/`Referer` to `:3000`) or the session never starts; and after register/login/logout call `$this->app['auth']->forgetGuards()` before re-reading `/api/user`, or the cached guard user makes the test prove nothing. PHPUnit also skips CSRF — probe 419s with curl and an `Origin: http://localhost:3000` header.
 - **`SessionGuard::logout()` after deleting the user re-inserts the row** (it cycles the remember token and `save()`s the deleted model). Use `logoutCurrentDevice()`, as `DeleteAccountController` does.
+- **Never `LIKE` or `substr` a date column.** Filter by a half-open range (`>= first of the month`, `< first of the next`; `App\Support\Month`). Postgres is picky about it, and the old `LIKE '2026-06%'` was wrong on SQLite too (`2026-13` rolled into January, an empty month matched everything).
+- **Postgres returns `SUM`/`COUNT` as strings.** Cast aggregates before they reach JSON.
+- **Explicit route bindings live in `AppServiceProvider`, never in `routes/*.php`.** Production runs `route:cache`, which skips the route files, so a `Route::bind` there vanishes (Undo and restore would break). Ids are also guarded numeric, because Postgres errors on `'abc'` where SQLite shrugs; a non-numeric id is a 404.
+- **`winget install PostgreSQL.PostgreSQL.17` sets no password you know.** Reset it: `pg_hba.conf` to `trust`, `ALTER USER`, back to `scram-sha-256`, restart the service.
+- **A pasted `PS C:\…>` prompt makes PowerShell run `Get-Process`** (`PS` is its alias). Paste commands without the prompt.
+- **Nuxt dev listens on IPv6 `[::1]:3000`.** Probe `http://localhost:3000`, not `127.0.0.1`.
+- **Check a mockup by looking** (screenshot or layout measurements), not by reading its text: a broken layout reads fine as text.
 - **SQLite `->change()` rebuilds the table (copy → drop → rename) and Laravel runs SQLite migrations without a transaction**, so a failure mid-way loses the table. Follow `2026_10_13_000004_require_user_id_on_ledger_tables.php`: foreign keys off *outside* a transaction (the pragma is ignored inside one), rebuild in one transaction, `PRAGMA foreign_key_check` before committing.
+
+### Postgres tests
+
+Production will be Postgres (Neon), so the API suite runs on both drivers. Locally: Postgres 17 at `127.0.0.1:5432`, database `pesonal_test`, credentials in the gitignored `api/.env.testing.pgsql` (never open or print it). `composer test:pgsql` runs the suite against it; `api/tests/pgsql.php` reads only the `DB_*` keys and never echoes them. Filters go after `--`: `composer test:pgsql -- --filter=Stats`. CI's `api` job runs both drivers.
 
 ### Checks
 
@@ -126,6 +138,10 @@ cd api && php artisan test
 
 ```
 cd api && composer analyse
+```
+
+```
+cd api && composer test:pgsql
 ```
 
 The typecheck prints nothing and exits 0 on success. Run both before committing — **Vite strips types without checking them**, so type errors never surface at runtime and the dev server will happily serve broken code.
