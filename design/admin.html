@@ -99,11 +99,12 @@ body{font-family:var(--sans);background:#d8d1c2;min-height:100vh;padding:30px 16
 .btn{display:flex;align-items:center;justify-content:center;margin-top:var(--space-m);padding:var(--space-m) var(--space-l);border-radius:var(--radius-pill);font-family:var(--mono);font-size:var(--text-label);letter-spacing:.08em;text-transform:uppercase;font-weight:600;text-decoration:none;background:var(--stamp);color:#fff;border:1.5px solid var(--stamp)}
 .invs{margin-top:var(--space-l)}
 .inv{display:flex;align-items:center;gap:var(--space-m);padding:var(--space-m) 2px;border-top:1.5px dashed var(--perforation)}
-.inv .who{flex:1;min-width:0;font-family:var(--sans);font-size:var(--text-body);overflow-wrap:anywhere}
+.inv .who{flex:1;min-width:0;font-family:var(--sans);font-size:var(--text-body);word-break:break-all}
 .inv .when{display:block;font-size:var(--text-label);color:var(--faded);margin-top:2px}
-.stamp{font-size:9px;letter-spacing:.1em;text-transform:uppercase;border-radius:var(--radius-pill);padding:2px var(--space-s);border:1px solid var(--perforation);color:var(--faded);white-space:nowrap}
+.inv .side{flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:var(--space-xs)}
+.stamp{flex-shrink:0;font-size:9px;letter-spacing:.1em;text-transform:uppercase;border-radius:var(--radius-pill);padding:2px var(--space-s);border:1px solid var(--perforation);color:var(--faded);white-space:nowrap}
 .stamp.has{border-color:var(--under);color:var(--under)}
-.rm{font-family:var(--sans);font-size:var(--text-label);color:var(--stamp);text-decoration:underline;text-underline-offset:3px}
+.rm{flex-shrink:0;white-space:nowrap;font-family:var(--sans);font-size:var(--text-label);color:var(--stamp);text-decoration:underline;text-underline-offset:3px}
 .empty{text-align:center;padding:var(--space-2xl) 0 var(--space-l);border-top:1.5px dashed var(--perforation);margin-top:var(--space-l);font-family:var(--sans);font-size:var(--text-body);color:var(--faded)}
 .fld{margin-top:0}
 </style>
@@ -142,13 +143,13 @@ body{font-family:var(--sans);background:#d8d1c2;min-height:100vh;padding:30px 16
 <div class="lede">Only these emails can open a ledger.</div>
 <div class="invite"><div class="fld"><span class="lbl">Email</span><div class="in"><span class="ph">name@example.com</span></div></div><a class="btn" href="#">Invite</a></div>
 <div class="invs">
-<div class="inv"><span class="who">ate.jo@example.com<span class="when">invited 20 Oct</span></span><span class="stamp">not yet</span><a class="rm" href="#remove">Remove</a>
-<div class="inv"><span class="who">tito.ben@example.com<span class="when">invited 19 Oct</span></span><span class="stamp">not yet</span><a class="rm" href="#remove">Remove</a></div>
-<div class="inv"><span class="who">maria.santos@example.com<span class="when">invited 16 Oct</span></span><span class="stamp has">has a ledger</span><a class="rm" href="#remove">Remove</a></div>
-<div class="inv"><span class="who">juan@example.com<span class="when">invited 14 Oct</span></span><span class="stamp has">has a ledger</span><a class="rm" href="#remove">Remove</a></div>
+<div class="inv"><span class="who">ate.jo@example.com<span class="when">invited 20 Oct</span></span><span class="side"><span class="stamp">not yet</span><a class="rm" href="#remove">Remove</a></span></div>
+<div class="inv"><span class="who">tito.ben@example.com<span class="when">invited 19 Oct</span></span><span class="side"><span class="stamp">not yet</span><a class="rm" href="#remove">Remove</a></span></div>
+<div class="inv"><span class="who">maria.santos.delacruz@example.com<span class="when">invited 17 Oct</span></span><span class="side"><span class="stamp">not yet</span><a class="rm" href="#remove">Remove</a></span></div>
+<div class="inv"><span class="who">maria.santos@example.com<span class="when">invited 16 Oct</span></span><span class="side"><span class="stamp has">has a ledger</span><a class="rm" href="#remove">Remove</a></span></div>
+<div class="inv"><span class="who">juan@example.com<span class="when">invited 14 Oct</span></span><span class="side"><span class="stamp has">has a ledger</span><a class="rm" href="#remove">Remove</a></span></div>
 </div>
-</div>
-<div class="foot"><div class="barcode"></div><div class="count">4 invited · 2 with a ledger</div><div class="quip">* the guest list is short on purpose *</div></div></div></div></div></div>
+<div class="foot"><div class="barcode"></div><div class="count">5 invited · 2 with a ledger</div><div class="quip">* the guest list is short on purpose *</div></div></div></div></div></div>
 </div>
 
 <div class="item" id="invited"><div class="label"><b>3 · After inviting</b> — the new email lands on top. A repeat toasts <b>Already on the list.</b> instead and adds nothing.</div>
@@ -160,14 +161,14 @@ body{font-family:var(--sans);background:#d8d1c2;min-height:100vh;padding:30px 16
 <div class="lede">Only these emails can open a ledger.</div>
 <div class="invite"><div class="fld"><span class="lbl">Email</span><div class="in"><span class="ph">name@example.com</span></div></div><a class="btn" href="#">Invite</a></div>
 <div class="invs">
-<div class="inv"><span class="who">new@example.com<span class="when">invited 21 Oct</span></span><span class="stamp">not yet</span><a class="rm" href="#remove">Remove</a></div>
-<div class="inv"><span class="who">ate.jo@example.com<span class="when">invited 20 Oct</span></span><span class="stamp">not yet</span><a class="rm" href="#remove">Remove</a>
-<div class="inv"><span class="who">tito.ben@example.com<span class="when">invited 19 Oct</span></span><span class="stamp">not yet</span><a class="rm" href="#remove">Remove</a></div>
-<div class="inv"><span class="who">maria.santos@example.com<span class="when">invited 16 Oct</span></span><span class="stamp has">has a ledger</span><a class="rm" href="#remove">Remove</a></div>
-<div class="inv"><span class="who">juan@example.com<span class="when">invited 14 Oct</span></span><span class="stamp has">has a ledger</span><a class="rm" href="#remove">Remove</a></div>
+<div class="inv"><span class="who">new@example.com<span class="when">invited 21 Oct</span></span><span class="side"><span class="stamp">not yet</span><a class="rm" href="#remove">Remove</a></span></div>
+<div class="inv"><span class="who">ate.jo@example.com<span class="when">invited 20 Oct</span></span><span class="side"><span class="stamp">not yet</span><a class="rm" href="#remove">Remove</a></span></div>
+<div class="inv"><span class="who">tito.ben@example.com<span class="when">invited 19 Oct</span></span><span class="side"><span class="stamp">not yet</span><a class="rm" href="#remove">Remove</a></span></div>
+<div class="inv"><span class="who">maria.santos.delacruz@example.com<span class="when">invited 17 Oct</span></span><span class="side"><span class="stamp">not yet</span><a class="rm" href="#remove">Remove</a></span></div>
+<div class="inv"><span class="who">maria.santos@example.com<span class="when">invited 16 Oct</span></span><span class="side"><span class="stamp has">has a ledger</span><a class="rm" href="#remove">Remove</a></span></div>
+<div class="inv"><span class="who">juan@example.com<span class="when">invited 14 Oct</span></span><span class="side"><span class="stamp has">has a ledger</span><a class="rm" href="#remove">Remove</a></span></div>
 </div>
-</div>
-<div class="foot"><div class="barcode"></div><div class="count">5 invited · 2 with a ledger</div><div class="quip">* the guest list is short on purpose *</div></div></div></div><div class="toast"><span class="ok"><i class="pi pi-check"></i>Invited new@example.com.</span></div></div></div>
+<div class="foot"><div class="barcode"></div><div class="count">6 invited · 2 with a ledger</div><div class="quip">* the guest list is short on purpose *</div></div></div></div><div class="toast"><span class="ok"><i class="pi pi-check"></i>Invited new@example.com.</span></div></div></div>
 </div>
 
 <div class="item" id="error"><div class="label"><b>3b · Field error</b> — not an email: the field turns stamp red and nothing is added.</div>
@@ -179,13 +180,13 @@ body{font-family:var(--sans);background:#d8d1c2;min-height:100vh;padding:30px 16
 <div class="lede">Only these emails can open a ledger.</div>
 <div class="invite"><div class="fld bad"><span class="lbl">Email</span><div class="in">tito.ben@</div><div class="err">That isn't an email address.</div></div><a class="btn" href="#">Invite</a></div>
 <div class="invs">
-<div class="inv"><span class="who">ate.jo@example.com<span class="when">invited 20 Oct</span></span><span class="stamp">not yet</span><a class="rm" href="#remove">Remove</a>
-<div class="inv"><span class="who">tito.ben@example.com<span class="when">invited 19 Oct</span></span><span class="stamp">not yet</span><a class="rm" href="#remove">Remove</a></div>
-<div class="inv"><span class="who">maria.santos@example.com<span class="when">invited 16 Oct</span></span><span class="stamp has">has a ledger</span><a class="rm" href="#remove">Remove</a></div>
-<div class="inv"><span class="who">juan@example.com<span class="when">invited 14 Oct</span></span><span class="stamp has">has a ledger</span><a class="rm" href="#remove">Remove</a></div>
+<div class="inv"><span class="who">ate.jo@example.com<span class="when">invited 20 Oct</span></span><span class="side"><span class="stamp">not yet</span><a class="rm" href="#remove">Remove</a></span></div>
+<div class="inv"><span class="who">tito.ben@example.com<span class="when">invited 19 Oct</span></span><span class="side"><span class="stamp">not yet</span><a class="rm" href="#remove">Remove</a></span></div>
+<div class="inv"><span class="who">maria.santos.delacruz@example.com<span class="when">invited 17 Oct</span></span><span class="side"><span class="stamp">not yet</span><a class="rm" href="#remove">Remove</a></span></div>
+<div class="inv"><span class="who">maria.santos@example.com<span class="when">invited 16 Oct</span></span><span class="side"><span class="stamp has">has a ledger</span><a class="rm" href="#remove">Remove</a></span></div>
+<div class="inv"><span class="who">juan@example.com<span class="when">invited 14 Oct</span></span><span class="side"><span class="stamp has">has a ledger</span><a class="rm" href="#remove">Remove</a></span></div>
 </div>
-</div>
-<div class="foot"><div class="barcode"></div><div class="count">4 invited · 2 with a ledger</div><div class="quip">* the guest list is short on purpose *</div></div></div></div></div></div>
+<div class="foot"><div class="barcode"></div><div class="count">5 invited · 2 with a ledger</div><div class="quip">* the guest list is short on purpose *</div></div></div></div></div></div>
 </div>
 
 <div class="item" id="remove"><div class="label"><b>4 · Remove</b> — void slip, confirm mode, so it maps 1:1 onto <b>SharedVoidSlip</b>: title, subject, warning, confirm-label.</div>
@@ -197,10 +198,9 @@ body{font-family:var(--sans);background:#d8d1c2;min-height:100vh;padding:30px 16
 <div class="lede">Only these emails can open a ledger.</div>
 <div class="invite"><div class="fld"><span class="lbl">Email</span><div class="in"><span class="ph">name@example.com</span></div></div><a class="btn" href="#">Invite</a></div>
 <div class="invs">
-<div class="inv"><span class="who">tito.ben@example.com<span class="when">invited 19 Oct</span></span><span class="stamp">not yet</span><a class="rm" href="#remove">Remove</a>
-<div class="inv"><span class="who">maria.santos@example.com<span class="when">invited 16 Oct</span></span><span class="stamp has">has a ledger</span><a class="rm" href="#remove">Remove</a></div>
-<div class="inv"><span class="who">juan@example.com<span class="when">invited 14 Oct</span></span><span class="stamp has">has a ledger</span><a class="rm" href="#remove">Remove</a></div>
-</div>
+<div class="inv"><span class="who">ate.jo@example.com<span class="when">invited 20 Oct</span></span><span class="side"><span class="stamp">not yet</span><a class="rm" href="#remove">Remove</a></span></div>
+<div class="inv"><span class="who">tito.ben@example.com<span class="when">invited 19 Oct</span></span><span class="side"><span class="stamp">not yet</span><a class="rm" href="#remove">Remove</a></span></div>
+<div class="inv"><span class="who">maria.santos.delacruz@example.com<span class="when">invited 17 Oct</span></span><span class="side"><span class="stamp">not yet</span><a class="rm" href="#remove">Remove</a></span></div>
 </div>
 </div></div></div><div class="scrim"></div><div class="slipwrap"><div class="slip"><div class="voidstamp">Void</div><div class="stitle">Remove invite</div><div class="rule"></div><div class="subj"><span class="d">tito.ben@example.com</span><span class="l"></span></div><div class="warn">An account they already opened keeps working.</div><div class="acts"><a class="abtn ghost" href="#list">Keep</a><a class="abtn danger" href="#list">Remove</a></div></div></div></div></div>
 </div>
