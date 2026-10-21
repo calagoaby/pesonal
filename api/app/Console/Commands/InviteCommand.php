@@ -2,9 +2,10 @@
 
 namespace App\Console\Commands;
 
+use App\Actions\InviteEmail;
+use App\Actions\InviteResult;
 use App\Models\Invitation;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Validator;
 
 class InviteCommand extends Command
 {
@@ -12,19 +13,19 @@ class InviteCommand extends Command
 
     protected $description = 'Put an email on the sign-up list';
 
-    public function handle(): int
+    public function handle(InviteEmail $inviteEmail): int
     {
         $email = Invitation::normalize((string) $this->argument('email'));
 
-        if (Validator::make(['email' => $email], ['email' => ['required', 'email', 'max:255']])->fails()) {
+        $result = $inviteEmail->execute($email);
+
+        if ($result === InviteResult::NotAnEmail) {
             $this->error("{$email} isn't an email address.");
 
             return self::FAILURE;
         }
 
-        $invitation = Invitation::firstOrCreate(['email' => $email]);
-
-        if (! $invitation->wasRecentlyCreated) {
+        if ($result === InviteResult::AlreadyInvited) {
             $this->info("{$email} was already invited.");
 
             return self::SUCCESS;

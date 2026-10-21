@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Actions\UninviteEmail;
 use App\Models\Invitation;
 use Illuminate\Console\Command;
 
@@ -11,11 +12,11 @@ class UninviteCommand extends Command
 
     protected $description = 'Take an email off the sign-up list (an account it already opened keeps working)';
 
-    public function handle(): int
+    public function handle(UninviteEmail $uninviteEmail): int
     {
         $email = Invitation::normalize((string) $this->argument('email'));
 
-        if (Invitation::where('email', $email)->delete() === 0) {
+        if (! $uninviteEmail->execute($email)) {
             $this->error("{$email} isn't on the list.");
 
             return self::FAILURE;
