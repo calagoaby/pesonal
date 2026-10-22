@@ -52,7 +52,8 @@ onBeforeUnmount(() => clearInterval(timer))
 
         <AuthHeading title="Check your inbox" />
 
-        <AuthBanner v-if="has_resent" tone="ok">Sent again. Check spam, it's shy.</AuthBanner>
+        <!-- The Google hint covers the no-domain period, when Resend only delivers to the owner; drop it at the domain switch. -->
+        <AuthBanner v-if="has_resent" tone="ok">Sent again. Check spam, it's shy. Not arriving? Sign in with Google instead.</AuthBanner>
         <AuthBanner v-if="failure">{{ failure }}</AuthBanner>
 
         <p class="lede">
