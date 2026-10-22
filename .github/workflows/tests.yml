@@ -239,3 +239,69 @@ jobs:
         run: |
           docker ps --all
           docker logs api || true
+
+  # The frontend goes live only after every check above is green. Vercel's own Git deploys are
+  # off (web/vercel.json), so this job is the only way a commit reaches production. Render's
+  # "After CI Checks Pass" waits for this job too, so a failed frontend deploy holds the API back.
+  deploy-web:
+    needs: [api, web, docker]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    # Two quick pushes deploy one after the other, never side by side; the newer one lands last.
+    concurrency:
+      group: deploy-web
+      cancel-in-progress: false
+
+    # The CLI reads these instead of a linked .vercel/project.json.
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+    steps:
+      # Secrets can't appear in a job's `if:`, so a step reads the token and says whether to go on.
+      # Until the owner adds VERCEL_TOKEN the job ends green with a notice, not red.
+      - name: Check the Vercel secrets
+        id: gate
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          if [ -z "$VERCEL_TOKEN" ] || [ -z "$VERCEL_ORG_ID" ] || [ -z "$VERCEL_PROJECT_ID" ]; then
+            echo "::notice::VERCEL_TOKEN, VERCEL_ORG_ID or VERCEL_PROJECT_ID is not set, so the frontend was not deployed"
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.gate.outputs.enabled == 'true'
+
+      # vercel build runs the Nuxt build on this runner, so it needs the same Node as the web job.
+      - name: Set up Node
+        if: steps.gate.outputs.enabled == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      # Run from the repo root, not web/: the project's Root Directory setting (web) is joined onto
+      # the current directory, so running inside web/ would look for web/web. The CLI is pinned so a
+      # new release can't change the deploy under us; bump it deliberately.
+      - name: Pull the production settings and env
+        if: steps.gate.outputs.enabled == 'true'
+        run: npx --yes vercel@63.0.2 pull --yes --environment=production --token="$VERCEL_TOKEN"
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build
+        if: steps.gate.outputs.enabled == 'true'
+        run: npx --yes vercel@63.0.2 build --prod --token="$VERCEL_TOKEN"
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy
+        if: steps.gate.outputs.enabled == 'true'
+        run: npx --yes vercel@63.0.2 deploy --prebuilt --prod --token="$VERCEL_TOKEN"
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
