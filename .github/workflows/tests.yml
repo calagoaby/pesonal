@@ -116,3 +116,124 @@ jobs:
 
       - name: Lint
         run: npm run lint
+
+  # The production image, built and started the way Render runs it: env only, no .env file,
+  # Postgres, the proxy gate on, and the entrypoint migrating and caching before it serves.
+  # Only after the api checks pass, so a red test suite doesn't also spend a docker build.
+  docker:
+    needs: [api]
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: pesonal
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build the image
+        run: docker build --tag pesonal-api api
+
+      # Production-like env. APP_KEY is generated fresh per run (it guards nothing here).
+      # --network host lets the container reach the postgres service on 127.0.0.1:5432
+      # and lets the steps below reach the API on 127.0.0.1:8080.
+      - name: Start the container
+        run: |
+          cat > ci.env <<ENV
+          APP_ENV=production
+          APP_DEBUG=false
+          APP_KEY=base64:$(openssl rand -base64 32)
+          APP_URL=http://localhost:8080
+          FRONTEND_URL=http://localhost:3000
+          PORT=8080
+          LOG_CHANNEL=stderr
+          DB_CONNECTION=pgsql
+          DB_URL=postgresql://postgres:postgres@127.0.0.1:5432/pesonal
+          SESSION_DRIVER=database
+          CACHE_STORE=file
+          QUEUE_CONNECTION=sync
+          MAIL_MAILER=log
+          PROXY_SECRET=ci-secret
+          ENV
+          docker run --detach --name api --network host --env-file ci.env pesonal-api
+
+      # /up only answers once migrations and caches are done (the server starts after them).
+      # A container that exits while we wait fails at once instead of timing out.
+      - name: Wait for /up
+        run: |
+          for attempt in $(seq 1 60); do
+            if curl --silent --fail --output /dev/null http://127.0.0.1:8080/up; then
+              echo "/up answered after ${attempt} tries"
+              exit 0
+            fi
+            if [ "$(docker inspect --format '{{.State.Running}}' api)" != "true" ]; then
+              echo "::error::the container exited before /up answered"
+              exit 1
+            fi
+            sleep 2
+          done
+          echo "::error::/up did not answer within 120 s"
+          exit 1
+
+      - name: Smoke checks
+        run: |
+          failed=0
+          # check <expected status> <method> <path> [curl args...]: the body lands in body.txt.
+          check() {
+            local expected=$1 method=$2 path=$3
+            shift 3
+            local status
+            status=$(curl --silent --output body.txt --write-out '%{http_code}' \
+              --request "$method" --header 'Accept: application/json' "$@" "http://127.0.0.1:8080$path")
+            if [ "$status" = "$expected" ]; then
+              echo "ok   $method $path $* -> $status"
+            else
+              echo "::error::$method $path $* answered $status, expected $expected"
+              cat body.txt; echo
+              failed=1
+            fi
+          }
+
+          check 200 GET /up
+          # Without the proxy header every other path is a missing route.
+          check 404 GET /api/user
+          # With it, the request reaches auth: a JSON 401.
+          check 401 GET /api/user --header 'X-Pesonal-Proxy: ci-secret'
+          grep --quiet '"message"' body.txt || { echo "::error::the 401 is not JSON"; cat body.txt; failed=1; }
+          # The restore route resolves under the cached routes: auth answers 401, where a lost
+          # route would be a 404 and a lost binding a 500.
+          check 401 POST /api/expenses/999999/restore --header 'X-Pesonal-Proxy: ci-secret'
+          if grep --quiet 'could not be found' body.txt; then echo "::error::the restore route is missing"; failed=1; fi
+          check 401 POST /api/recurring/999999/restore --header 'X-Pesonal-Proxy: ci-secret'
+
+          # The entrypoint really cached: a missing file means the checks above ran uncached.
+          docker exec api sh -c 'ls bootstrap/cache/config.php bootstrap/cache/routes-v*.php bootstrap/cache/events.php' \
+            || { echo "::error::a cache file is missing"; failed=1; }
+
+          exit $failed
+
+      - name: Both processes are still running after 30 s
+        run: |
+          sleep 30
+          docker top api
+          processes=$(docker top api -eo args)
+          echo "$processes" | grep --quiet 'frankenphp run' || { echo "::error::the web server is gone"; exit 1; }
+          echo "$processes" | grep --quiet 'artisan schedule:work' || { echo "::error::the scheduler is gone"; exit 1; }
+          [ "$(docker inspect --format '{{.State.Running}}' api)" = "true" ]
+
+      - name: Container logs
+        if: failure()
+        run: |
+          docker ps --all
+          docker logs api || true

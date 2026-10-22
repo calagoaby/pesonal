@@ -1,0 +1,19 @@
+# FrankenPHP's server config. Render terminates TLS and forwards plain HTTP to $PORT.
+{
+	# No certificates to fetch, and no admin API to listen on: the config never reloads.
+	auto_https off
+	admin off
+
+	frankenphp {
+		# Classic mode (no worker): each request boots Laravel fresh, as under PHP-FPM.
+		# 4 threads cap concurrent PHP requests, and so memory, on a 512 MB / 0.1 CPU box;
+		# the default (2 per CPU the host reports) could be far more.
+		num_threads 4
+	}
+}
+
+:{$PORT:8080} {
+	root * /app/public
+	encode zstd gzip
+	php_server
+}
