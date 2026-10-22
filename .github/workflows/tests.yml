@@ -211,13 +211,14 @@ jobs:
           # With it, the request reaches auth: a JSON 401.
           check 401 GET /api/user --header 'X-Pesonal-Proxy: ci-secret'
           grep --quiet '"message"' body.txt || { echo "::error::the 401 is not JSON"; cat body.txt; failed=1; }
-          # The restore route resolves under the cached routes: auth answers 401, where a lost
-          # route would be a 404 and a lost binding a 500.
+          # The restore routes survive route:cache: auth answers 401, where a lost route would be
+          # a 404. Without a session auth stops the request first, so this doesn't reach the
+          # voided-row binding; the test suite covers that.
           check 401 POST /api/expenses/999999/restore --header 'X-Pesonal-Proxy: ci-secret'
           if grep --quiet 'could not be found' body.txt; then echo "::error::the restore route is missing"; failed=1; fi
           check 401 POST /api/recurring/999999/restore --header 'X-Pesonal-Proxy: ci-secret'
 
-          # The entrypoint really cached: a missing file means the checks above ran uncached.
+          # The entrypoint's optimize really cached: a missing file means the checks above ran uncached.
           docker exec api sh -c 'ls bootstrap/cache/config.php bootstrap/cache/routes-v*.php bootstrap/cache/events.php' \
             || { echo "::error::a cache file is missing"; failed=1; }
 
@@ -226,8 +227,9 @@ jobs:
       - name: Both processes are still running after 30 s
         run: |
           sleep 30
-          docker top api
-          processes=$(docker top api -eo args)
+          # docker top passes these options to ps, and the daemon needs a pid column in the output.
+          processes=$(docker top api -eo pid,args)
+          echo "$processes"
           echo "$processes" | grep --quiet 'frankenphp run' || { echo "::error::the web server is gone"; exit 1; }
           echo "$processes" | grep --quiet 'artisan schedule:work' || { echo "::error::the scheduler is gone"; exit 1; }
           [ "$(docker inspect --format '{{.State.Running}}' api)" = "true" ]
