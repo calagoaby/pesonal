@@ -1,4 +1,5 @@
 import type { ApiError, ListMeta } from "#shared/types/Api";
+import { proxyHeaders } from "#shared/utils/proxyHeaders";
 import { useAuth } from "~/stores/auth";
 
 /**
@@ -89,14 +90,27 @@ export async function apiPostRaw<T>(path: string, body: Record<string, any>): Pr
 async function request<T>(path: string, options: RequestOptions = {}, isRetry = false): Promise<T> {
     // Captured before any await: on the server the Nuxt context is gone by the time a catch runs.
     const nuxtApp = useNuxtApp()
-    const { public: config } = useRuntimeConfig()
+    const runtimeConfig = useRuntimeConfig()
+    const { public: config } = runtimeConfig
     const method = options.method ?? 'GET'
     const headers: Record<string, string> = {}
+    let base = config.apiBase
 
     if (import.meta.server) {
         // A server render has no browser cookie jar: forward the visitor's own cookie, and send
         // an origin so Sanctum treats the call as first-party stateful.
         Object.assign(headers, useRequestHeaders(['cookie']), { origin: useRequestURL().origin })
+
+        // In production apiBase is this frontend's own address. A server render skips that hop and
+        // calls the API directly, with the same headers the /api proxy route would add.
+        if (runtimeConfig.apiProxyTarget) {
+            base = runtimeConfig.apiProxyTarget
+            Object.assign(headers, proxyHeaders({
+                headers: useRequestHeaders(),
+                socketIp: useRequestEvent()?.node.req.socket.remoteAddress,
+                onVercel: Boolean(process.env.VERCEL),
+            }, runtimeConfig.apiProxySecret))
+        }
     } else if (method !== 'GET') {
         const token = await readXsrfToken(config.apiBase)
 
@@ -106,7 +120,7 @@ async function request<T>(path: string, options: RequestOptions = {}, isRetry = 
     }
 
     try {
-        return await $fetch<T>(`${config.apiBase}/api${path}`, { ...options, headers, credentials: 'include' }) as T
+        return await $fetch<T>(`${base}/api${path}`, { ...options, headers, credentials: 'include' }) as T
     } catch (error) {
         const failure = toRequestError(error)
 

@@ -18,6 +18,12 @@ export default defineNuxtConfig({
         }
     },
     runtimeConfig: {
+        // Server-only (never sent to the browser). Production: NUXT_API_PROXY_TARGET is the API's
+        // own URL and NUXT_API_PROXY_SECRET its PROXY_SECRET; /api and /sanctum are proxied there and
+        // NUXT_PUBLIC_API_BASE is this frontend's address. Empty (local dev): the browser calls
+        // apiBase directly and the proxy routes 404.
+        apiProxyTarget: '',
+        apiProxySecret: '',
         public: {
             // `php artisan serve --port=8080`. Not 8000: Homestead forwards 8000 and 8001.
             apiBase: 'http://localhost:8080',
@@ -25,6 +31,14 @@ export default defineNuxtConfig({
             timezone: 'Asia/Manila',
             // Shown on /privacy; empty falls back to "Ask whoever invited you". Set via NUXT_PUBLIC_CONTACT_EMAIL.
             contactEmail: ''
+        }
+    },
+    // Used only by the vercel preset, which Nitro picks itself when building on Vercel; a local
+    // `nuxi build` stays node. Singapore, near the API, since every request makes that hop.
+    // Hobby allows one function region, which this is.
+    nitro: {
+        vercel: {
+            functions: { regions: ['sin1'] }
         }
     }
 })
