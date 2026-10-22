@@ -2,11 +2,14 @@
 
 use App\Http\Middleware\EnsureAdmin;
 use App\Http\Middleware\EnsureEmailIsVerified;
+use App\Http\Middleware\RequireProxySecret;
+use App\Http\Middleware\TrustProxies as AppTrustProxies;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Exceptions\ThrottleRequestsException;
+use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Middleware\ThrottleRequests;
 use Illuminate\Validation\ValidationException;
@@ -19,6 +22,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Global, and first: it has to beat StartSession and Sanctum on every route, web group included.
+        $middleware->prepend(RequireProxySecret::class);
+        $middleware->replace(TrustProxies::class, AppTrustProxies::class);
         $middleware->statefulApi();
         $middleware->alias(['verified.api' => EnsureEmailIsVerified::class, 'admin' => EnsureAdmin::class]);
         // admin answers non-admins with a missing-route 404, so it has to run before the throttle
