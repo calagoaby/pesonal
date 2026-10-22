@@ -15,7 +15,7 @@ const HOP_BY_HOP_RESPONSE = ['connection', 'keep-alive', 'transfer-encoding', 'h
 // the API with the proxy secret. Without a target (local dev) the browser calls the API directly
 // and these routes don't exist.
 export async function proxyToApi(event: H3Event) {
-    const { apiProxyTarget, apiProxySecret } = useRuntimeConfig(event)
+    const { apiProxyTarget, apiProxySecret, public: { apiBase } } = useRuntimeConfig(event)
 
     if (!apiProxyTarget) {
         throw createError({ statusCode: 404 })
@@ -40,6 +40,7 @@ export async function proxyToApi(event: H3Event) {
 
     Object.assign(headers, proxyHeaders({
         headers: incoming,
+        publicUrl: apiBase,
         socketIp: event.node.req.socket.remoteAddress,
         onVercel: Boolean(process.env.VERCEL),
     }, apiProxySecret))

@@ -104,9 +104,12 @@ async function request<T>(path: string, options: RequestOptions = {}, isRetry = 
         // In production apiBase is this frontend's own address. A server render skips that hop and
         // calls the API directly, with the same headers the /api proxy route would add.
         if (runtimeConfig.apiProxyTarget) {
-            base = runtimeConfig.apiProxyTarget
+            // Origin only, as in the proxy route: a trailing slash in the env value would otherwise
+            // give //api/user, a 404, and every server render would look signed out.
+            base = new URL(runtimeConfig.apiProxyTarget).origin
             Object.assign(headers, proxyHeaders({
                 headers: useRequestHeaders(),
+                publicUrl: config.apiBase,
                 socketIp: useRequestEvent()?.node.req.socket.remoteAddress,
                 onVercel: Boolean(process.env.VERCEL),
             }, runtimeConfig.apiProxySecret))
