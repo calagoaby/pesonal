@@ -7,16 +7,19 @@ use App\Models\Invitation;
 use App\Models\Recurring;
 use App\Models\Scopes\OwnedByCurrentUser;
 use App\Models\User;
+use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Console\Scheduling\Event;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Mail\Transport\ArrayTransport;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Exceptions;
 use Illuminate\Support\Facades\Facade;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Testing\TestResponse;
 use Laravel\Sanctum\Sanctum;
+use RuntimeException;
 use Symfony\Component\Mailer\Exception\TransportException;
 use Symfony\Component\Mailer\SentMessage;
 use Symfony\Component\Mailer\Transport\AbstractTransport;
@@ -78,6 +81,12 @@ class ProductionBehaviourTest extends TestCase
         $this->useDatabaseSessions();
         config(['pesonal.proxy_secret' => self::SECRET]);
 
+        // Neon sleeps after 5 idle minutes: a stranger's request must not run a single query.
+        $queries = 0;
+        DB::listen(function () use (&$queries) {
+            $queries++;
+        });
+
         $responses = [
             'api/categories' => $this->fromFrontend()->getJson('/api/categories'),
             'api/auth/login' => $this->fromFrontend()->postJson('/api/auth/login', ['email' => 'a@example.com', 'password' => 'x']),
@@ -93,12 +102,14 @@ class ProductionBehaviourTest extends TestCase
         $this->assertSame(str_replace('api/nope', 'api/categories', $missing), $responses['api/categories']->getContent());
         // A wrong secret is no secret.
         $this->withHeaders(['X-Pesonal-Proxy' => 'guess'])->fromFrontend()->getJson('/api/categories')->assertNotFound();
-        $this->assertDatabaseCount('sessions', 0);
 
         $up = $this->get('/up');
         $up->assertOk();
         $this->assertNoCookies($up);
+        $this->assertSame(0, $queries);
         $this->assertDatabaseCount('sessions', 0);
+        // The listener's control: that count was a query, and it was seen.
+        $this->assertGreaterThan(0, $queries);
     }
 
     public function test_with_the_secret_requests_pass(): void
@@ -162,8 +173,9 @@ class ProductionBehaviourTest extends TestCase
         $this->register('stranger@example.com')->assertNotFound();
         $this->assertDatabaseMissing('users', ['email' => 'stranger@example.com']);
 
-        // With it, the verify link is built on the forwarded scheme and host.
-        $this->withHeaders($this->proxied() + $forwardedFrom('203.0.113.9'))->fromFrontend();
+        // With it, the verify link is built on the forwarded scheme and host, and only those: the
+        // proxy passes the browser's headers on, so a sent prefix or port must not shape the link.
+        $this->withHeaders($this->proxied() + $forwardedFrom('203.0.113.9') + ['X-Forwarded-Prefix' => '/evil', 'X-Forwarded-Port' => '1234'])->fromFrontend();
         $this->register()->assertCreated();
 
         $transport = Mail::mailer('array')->getSymfonyTransport();
@@ -180,7 +192,6 @@ class ProductionBehaviourTest extends TestCase
 
     public function test_daily_job_runs_on_manila_today(): void
     {
-        config(['pesonal.job_timezone' => 'Asia/Manila']);
         $owner = User::factory()->create();
         $first = Recurring::factory()->create(['user_id' => $owner->id, 'day_of_month' => 1, 'start_date' => '2026-01-01']);
         $last = Recurring::factory()->create(['user_id' => $owner->id, 'day_of_month' => 31, 'start_date' => '2026-01-01']);
@@ -202,7 +213,6 @@ class ProductionBehaviourTest extends TestCase
     {
         $this->assertSame('0 * * * *', $this->materializeEvent()->expression);
 
-        config(['pesonal.job_timezone' => 'Asia/Manila']);
         $this->app->detectEnvironment(fn () => 'production');
         $this->app->forgetInstance(Schedule::class);
         Facade::clearResolvedInstances();
@@ -254,5 +264,19 @@ class ProductionBehaviourTest extends TestCase
         $this->fromFrontend()->actingAs($user)->postJson('/api/auth/email/verification-notification')->assertStatus(202);
 
         Exceptions::assertReportedCount(3);
+    }
+
+    public function test_a_mail_bug_that_is_not_a_transport_failure_still_throws(): void
+    {
+        $user = User::factory()->unverified()->create();
+        VerifyEmail::createUrlUsing(fn () => throw new RuntimeException('No route to build the link.'));
+
+        try {
+            $this->expectException(RuntimeException::class);
+            $user->sendEmailVerificationNotification();
+        } finally {
+            // A static: left set, it would break every later test's verify mail.
+            VerifyEmail::$createUrlCallback = null;
+        }
     }
 }

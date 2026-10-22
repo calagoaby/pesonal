@@ -11,6 +11,10 @@ use Illuminate\Http\Request;
 // proof the request came through Vercel. Without a secret (local) nothing is trusted, as before.
 class TrustProxies extends Middleware
 {
+    // Only these three: the proxy forwards incoming headers, so a trusted X-Forwarded-Prefix or
+    // -Port from the browser would reshape url() and the signed links.
+    protected $headers = Request::HEADER_X_FORWARDED_FOR | Request::HEADER_X_FORWARDED_HOST | Request::HEADER_X_FORWARDED_PROTO;
+
     protected function setTrustedProxyIpAddresses(Request $request)
     {
         // The parent's handle() has already reset the trusted list to empty, so returning here
@@ -19,7 +23,10 @@ class TrustProxies extends Middleware
             return;
         }
 
-        $this->proxies = config('pesonal.trusted_proxies');
+        // Every hop, behind the gate: the client ip is then the leftmost X-Forwarded-For entry,
+        // which the proxy sets. A list of Vercel/Render ips would make it Vercel's egress, one
+        // rate-limit bucket for everybody.
+        $this->proxies = '*';
 
         parent::setTrustedProxyIpAddresses($request);
     }

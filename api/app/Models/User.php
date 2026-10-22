@@ -15,7 +15,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Notifications\Notification;
 use Laravel\Sanctum\HasApiTokens;
-use Throwable;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 
 #[Fillable(['name', 'email', 'password', 'avatar_url'])]
 #[Hidden(['password', 'remember_token'])]
@@ -49,12 +49,14 @@ class User extends Authenticatable implements MustVerifyEmail
 
     // Production runs the queue sync, so a refused send (Resend before a domain is verified)
     // throws right here, inside register / forgot-password / resend. The account or the request
-    // still stands; the failure goes to the log instead of turning the reply into a 500.
+    // still stands; the failure goes to the log instead of turning the reply into a 500. Only
+    // transport errors: Laravel's Resend transport wraps every API failure in one, and anything
+    // else (building the link, say) is a bug that should still 500.
     private function notifyOrReport(Notification $notification): void
     {
         try {
             $this->notify($notification);
-        } catch (Throwable $e) {
+        } catch (TransportExceptionInterface $e) {
             report($e);
         }
     }
