@@ -294,11 +294,14 @@ jobs:
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
 
+      # NITRO_PRESET pins Nuxt's output to Vercel's format. Without it a project whose framework
+      # setting isn't Nuxt builds a plain Node server, and Vercel then hunts for a static "dist".
       - name: Build
         if: steps.gate.outputs.enabled == 'true'
         run: npx --yes vercel@63.0.2 build --prod --token="$VERCEL_TOKEN"
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          NITRO_PRESET: vercel
 
       - name: Deploy
         if: steps.gate.outputs.enabled == 'true'
