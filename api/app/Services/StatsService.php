@@ -6,10 +6,16 @@ use App\Http\Resources\CategoryRefResource;
 use App\Models\Category;
 use App\Models\Expense;
 use App\Support\Month;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
 
+// Every figure is summed here, not by the database: amount is stored as ciphertext, so
+// SUM and ORDER BY on it mean nothing. Rows come back through the model, so the
+// ownership scope applies and the amount cast decrypts.
 class StatsService
 {
+    private const COLUMNS = ['id', 'date', 'amount', 'category_id'];
+
     /**
      * @return array<string, mixed>
      */
@@ -17,10 +23,11 @@ class StatsService
     {
         $monthDate = Month::start($month); // null when unparseable → all-zero, never a 500
 
-        $total = $this->sumForMonth($month);
+        $rows = $this->rowsInMonth($month);
+        $total = $this->sum($rows);
 
         $previousMonth = $monthDate?->copy()->subMonthNoOverflow()->format('Y-m');
-        $previousTotal = $previousMonth ? $this->sumForMonth($previousMonth) : 0;
+        $previousTotal = $previousMonth ? $this->sum($this->rowsInMonth($previousMonth)) : 0;
 
         // No baseline last month → null, never a divide by zero.
         $changePct = $previousTotal === 0
@@ -32,10 +39,10 @@ class StatsService
             'total' => $total,
             'previous_total' => $previousTotal,
             'change_pct' => $changePct,
-            'by_category' => $this->byCategory($month),
+            'by_category' => $this->byCategory($rows),
             // ternary, not $monthDate?->daysInMonth ?? 0: same result (null month → 0),
             // but phpstan's nullsafe.neverNull rule mis-flags the ?->…?? form here.
-            'daily' => $this->daily($month, $monthDate !== null ? $monthDate->daysInMonth : 0),
+            'daily' => $this->daily($rows, $month, $monthDate !== null ? $monthDate->daysInMonth : 0),
         ];
     }
 
@@ -52,80 +59,88 @@ class StatsService
         $window = collect(range($months - 1, 0))
             ->map(fn (int $step) => $anchor->copy()->subMonthsNoOverflow($step)->format('Y-m'));
 
-        // One query grouped by day over the window, folded into months here: no substr or
-        // date function, so it reads the same on SQLite and Postgres. Then zero-fill so the
-        // line stays contiguous. The raw 'date' alias (ymd) keeps the key a plain string,
-        // never the Carbon the date cast would hand back.
-        $days = Expense::query()
+        // One query over the whole window (a half-open date range), folded into months
+        // here, then zero-filled so the line stays contiguous.
+        $rows = Expense::query()
             ->where('date', '>=', $window->first().'-01')
-            ->selectRaw('date as ymd, SUM(amount) as total')
-            ->groupBy('date')
-            ->pluck('total', 'ymd');
+            ->where('date', '<', $anchor->copy()->addMonthNoOverflow()->format('Y-m-d'))
+            ->get(self::COLUMNS);
 
         $sums = [];
-        foreach ($days as $ymd => $total) {
-            $ym = substr((string) $ymd, 0, 7);
-            $sums[$ym] = ($sums[$ym] ?? 0) + (int) $total; // Postgres hands SUM back as a string
+        foreach ($rows as $row) {
+            $ym = $row->date->format('Y-m');
+            $sums[$ym] = ($sums[$ym] ?? 0) + $row->amount->centavos();
         }
 
         return $window->map(fn (string $ym) => [
             'month' => $ym,
-            'total' => (int) ($sums[$ym] ?? 0),
+            'total' => $sums[$ym] ?? 0,
         ])->values()->all();
     }
 
-    private function sumForMonth(string $month): int
+    /**
+     * @return EloquentCollection<int, Expense>
+     */
+    private function rowsInMonth(string $month): EloquentCollection
     {
-        return (int) Expense::query()->inMonth($month)->sum('amount');
+        return Expense::query()->inMonth($month)->get(self::COLUMNS);
     }
 
     /**
+     * @param  EloquentCollection<int, Expense>  $rows
+     */
+    private function sum(EloquentCollection $rows): int
+    {
+        return $rows->sum(fn (Expense $row) => $row->amount->centavos());
+    }
+
+    /**
+     * @param  EloquentCollection<int, Expense>  $rows
      * @return Collection<int, array{category: array<string, mixed>, total: int, count: int}>
      */
-    private function byCategory(string $month): Collection
+    private function byCategory(EloquentCollection $rows): Collection
     {
-        $rows = Expense::query()
-            ->inMonth($month)
-            ->selectRaw('category_id, SUM(amount) as total, COUNT(*) as count')
-            ->groupBy('category_id')
-            ->orderByDesc('total')
-            ->orderBy('category_id') // deterministic tie-break; the frontend doesn't depend on it
-            ->get();
+        $groups = [];
+        foreach ($rows as $row) {
+            $group = $groups[$row->category_id] ?? ['category_id' => $row->category_id, 'total' => 0, 'count' => 0];
+            $group['total'] += $row->amount->centavos();
+            $group['count']++; // a row count, not a peso figure
+            $groups[$row->category_id] = $group;
+        }
 
-        $categories = Category::findMany($rows->pluck('category_id'))->keyBy('id');
+        // Highest total first; category_id breaks ties so the order is deterministic.
+        usort($groups, fn (array $x, array $y) => [$y['total'], $x['category_id']] <=> [$x['total'], $y['category_id']]);
 
-        return $rows->map(function (Expense $row) use ($categories) {
+        $categories = Category::findMany(array_column($groups, 'category_id'))->keyBy('id');
+
+        return collect($groups)->map(function (array $group) use ($categories) {
             /** @var array<string, mixed> $category */
-            $category = CategoryRefResource::make($categories[$row->category_id])->resolve();
+            $category = CategoryRefResource::make($categories[$group['category_id']])->resolve();
 
-            // total/count are selectRaw aggregate aliases, not real columns, so they are
-            // read as attributes rather than typed properties.
             return [
                 'category' => $category,
-                'total' => (int) $row->getAttribute('total'),
-                'count' => (int) $row->getAttribute('count'), // a row count, not a peso figure
+                'total' => $group['total'],
+                'count' => $group['count'],
             ];
         })->values();
     }
 
     /**
+     * @param  EloquentCollection<int, Expense>  $rows
      * @return array<int, array{date: string, total: int}> zero-filled, one per calendar day
      */
-    private function daily(string $month, int $daysInMonth): array
+    private function daily(EloquentCollection $rows, string $month, int $daysInMonth): array
     {
-        // Alias the raw 'date' column (ymd) before grouping. The 'date:Y-m-d' cast returns a
-        // Carbon on read, so plucking by 'date' would key on a reformatted value and every
-        // day's lookup below would miss (→ all zeroes). The alias keeps the key a plain string.
-        $sums = Expense::query()
-            ->inMonth($month)
-            ->selectRaw('date as ymd, SUM(amount) as total')
-            ->groupBy('date')
-            ->pluck('total', 'ymd');
+        $sums = [];
+        foreach ($rows as $row) {
+            $date = $row->date->format('Y-m-d');
+            $sums[$date] = ($sums[$date] ?? 0) + $row->amount->centavos();
+        }
 
         $daily = [];
         for ($day = 1; $day <= $daysInMonth; $day++) {
             $date = sprintf('%s-%02d', $month, $day);
-            $daily[] = ['date' => $date, 'total' => (int) ($sums[$date] ?? 0)];
+            $daily[] = ['date' => $date, 'total' => $sums[$date] ?? 0];
         }
 
         return $daily;

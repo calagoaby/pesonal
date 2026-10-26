@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Category;
 use App\Models\Expense;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -283,6 +284,74 @@ class StatsTest extends TestCase
             fn (int $step) => $anchor->copy()->subMonthsNoOverflow($step)->format('Y-m'),
             range($months - 1, 0)
         );
+    }
+
+    // Pins every figure to a sum done by hand, so moving the arithmetic out of SQL (amounts
+    // become ciphertext) can't shift a total, a count, the order or the zero-fill.
+    public function test_stats_match_a_hand_sum(): void
+    {
+        $this->travelTo(Carbon::parse('2026-08-15 12:00:00'));
+
+        $a = Category::factory()->create(['name' => 'A', 'color' => '#534F8C', 'emoji' => '🏠']);
+        $b = Category::factory()->create(['name' => 'B', 'color' => '#C9692E', 'emoji' => '🍔']);
+        $c = Category::factory()->create(['name' => 'C', 'color' => '#5E7A3E', 'emoji' => '🥬']);
+
+        $expense = fn (Category $category, string $date, int $amount) => Expense::factory()
+            ->create(['category_id' => $category->id, 'date' => $date, 'amount' => $amount]);
+
+        $expense($a, '2026-05-31', 88800); // before the trend window
+
+        $expense($a, '2026-06-10', 40000);
+        $expense($b, '2026-06-30', 7000);
+
+        $expense($a, '2026-07-01', 30000);
+        $expense($c, '2026-07-31', 12345);
+
+        // C's rows go in first: A and C tie on 15 000, and the tie must break on
+        // category_id (A), not on which rows happened to come back first.
+        $expense($c, '2026-08-02', 5000);
+        $expense($c, '2026-08-02', 5000);
+        $expense($c, '2026-08-31', 5000);
+        $expense($a, '2026-08-02', 10000);
+        $expense($a, '2026-08-15', 5000);
+        $expense($b, '2026-08-20', 20000);
+        $expense($b, '2026-08-15', 3000)->delete(); // voided
+        $expense($a, '2026-09-01', 77700); // the next month
+
+        $stranger = User::factory()->create();
+        Expense::factory()->create(['user_id' => $stranger->id, 'date' => '2026-08-02', 'amount' => 999999]);
+
+        $ref = fn (Category $category) => [
+            'id' => $category->id, 'name' => $category->name, 'color' => $category->color, 'emoji' => $category->emoji,
+        ];
+
+        $daily = [];
+        for ($day = 1; $day <= 31; $day++) {
+            $daily[] = ['date' => sprintf('2026-08-%02d', $day), 'total' => 0];
+        }
+        $daily[1]['total'] = 20000;  // 08-02: 5000 + 5000 + 10000
+        $daily[14]['total'] = 5000;  // 08-15: the voided 3000 doesn't count
+        $daily[19]['total'] = 20000; // 08-20
+        $daily[30]['total'] = 5000;  // 08-31
+
+        $this->assertSame([
+            'month' => '2026-08',
+            'total' => 50000,
+            'previous_total' => 42345,
+            'change_pct' => 18.1, // (50000 - 42345) / 42345 * 100 = 18.077…
+            'by_category' => [
+                ['category' => $ref($b), 'total' => 20000, 'count' => 1],
+                ['category' => $ref($a), 'total' => 15000, 'count' => 2],
+                ['category' => $ref($c), 'total' => 15000, 'count' => 3],
+            ],
+            'daily' => $daily,
+        ], $this->getJson('/api/stats/monthly?month=2026-08')->assertOk()->json('data'));
+
+        $this->assertSame([
+            ['month' => '2026-06', 'total' => 47000],
+            ['month' => '2026-07', 'total' => 42345],
+            ['month' => '2026-08', 'total' => 50000],
+        ], $this->getJson('/api/stats/trend?months=3')->assertOk()->json('data'));
     }
 
     public function test_a_voided_expense_drops_out_of_the_month_totals(): void
