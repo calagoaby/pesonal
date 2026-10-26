@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Recurring;
+use App\Support\LedgerCipher;
 use Illuminate\Database\Seeder;
 
 class RecurringSeeder extends Seeder
@@ -21,6 +22,11 @@ class RecurringSeeder extends Seeder
             ['user_id' => $userId, 'amount' => 108600, 'note' => 'Netflix', 'day_of_month' => 20, 'start_date' => '2026-01-01', 'end_date' => '2026-12-01', 'active' => 1, 'category_id' => 5, 'created_at' => '2026-01-01 00:00:00', 'updated_at' => '2026-01-01 00:00:00'],
         ];
 
-        Recurring::insert($recurring);
+        // insert() skips the casts, so the values are encrypted by hand.
+        Recurring::insert(array_map(fn (array $order) => [
+            ...$order,
+            'amount' => LedgerCipher::encrypt((string) $order['amount']),
+            'note' => LedgerCipher::encrypt($order['note']),
+        ], $recurring));
     }
 }

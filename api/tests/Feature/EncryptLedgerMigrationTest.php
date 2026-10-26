@@ -8,6 +8,7 @@ use App\Models\Recurring;
 use App\Models\Scopes\OwnedByCurrentUser;
 use App\Models\User;
 use App\Support\LedgerCipher;
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -187,6 +188,45 @@ class EncryptLedgerMigrationTest extends TestCase
 
         $note = (string) DB::table('expenses')->where('id', $this->ids['lunch'])->value('note');
         $this->assertSame('Lunch', LedgerCipher::decrypt($note));
+    }
+
+    public function test_migration_stores_an_empty_note_as_null(): void
+    {
+        $this->rollBackTheMigration();
+        $this->insertPlainLedger();
+        DB::table('expenses')->where('id', $this->ids['lunch'])->update(['note' => '']);
+        DB::table('recurring')->where('id', $this->ids['gym'])->update(['note' => '']);
+
+        $this->artisan('migrate')->assertSuccessful();
+
+        // As the cast saves it: "no note" is never ciphertext of ''.
+        $this->assertNull(DB::table('expenses')->where('id', $this->ids['lunch'])->value('note'));
+        $this->assertNull(DB::table('recurring')->where('id', $this->ids['gym'])->value('note'));
+        $this->assertSame(self::EDITED, DB::table('expenses')->where('id', $this->ids['lunch'])->value('updated_at'));
+    }
+
+    public function test_rollback_refuses_an_amount_that_is_not_an_integer(): void
+    {
+        $this->rollBackTheMigration();
+        $this->insertPlainLedger();
+        $this->artisan('migrate')->assertSuccessful();
+
+        $garbage = LedgerCipher::encrypt('12.50');
+        DB::table('expenses')->where('id', $this->ids['lunch'])->update(['amount' => $garbage]);
+
+        try {
+            $this->artisan('migrate:rollback', ['--path' => self::MIGRATION]);
+            $this->fail('The rollback wrote a non-integer amount.');
+        } catch (DecryptException) {
+            // Nothing changed: still encrypted, still text, and the migration still counts as run.
+        }
+
+        $this->assertSame($garbage, DB::table('expenses')->where('id', $this->ids['lunch'])->value('amount'));
+        $this->assertTrue(LedgerCipher::isEncrypted((string) DB::table('expenses')->where('id', $this->ids['small'])->value('amount')));
+        $this->assertTrue(Schema::hasColumn('categories', 'name_index'));
+
+        // Put it right, so the teardown rollback can run.
+        DB::table('expenses')->where('id', $this->ids['lunch'])->update(['amount' => LedgerCipher::encrypt('15000')]);
     }
 
     public function test_migration_rolls_back_exactly(): void

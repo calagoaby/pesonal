@@ -1,6 +1,6 @@
 <?php
 
-use App\Support\LedgerCipher;
+use App\Support\LedgerRewrite;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -11,15 +11,6 @@ use Illuminate\Support\Facades\Schema;
 // and a name's uniqueness moves to name_index, a per-user fingerprint of the plain name.
 return new class extends Migration
 {
-    // Each table's encrypted columns. amount is never null; a null note stays null.
-    private const COLUMNS = [
-        'expenses' => ['amount', 'note'],
-        'recurring' => ['amount', 'note'],
-        'categories' => ['name'],
-    ];
-
-    private const CHUNK = 500;
-
     public function up(): void
     {
         $this->rebuild(function () {
@@ -34,18 +25,13 @@ return new class extends Migration
                 $table->string('name_index', 64)->nullable();
             });
 
-            foreach (self::COLUMNS as $table => $columns) {
-                $this->rewrite($table, $columns, fn (string $value) => LedgerCipher::isEncrypted($value) ? $value : LedgerCipher::encrypt($value));
-            }
+            // An empty note becomes null, as the cast saves it; down() then can't bring back a
+            // byte-exact '', though it reads the same.
+            LedgerRewrite::encrypt();
 
-            // Always recomputed from the decrypted name, so a re-run fixes a stale one.
-            DB::table('categories')->select(['id', 'user_id', 'name'])->chunkById(self::CHUNK, function ($rows) {
-                foreach ($rows as $row) {
-                    DB::table('categories')->where('id', $row->id)->update([
-                        'name_index' => LedgerCipher::fingerprint((int) $row->user_id, LedgerCipher::decrypt((string) $row->name)),
-                    ]);
-                }
-            });
+            // Always recomputed from the decrypted name, so a re-run fixes a stale one. The
+            // unique index only comes next, so nothing can collide here.
+            LedgerRewrite::fingerprint();
 
             // NOT NULL from here on: a unique index lets any number of nulls through, so a
             // row without a fingerprint would silently skip the duplicate check.
@@ -61,9 +47,8 @@ return new class extends Migration
     public function down(): void
     {
         $this->rebuild(function () {
-            foreach (self::COLUMNS as $table => $columns) {
-                $this->rewrite($table, $columns, fn (string $value) => LedgerCipher::decrypt($value));
-            }
+            // An amount that doesn't decrypt to an integer throws: nothing else reaches bigint.
+            LedgerRewrite::decrypt();
 
             Schema::table('categories', function (Blueprint $table) {
                 $table->dropUnique(['user_id', 'name_index']);
@@ -78,36 +63,6 @@ return new class extends Migration
                     DB::statement("ALTER TABLE {$name} ALTER COLUMN amount TYPE bigint USING amount::bigint");
                 } else {
                     Schema::table($name, fn (Blueprint $table) => $table->bigInteger('amount')->change());
-                }
-            }
-        });
-    }
-
-    /**
-     * Rewrites every non-null value of the columns, soft-deleted rows included. DB::table on
-     * purpose: no ownership scope (nobody is signed in), no casts, and updated_at is left
-     * alone (the app reads it as "paused since" and "last changed").
-     *
-     * @param  list<string>  $columns
-     */
-    private function rewrite(string $table, array $columns, Closure $transform): void
-    {
-        DB::table($table)->select(['id', ...$columns])->chunkById(self::CHUNK, function ($rows) use ($table, $columns, $transform) {
-            foreach ($rows as $row) {
-                $changes = [];
-                foreach ($columns as $column) {
-                    if ($row->{$column} === null) {
-                        continue;
-                    }
-                    $value = (string) $row->{$column};
-                    $new = $transform($value);
-                    if ($new !== $value) {
-                        $changes[$column] = $new;
-                    }
-                }
-
-                if ($changes !== []) {
-                    DB::table($table)->where('id', $row->id)->update($changes);
                 }
             }
         });

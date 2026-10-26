@@ -16,10 +16,11 @@ class CategorySeeder extends Seeder
         $seeded_at = '2026-01-01 00:00:00';
 
         Category::insert(array_map(
-            // insert() skips the model, so the fingerprint is set by hand. The name stays plain
-            // here (still readable through the tolerant cast) until the seeders encrypt.
+            // insert() skips the model's cast and hook, so the name is encrypted and fingerprinted by hand.
             fn (array $category) => [
-                ...$category, 'name_index' => LedgerCipher::fingerprint($userId, $category['name']),
+                ...$category,
+                'name' => LedgerCipher::encrypt($category['name']),
+                'name_index' => LedgerCipher::fingerprint($userId, $category['name']),
                 'user_id' => $userId, 'created_at' => $seeded_at, 'updated_at' => $seeded_at,
             ],
             DefaultCategories::ALL,

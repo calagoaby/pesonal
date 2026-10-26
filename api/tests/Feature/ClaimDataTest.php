@@ -3,10 +3,14 @@
 namespace Tests\Feature;
 
 use App\Actions\MaterializeRecurring;
+use App\Models\Category;
+use App\Models\Expense;
 use App\Models\User;
+use App\Support\LedgerCipher;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Tests\Concerns\AllowsUnownedRows;
 use Tests\TestCase;
 
@@ -161,6 +165,59 @@ class ClaimDataTest extends TestCase
         foreach ($before as $table => $rows) {
             $this->assertEquals($rows, $stamps($table), "{$table} timestamps changed");
         }
+    }
+
+    public function test_claim_still_works_on_a_plaintext_backup(): void
+    {
+        // setUp rolled back to the plaintext schema: no encryption, no fingerprints.
+        $this->assertFalse(Schema::hasColumn('categories', 'name_index'));
+
+        $owner = User::factory()->create(['email' => 'owner@example.com']);
+        $ownersFood = DB::table('categories')->insertGetId([
+            'name' => 'Food', 'color' => '#C9692E', 'emoji' => '🍔', 'user_id' => $owner->id, 'created_at' => self::STAMP, 'updated_at' => self::STAMP,
+        ]);
+        $unownedFood = $this->unownedCategory('Food');
+        $transport = $this->unownedCategory('Transport');
+        $order = $this->unownedOrder($unownedFood);
+        $lunch = $this->unownedExpense($unownedFood, $order);
+        $voided = $this->unownedExpense($transport, null, self::STAMP);
+
+        $this->artisan('pesonal:claim', ['email' => 'owner@example.com'])
+            ->expectsOutput('Merged 1 categories into ones the account already had.')
+            ->expectsOutput('Claimed 1 categories, 1 standing orders, 2 expenses for owner@example.com.')
+            ->assertSuccessful();
+
+        // Then the deploy's migrate: require_user_id, then the encryption.
+        $this->artisan('migrate')->assertSuccessful();
+
+        $this->assertNull(DB::table('categories')->where('id', $unownedFood)->first());
+        foreach (['categories' => [$ownersFood, $transport], 'recurring' => [$order], 'expenses' => [$lunch, $voided]] as $table => $ids) {
+            foreach ($ids as $id) {
+                $this->assertSame($owner->id, DB::table($table)->where('id', $id)->value('user_id'), "{$table} row {$id}");
+            }
+        }
+
+        $raw = fn (string $table, int $id) => DB::table($table)->where('id', $id)->sole();
+        foreach ([$lunch, $voided] as $id) {
+            $this->assertTrue(LedgerCipher::isEncrypted((string) $raw('expenses', $id)->amount));
+            $this->assertTrue(LedgerCipher::isEncrypted((string) $raw('expenses', $id)->note));
+        }
+        $this->assertSame(1500000, LedgerCipher::decryptAmount((string) $raw('recurring', $order)->amount));
+        $this->assertSame('Rent', LedgerCipher::decrypt((string) $raw('recurring', $order)->note));
+        $this->assertSame($ownersFood, $raw('recurring', $order)->category_id);
+        $this->assertSame($ownersFood, $raw('expenses', $lunch)->category_id);
+
+        foreach ([$ownersFood => 'Food', $transport => 'Transport'] as $id => $name) {
+            $this->assertTrue(LedgerCipher::isEncrypted((string) $raw('categories', $id)->name));
+            $this->assertSame($name, LedgerCipher::decrypt((string) $raw('categories', $id)->name));
+            $this->assertSame(LedgerCipher::fingerprint($owner->id, $name), $raw('categories', $id)->name_index);
+        }
+
+        // And the app reads it all back for the owner.
+        $this->actingAs($owner);
+        $this->assertSame(15000, Expense::query()->findOrFail($lunch)->amount->centavos());
+        $this->assertSame('Kape', Expense::onlyTrashed()->findOrFail($voided)->note);
+        $this->assertSame(['Food', 'Transport'], Category::query()->get()->pluck('name')->sort()->values()->all());
     }
 
     public function test_the_job_skips_an_unclaimed_order_even_with_someone_signed_in(): void

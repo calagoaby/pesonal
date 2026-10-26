@@ -36,6 +36,11 @@ step() {
 log "migrating"
 step php artisan migrate --force --no-interaction
 
+# Every boot, not once: rows an older container wrote in plain text during a deploy are
+# encrypted here. Prints counts only, and a duplicate category name is a warning, not a failure.
+log "encrypting any plain ledger values"
+step php artisan pesonal:encrypt-ledger --no-interaction
+
 # Cached at start, not at build: config:cache freezes the environment, which only exists
 # here. optimize caches config, events, routes and views in one PHP boot (they'd be four at
 # ~0.1 CPU). route:cache is why the route bindings live in AppServiceProvider.

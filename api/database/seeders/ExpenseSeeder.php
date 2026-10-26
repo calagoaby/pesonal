@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Expense;
+use App\Support\LedgerCipher;
 use Illuminate\Database\Seeder;
 
 class ExpenseSeeder extends Seeder
@@ -73,6 +74,11 @@ class ExpenseSeeder extends Seeder
             }
         }
 
-        Expense::insert($rows);
+        // insert() skips the casts, so the values are encrypted by hand (each with its own IV).
+        Expense::insert(array_map(fn (array $row) => [
+            ...$row,
+            'amount' => LedgerCipher::encrypt((string) $row['amount']),
+            'note' => LedgerCipher::encrypt($row['note']),
+        ], $rows));
     }
 }

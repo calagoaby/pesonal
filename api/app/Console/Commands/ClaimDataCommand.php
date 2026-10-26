@@ -2,10 +2,6 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Category;
-use App\Models\Expense;
-use App\Models\Recurring;
-use App\Models\Scopes\OwnedByCurrentUser;
 use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
@@ -27,18 +23,20 @@ class ClaimDataCommand extends Command
             return self::FAILURE;
         }
 
-        // Nobody is signed in on the console, so every query opts out of the ownership
-        // scope (which would otherwise match nothing) and filters by user_id by hand.
-        // Updates go through toBase(): Eloquent's update() would bump updated_at, which
-        // the app reads as "paused since" and "last changed".
+        // Unowned rows only exist before require_user_id, so before the encryption: this runs
+        // on the plaintext schema. Raw queries, then: no casts or hooks that expect ciphertext
+        // or name_index, no ownership scope (nobody is signed in), soft-deleted rows included,
+        // and updated_at left alone (the app reads it as "paused since" and "last changed").
+        // The next migrate encrypts and fingerprints what moved here.
         [$merged, $categories, $orders, $expenses] = DB::transaction(function () use ($user) {
             $merged = $this->mergeClashingCategories($user);
 
             return [
                 $merged,
-                Category::withoutGlobalScope(OwnedByCurrentUser::class)->whereNull('user_id')->toBase()->update(['user_id' => $user->id]),
-                Recurring::withoutGlobalScope(OwnedByCurrentUser::class)->withTrashed()->whereNull('user_id')->toBase()->update(['user_id' => $user->id]),
-                Expense::withoutGlobalScope(OwnedByCurrentUser::class)->withTrashed()->whereNull('user_id')->toBase()->update(['user_id' => $user->id]),
+                ...array_map(
+                    fn (string $table) => DB::table($table)->whereNull('user_id')->update(['user_id' => $user->id]),
+                    ['categories', 'recurring', 'expenses'],
+                ),
             ];
         });
 
@@ -56,26 +54,20 @@ class ClaimDataCommand extends Command
      */
     private function mergeClashingCategories(User $user): int
     {
-        $owned = Category::withoutGlobalScope(OwnedByCurrentUser::class)
-            ->where('user_id', $user->id)
-            ->pluck('id', 'name');
+        $owned = DB::table('categories')->where('user_id', $user->id)->pluck('id', 'name');
 
-        $clashing = Category::withoutGlobalScope(OwnedByCurrentUser::class)
+        $clashing = DB::table('categories')
             ->whereNull('user_id')
             ->whereIn('name', $owned->keys())
-            ->get();
+            ->get(['id', 'name']);
 
         foreach ($clashing as $duplicate) {
             $target = $owned[$duplicate->name];
 
-            Expense::withoutGlobalScope(OwnedByCurrentUser::class)->withTrashed()
-                ->where('category_id', $duplicate->id)
-                ->toBase()->update(['category_id' => $target]);
-            Recurring::withoutGlobalScope(OwnedByCurrentUser::class)->withTrashed()
-                ->where('category_id', $duplicate->id)
-                ->toBase()->update(['category_id' => $target]);
-
-            $duplicate->delete();
+            foreach (['expenses', 'recurring'] as $table) {
+                DB::table($table)->where('category_id', $duplicate->id)->update(['category_id' => $target]);
+            }
+            DB::table('categories')->where('id', $duplicate->id)->delete();
         }
 
         return $clashing->count();

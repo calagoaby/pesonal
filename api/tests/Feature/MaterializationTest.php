@@ -8,9 +8,11 @@ use App\Models\Expense;
 use App\Models\Recurring;
 use App\Models\Scopes\OwnedByCurrentUser;
 use App\Models\User;
+use App\Support\LedgerCipher;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Tests\Concerns\ActsAsUser;
 use Tests\TestCase;
 
@@ -46,6 +48,34 @@ class MaterializationTest extends TestCase
         $this->assertSame('Apartment rent', $expense->note);
         $this->assertSame($category->id, $expense->category_id);
         $this->assertSame($template->id, $expense->recurring_id);
+    }
+
+    public function test_materialized_expense_copies_the_decrypted_template(): void
+    {
+        $template = Recurring::factory()->create(['amount' => 50000, 'note' => 'Gym', 'day_of_month' => 1, 'start_date' => '2026-01-01']);
+
+        $this->assertSame(1, $this->materialize(Carbon::create(2026, 6, 20)));
+
+        $expense = Expense::query()->where('recurring_id', $template->id)->sole();
+        $this->assertSame(50000, $expense->amount->centavos());
+        $this->assertSame('Gym', $expense->note);
+
+        // Encrypted afresh, not the template's ciphertext copied over.
+        $raw = fn (string $table, int $id) => DB::table($table)->where('id', $id)->sole();
+        foreach (['amount', 'note'] as $column) {
+            $stored = (string) $raw('expenses', $expense->id)->{$column};
+            $this->assertTrue(LedgerCipher::isEncrypted($stored), "{$column} is plain");
+            $this->assertNotSame((string) $raw('recurring', $template->id)->{$column}, $stored);
+        }
+
+        // Void and undo: the values survive.
+        $this->deleteJson("/api/expenses/{$expense->id}")->assertNoContent();
+        $this->postJson("/api/expenses/{$expense->id}/restore")->assertOk()
+            ->assertJsonPath('data.amount', 50000)
+            ->assertJsonPath('data.note', 'Gym');
+        $restored = Expense::query()->findOrFail($expense->id);
+        $this->assertSame(50000, $restored->amount->centavos());
+        $this->assertSame('Gym', $restored->note);
     }
 
     public function test_running_twice_for_the_same_month_creates_only_one_expense(): void
