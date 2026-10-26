@@ -10,7 +10,6 @@ use App\Support\LedgerCipher;
 use App\Support\Money;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
-use InvalidArgumentException;
 use Tests\TestCase;
 use UnexpectedValueException;
 
@@ -32,11 +31,6 @@ class EncryptedCastsTest extends TestCase
         // SQLite and Postgres can hand back a bigint as a digit string.
         $this->assertSame(15000, $cast->get(new Expense, 'amount', '15000', [])->centavos());
         $this->assertThrows(fn () => $cast->get(new Expense, 'amount', null, []), UnexpectedValueException::class, 'The amount is missing.');
-    }
-
-    public function test_money_cast_rejects_an_unknown_option(): void
-    {
-        $this->assertThrows(fn () => new MoneyCast('plian'), InvalidArgumentException::class);
     }
 
     public function test_casts_compare_decrypted_values_not_ciphertext(): void
@@ -70,9 +64,6 @@ class EncryptedCastsTest extends TestCase
 
     public function test_models_store_ciphertext_and_read_plain(): void
     {
-        // Task 2 widens the columns and wires the casts onto the models; remove this skip then.
-        $this->markTestSkipped('enabled in Task 2');
-
         $expense = Expense::factory()->create(['amount' => 15000, 'note' => 'Lunch']);
         // The ownership scope hides every row when nobody is signed in.
         $this->actingAs($expense->user);

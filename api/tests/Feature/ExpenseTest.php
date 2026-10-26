@@ -251,11 +251,10 @@ class ExpenseTest extends TestCase
         $response->assertJsonPath('data.recurring_id', null);
         $response->assertJsonPath('data.date', '2026-08-15');
         $response->assertJsonPath('data.amount', 15000);
-        $this->assertDatabaseHas('expenses', [
-            'id' => $response->json('data.id'),
-            'recurring_id' => null,
-            'note' => 'lunch with team',
-        ]);
+        // The note is stored encrypted, so it is read back through the model.
+        $stored = Expense::query()->findOrFail($response->json('data.id'));
+        $this->assertNull($stored->recurring_id);
+        $this->assertSame('lunch with team', $stored->note);
     }
 
     public static function invalidStorePayloads(): array

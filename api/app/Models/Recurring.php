@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Casts\EncryptedText;
 use App\Casts\MoneyCast;
 use App\Models\Concerns\BelongsToUser;
 use App\Support\Money;
@@ -40,7 +41,8 @@ class Recurring extends Model
     protected function casts(): array
     {
         return [
-            'amount' => MoneyCast::class.':plain', // centavos, bound to the Money VO; ':plain' goes when the columns widen
+            'amount' => MoneyCast::class, // centavos, bound to the Money VO, stored encrypted
+            'note' => EncryptedText::class,
             'day_of_month' => 'integer',
             // Format pins the stored string to YYYY-MM-DD — materialization compares these
             // as strings, and a bare 'date' cast would write a time component.

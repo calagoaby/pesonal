@@ -2,7 +2,8 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Validation\Rule;
+use App\Models\Category;
+use App\Rules\UniqueCategoryName;
 
 class UpdateCategoryRequest extends ApiFormRequest
 {
@@ -11,7 +12,7 @@ class UpdateCategoryRequest extends ApiFormRequest
     {
         // `sometimes` → a field is validated only when present, so PATCH stays partial.
         return [
-            'name' => ['sometimes', 'required', 'string', Rule::unique('categories', 'name')->where('user_id', $this->user()->id)->ignore($this->route('category'))],
+            'name' => ['sometimes', 'required', 'string', new UniqueCategoryName($this->user()->id, $this->boundCategory()->id)],
             'color' => ['sometimes', 'required', 'regex:/^#[0-9A-Fa-f]{6}$/'],
             'emoji' => ['sometimes', 'required', 'string'],
         ];
@@ -32,5 +33,14 @@ class UpdateCategoryRequest extends ApiFormRequest
         if ($this->has('name') && is_string($this->name)) {
             $this->merge(['name' => trim($this->name)]);
         }
+    }
+
+    // The binding in AppServiceProvider resolves (or 404s) before validation runs.
+    private function boundCategory(): Category
+    {
+        $category = $this->route('category');
+        assert($category instanceof Category);
+
+        return $category;
     }
 }

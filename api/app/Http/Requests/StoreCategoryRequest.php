@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Validation\Rule;
+use App\Rules\UniqueCategoryName;
 
 class StoreCategoryRequest extends ApiFormRequest
 {
@@ -10,7 +10,7 @@ class StoreCategoryRequest extends ApiFormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', Rule::unique('categories', 'name')->where('user_id', $this->user()->id)],
+            'name' => ['required', 'string', new UniqueCategoryName($this->user()->id)],
             'color' => ['required', 'regex:/^#[0-9A-Fa-f]{6}$/'],
             'emoji' => ['required', 'string'],
         ];

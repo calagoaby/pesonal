@@ -5,7 +5,10 @@ namespace Tests\Feature;
 use App\Models\Category;
 use App\Models\Expense;
 use App\Models\Recurring;
+use App\Models\User;
+use App\Support\LedgerCipher;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Tests\Concerns\ActsAsUser;
 use Tests\TestCase;
 
@@ -76,7 +79,11 @@ class CategoryTest extends TestCase
         $response->assertCreated();
         $this->assertSame(self::SHAPE, array_keys($response->json('data')));
         $response->assertJsonPath('data.name', 'Coffee');
-        $this->assertDatabaseHas('categories', ['name' => 'Coffee', 'color' => '#C8472E', 'emoji' => '☕']);
+        // The name is stored encrypted, so it is read back through the model.
+        $stored = Category::query()->findOrFail($response->json('data.id'));
+        $this->assertSame(['Coffee', '#C8472E', '☕'], [$stored->name, $stored->color, $stored->emoji]);
+        $this->assertTrue(LedgerCipher::isEncrypted((string) DB::table('categories')->where('id', $stored->id)->value('name')));
+        $this->assertSame(LedgerCipher::fingerprint($this->user->id, 'Coffee'), $stored->name_index);
     }
 
     public function test_store_rejects_a_whitespace_only_name_and_a_non_hex_color(): void
@@ -246,5 +253,33 @@ class CategoryTest extends TestCase
         $this->assertDatabaseMissing('categories', ['id' => $category->id]);
         $this->assertDatabaseMissing('expenses', ['id' => $expense->id]);
         $this->assertDatabaseMissing('recurring', ['id' => $template->id]);
+    }
+
+    public function test_category_name_uniqueness_by_fingerprint(): void
+    {
+        $food = Category::factory()->create(['name' => 'Food']);
+        $payload = ['color' => '#C9692E', 'emoji' => '🍔'];
+
+        $duplicate = $this->postJson('/api/categories', ['name' => ' Food ', ...$payload]);
+        $duplicate->assertStatus(422);
+        $this->assertSame('The name has already been taken.', $duplicate->json('errors.name.0'));
+
+        // Case-sensitive, as before encryption: "food" is another name.
+        $this->postJson('/api/categories', ['name' => 'food', ...$payload])->assertCreated();
+
+        // The same name in another account is no clash, and its fingerprint differs.
+        $other = User::factory()->create();
+        $theirs = Category::factory()->create(['user_id' => $other->id, 'name' => 'Fun']);
+        $this->actingAs($other);
+        $created = $this->postJson('/api/categories', ['name' => 'Food', ...$payload])->assertCreated();
+        $theirFood = Category::query()->findOrFail($created->json('data.id'));
+        $this->assertSame(LedgerCipher::fingerprint($other->id, 'Food'), $theirFood->name_index);
+        $this->assertNotSame($food->name_index, $theirFood->name_index);
+
+        // Renaming to its own name is fine; a rename moves the fingerprint with it.
+        $this->patchJson("/api/categories/{$theirs->id}", ['name' => 'Fun'])->assertOk();
+        $this->patchJson("/api/categories/{$theirs->id}", ['name' => 'Play'])->assertOk();
+        $this->assertSame(LedgerCipher::fingerprint($other->id, 'Play'), $theirs->fresh()?->name_index);
+        $this->patchJson("/api/categories/{$theirs->id}", ['name' => 'Food'])->assertStatus(422);
     }
 }

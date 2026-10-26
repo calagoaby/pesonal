@@ -5,6 +5,7 @@ namespace Tests\Feature\Auth;
 use App\Models\Invitation;
 use App\Models\User;
 use App\Support\DefaultCategories;
+use App\Support\LedgerCipher;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -63,12 +64,11 @@ class RegisterLoginTest extends TestCase
     {
         $id = $this->fromFrontend()->postJson('/api/auth/register', $this->registration())->assertCreated()->json('data.id');
 
-        $categories = DB::table('categories')->where('user_id', $id)->orderBy('id')->get(['name', 'color', 'emoji']);
+        // Names are stored encrypted; decrypted here, the rows read as the defaults.
+        $categories = DB::table('categories')->where('user_id', $id)->orderBy('id')->get(['name', 'color', 'emoji'])
+            ->map(fn (object $row) => [...(array) $row, 'name' => LedgerCipher::decrypt($row->name)]);
 
-        $this->assertSame(
-            DefaultCategories::ALL,
-            $categories->map(fn (object $row) => (array) $row)->all(),
-        );
+        $this->assertSame(DefaultCategories::ALL, $categories->all());
         $this->assertSame(
             ['Housing', 'Groceries', 'Food', 'Transport', 'Fun', 'Utilities', 'Health', 'Other'],
             $categories->pluck('name')->all(),

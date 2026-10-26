@@ -18,13 +18,16 @@ class RequireUserIdMigrationTest extends TestCase
 
     private const MIGRATION = 'database/migrations/2026_10_13_000004_require_user_id_on_ledger_tables.php';
 
+    // Runs later in the same batch; rolled back with it, since the rows here are plaintext.
+    private const ENCRYPT_LEDGER_MIGRATION = 'database/migrations/2026_10_26_000001_encrypt_ledger_fields.php';
+
     private const STAMP = '2026-01-01 00:00:00';
 
     // A fresh test database runs every migration in one batch, so a bare --step 1 would
     // undo whichever sorts last. --path narrows the last batch to this one file.
     private function rollBackTheMigration(): void
     {
-        $this->artisan('migrate:rollback', ['--path' => self::MIGRATION])->assertSuccessful();
+        $this->artisan('migrate:rollback', ['--path' => [self::ENCRYPT_LEDGER_MIGRATION, self::MIGRATION]])->assertSuccessful();
     }
 
     private function userIdIsRequired(string $table): bool
