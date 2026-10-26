@@ -22,9 +22,9 @@ class MoneyTest extends TestCase
         $this->assertSame(15000, $money->centavos());
     }
 
-    public function test_cast_set_stores_a_bare_int_from_a_money_or_a_raw_int(): void
+    public function test_plain_cast_set_stores_a_bare_int_from_a_money_or_a_raw_int(): void
     {
-        $cast = new MoneyCast;
+        $cast = new MoneyCast('plain');
 
         $this->assertSame(15000, $cast->set(new Expense, 'amount', Money::fromCentavos(15000), []));
         $this->assertSame(15000, $cast->set(new Expense, 'amount', 15000, []));

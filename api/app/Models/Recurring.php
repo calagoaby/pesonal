@@ -40,7 +40,7 @@ class Recurring extends Model
     protected function casts(): array
     {
         return [
-            'amount' => MoneyCast::class, // centavos, bound to the Money VO
+            'amount' => MoneyCast::class.':plain', // centavos, bound to the Money VO; ':plain' goes when the columns widen
             'day_of_month' => 'integer',
             // Format pins the stored string to YYYY-MM-DD — materialization compares these
             // as strings, and a bare 'date' cast would write a time component.

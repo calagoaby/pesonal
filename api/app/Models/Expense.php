@@ -38,7 +38,7 @@ class Expense extends Model
     protected function casts(): array
     {
         return [
-            'amount' => MoneyCast::class, // centavos, bound to the Money VO
+            'amount' => MoneyCast::class.':plain', // centavos, bound to the Money VO; ':plain' goes when the columns widen
             // The format normalizes the WRITE too: a bare 'date' cast persists via the
             // model's datetime format, and SQLite keeps '2026-09-15 00:00:00' verbatim,
             // which stats' daily grouping then never matches.
