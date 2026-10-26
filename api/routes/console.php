@@ -13,6 +13,9 @@ if (app()->isProduction()) {
     // Once a day, just after Manila midnight: every run wakes the sleeping database, so hourly
     // would keep it awake around the clock.
     Schedule::command('recurring:materialize')->dailyAt('00:05')->timezone(config('pesonal.job_timezone'));
+    // Nothing restarts a kept-awake container, so plain text an old container wrote during a deploy
+    // overlap is encrypted here. Its compare-and-swap writes make it safe beside the web server.
+    Schedule::command('pesonal:encrypt-ledger')->dailyAt('00:10')->timezone(config('pesonal.job_timezone'));
 } else {
     // Hourly locally: daily means midnight, when the dev servers are rarely running.
     Schedule::command('recurring:materialize')->hourly();

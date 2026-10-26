@@ -87,4 +87,18 @@ class EncryptedCastsTest extends TestCase
 
         $this->assertSame('Therapy', Category::query()->findOrFail($category->id)->name);
     }
+
+    public function test_text_cast_stores_null_for_empty_values_and_stringifies_scalars(): void
+    {
+        $cast = new EncryptedText;
+        $set = fn (mixed $value) => $cast->set(new Expense, 'note', $value, []);
+
+        foreach ([null, '', false, [], new \stdClass] as $empty) {
+            $this->assertNull($set($empty));
+        }
+
+        $this->assertSame('5', LedgerCipher::decrypt((string) $set(5)));
+        $this->assertSame('1', LedgerCipher::decrypt((string) $set(true)));
+        $this->assertSame('0', LedgerCipher::decrypt((string) $set(0)));
+    }
 }

@@ -37,7 +37,8 @@ log "migrating"
 step php artisan migrate --force --no-interaction
 
 # Every boot, not once: rows an older container wrote in plain text during a deploy are
-# encrypted here. Prints counts only, and a duplicate category name is a warning, not a failure.
+# encrypted here. Prints counts and ids (never values or names). A wrong APP_KEY fails the boot before any write;
+# a corrupt or colliding row is warned about and skipped, not a failure.
 log "encrypting any plain ledger values"
 step php artisan pesonal:encrypt-ledger --no-interaction
 

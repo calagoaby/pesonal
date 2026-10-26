@@ -17,13 +17,15 @@ final class EncryptedText implements CastsAttributes, ComparesCastableAttributes
     }
 
     /**
-     * An empty note is saved as null, so "no note" never becomes ciphertext.
+     * An empty note (or false, or a non-scalar) is saved as null, so "no note" never becomes ciphertext.
      *
      * @param  array<string, mixed>  $attributes
      */
     public function set(Model $model, string $key, mixed $value, array $attributes): ?string
     {
-        return $value === null || $value === '' ? null : LedgerCipher::encrypt((string) $value);
+        $plain = is_scalar($value) ? (string) $value : '';
+
+        return $plain === '' ? null : LedgerCipher::encrypt($plain);
     }
 
     // Every save re-runs set() with a fresh IV, so comparing ciphertext would mark an

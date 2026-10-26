@@ -237,4 +237,27 @@ class EncryptLedgerCommandTest extends TestCase
         $this->assertSame($foodIndex, $this->raw('categories', $food->id)->name_index);
         $this->assertSame($funIndex, $this->raw('categories', $fun->id)->name_index);
     }
+
+    public function test_encrypt_ledger_survives_a_key_rotation(): void
+    {
+        $user = User::factory()->create();
+        $food = Category::factory()->create(['user_id' => $user->id, 'name' => 'Food']);
+        $expense = Expense::factory()->create(['user_id' => $user->id, 'category_id' => $food->id, 'amount' => 15000, 'note' => 'Kape']);
+        $oldIndex = $this->raw('categories', $food->id)->name_index;
+
+        $old = config('app.key');
+        $new = 'base64:'.base64_encode(Encrypter::generateKey(config('app.cipher')));
+        config(['app.key' => $new, 'app.previous_keys' => [$old]]);
+        $this->app->forgetInstance('encrypter');
+        Crypt::clearResolvedInstance('encrypter');
+
+        $this->artisan('pesonal:encrypt-ledger')->assertSuccessful();
+
+        $newIndex = $this->raw('categories', $food->id)->name_index;
+        $this->assertNotSame($oldIndex, $newIndex);
+        $this->assertSame(LedgerCipher::fingerprint($user->id, 'Food'), $newIndex);
+        $this->assertSame(15000, Expense::withoutGlobalScope(OwnedByCurrentUser::class)->findOrFail($expense->id)->amount->centavos());
+        $this->assertSame('Kape', Expense::withoutGlobalScope(OwnedByCurrentUser::class)->findOrFail($expense->id)->note);
+        $this->assertSame('Food', Category::withoutGlobalScope(OwnedByCurrentUser::class)->findOrFail($food->id)->name);
+    }
 }

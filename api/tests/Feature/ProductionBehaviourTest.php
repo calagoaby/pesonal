@@ -221,12 +221,16 @@ class ProductionBehaviourTest extends TestCase
         $event = $this->materializeEvent();
         $this->assertSame('5 0 * * *', $event->expression);
         $this->assertSame('Asia/Manila', $event->timezone);
+
+        $sweep = $this->materializeEvent('pesonal:encrypt-ledger');
+        $this->assertSame('10 0 * * *', $sweep->expression);
+        $this->assertSame('Asia/Manila', $sweep->timezone);
     }
 
-    private function materializeEvent(): Event
+    private function materializeEvent(string $command = 'recurring:materialize'): Event
     {
         $event = collect(app(Schedule::class)->events())
-            ->first(fn (Event $event) => str_contains((string) $event->command, 'recurring:materialize'));
+            ->first(fn (Event $event) => str_contains((string) $event->command, $command));
         $this->assertInstanceOf(Event::class, $event);
 
         return $event;
