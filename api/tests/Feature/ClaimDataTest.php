@@ -220,6 +220,27 @@ class ClaimDataTest extends TestCase
         $this->assertSame(['Food', 'Transport'], Category::query()->get()->pluck('name')->sort()->values()->all());
     }
 
+    public function test_claim_merges_a_name_that_differs_only_by_spaces(): void
+    {
+        $owner = User::factory()->create(['email' => 'owner@example.com']);
+        $ownersFood = DB::table('categories')->insertGetId([
+            'name' => 'Food', 'color' => '#C9692E', 'emoji' => '🍔', 'user_id' => $owner->id, 'created_at' => self::STAMP, 'updated_at' => self::STAMP,
+        ]);
+        $spaced = $this->unownedCategory(' Food ');
+        $lunch = $this->unownedExpense($spaced);
+
+        $this->artisan('pesonal:claim', ['email' => 'owner@example.com'])
+            ->expectsOutput('Merged 1 categories into ones the account already had.')
+            ->assertSuccessful();
+
+        $this->assertNull(DB::table('categories')->where('id', $spaced)->first());
+        $this->assertSame($ownersFood, DB::table('expenses')->where('id', $lunch)->value('category_id'));
+
+        // The fingerprint trims, so an unmerged " Food " would break this unique index.
+        $this->artisan('migrate')->assertSuccessful();
+        $this->assertSame(LedgerCipher::fingerprint($owner->id, 'Food'), DB::table('categories')->where('id', $ownersFood)->value('name_index'));
+    }
+
     public function test_the_job_skips_an_unclaimed_order_even_with_someone_signed_in(): void
     {
         $this->actingAs(User::factory()->create());

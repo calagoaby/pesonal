@@ -11,6 +11,13 @@ use Illuminate\Support\Facades\Schema;
 // and a name's uniqueness moves to name_index, a per-user fingerprint of the plain name.
 return new class extends Migration
 {
+    // Frozen here: a later change to LedgerRewrite::COLUMNS must not change this migration.
+    private const COLUMNS = [
+        'expenses' => ['amount', 'note'],
+        'recurring' => ['amount', 'note'],
+        'categories' => ['name'],
+    ];
+
     public function up(): void
     {
         $this->rebuild(function () {
@@ -27,7 +34,7 @@ return new class extends Migration
 
             // An empty note becomes null, as the cast saves it; down() then can't bring back a
             // byte-exact '', though it reads the same.
-            LedgerRewrite::encrypt();
+            LedgerRewrite::encrypt(self::COLUMNS);
 
             // Always recomputed from the decrypted name, so a re-run fixes a stale one. The
             // unique index only comes next, so nothing can collide here.
@@ -48,7 +55,7 @@ return new class extends Migration
     {
         $this->rebuild(function () {
             // An amount that doesn't decrypt to an integer throws: nothing else reaches bigint.
-            LedgerRewrite::decrypt();
+            LedgerRewrite::decrypt(self::COLUMNS);
 
             Schema::table('categories', function (Blueprint $table) {
                 $table->dropUnique(['user_id', 'name_index']);

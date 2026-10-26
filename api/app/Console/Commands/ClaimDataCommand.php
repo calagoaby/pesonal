@@ -51,18 +51,20 @@ class ClaimDataCommand extends Command
      * already has (the defaults from sign-up, say) can't simply change hands. Its
      * expenses and standing orders move to the account's own category, and the
      * duplicate goes. Returns how many were merged.
+     *
+     * Compared trimmed, in PHP, as the name fingerprint does: "Food " merging into "Food"
+     * here is what keeps the next migration's unique index from failing.
      */
     private function mergeClashingCategories(User $user): int
     {
-        $owned = DB::table('categories')->where('user_id', $user->id)->pluck('id', 'name');
+        $owned = DB::table('categories')->where('user_id', $user->id)->orderBy('id')->get(['id', 'name'])
+            ->reverse()->mapWithKeys(fn (object $row) => [trim((string) $row->name) => (int) $row->id]);
 
-        $clashing = DB::table('categories')
-            ->whereNull('user_id')
-            ->whereIn('name', $owned->keys())
-            ->get(['id', 'name']);
+        $clashing = DB::table('categories')->whereNull('user_id')->get(['id', 'name'])
+            ->filter(fn (object $row) => $owned->has(trim((string) $row->name)));
 
         foreach ($clashing as $duplicate) {
-            $target = $owned[$duplicate->name];
+            $target = $owned[trim((string) $duplicate->name)];
 
             foreach (['expenses', 'recurring'] as $table) {
                 DB::table($table)->where('category_id', $duplicate->id)->update(['category_id' => $target]);
