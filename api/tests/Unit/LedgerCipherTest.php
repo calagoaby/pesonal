@@ -4,6 +4,8 @@ namespace Tests\Unit;
 
 use App\Support\LedgerCipher;
 use Illuminate\Contracts\Encryption\DecryptException;
+use Illuminate\Encryption\Encrypter;
+use Illuminate\Support\Facades\Crypt;
 use Tests\TestCase;
 
 class LedgerCipherTest extends TestCase
@@ -51,5 +53,51 @@ class LedgerCipherTest extends TestCase
         $this->assertNotSame($food, LedgerCipher::fingerprint(1, 'food'));
         $this->assertNotSame($food, LedgerCipher::fingerprint(2, 'Food'));
         $this->assertMatchesRegularExpression('/^[0-9a-f]{64}$/', $food);
+    }
+
+    public function test_a_tampered_payload_throws_instead_of_reading_as_plain(): void
+    {
+        foreach (['iv', 'value'] as $field) {
+            $note = $this->tamper(LedgerCipher::encrypt('Lunch'), $field);
+            $amount = $this->tamper(LedgerCipher::encrypt('15000'), $field);
+
+            $this->assertTrue(LedgerCipher::isEncrypted($note));
+            $this->assertThrows(fn () => LedgerCipher::decrypt($note), DecryptException::class);
+            $this->assertThrows(fn () => LedgerCipher::decryptAmount($amount), DecryptException::class);
+        }
+    }
+
+    public function test_a_gcm_payload_counts_as_encrypted_and_fails_to_decrypt(): void
+    {
+        $gcm = (new Encrypter(random_bytes(32), 'aes-256-gcm'))->encryptString('Lunch');
+
+        $this->assertTrue(LedgerCipher::isEncrypted($gcm));
+        $this->assertThrows(fn () => LedgerCipher::decrypt($gcm), DecryptException::class);
+    }
+
+    public function test_only_canonical_plain_integers_are_amounts(): void
+    {
+        $this->assertSame(0, LedgerCipher::decryptAmount('0'));
+
+        foreach (['-0', '007', '+5', ' 5', '5 ', '1.5', '99999999999999999999'] as $plain) {
+            $this->assertThrows(fn () => LedgerCipher::decryptAmount($plain), DecryptException::class);
+        }
+    }
+
+    public function test_fingerprint_changes_with_the_app_key(): void
+    {
+        $before = LedgerCipher::fingerprint(1, 'Food');
+
+        Crypt::swap(new Encrypter(random_bytes(32), 'AES-256-CBC'));
+
+        $this->assertNotSame($before, LedgerCipher::fingerprint(1, 'Food'));
+    }
+
+    private function tamper(string $encrypted, string $field): string
+    {
+        $payload = json_decode(base64_decode($encrypted), true);
+        $payload[$field] = base64_encode('not the original bytes');
+
+        return base64_encode((string) json_encode($payload));
     }
 }

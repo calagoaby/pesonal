@@ -10,7 +10,9 @@ use App\Support\LedgerCipher;
 use App\Support\Money;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use InvalidArgumentException;
 use Tests\TestCase;
+use UnexpectedValueException;
 
 class EncryptedCastsTest extends TestCase
 {
@@ -27,6 +29,28 @@ class EncryptedCastsTest extends TestCase
 
         $this->assertSame(15000, $cast->get(new Expense, 'amount', $stored, [])->centavos());
         $this->assertSame(15000, $cast->get(new Expense, 'amount', 15000, [])->centavos());
+        // SQLite and Postgres can hand back a bigint as a digit string.
+        $this->assertSame(15000, $cast->get(new Expense, 'amount', '15000', [])->centavos());
+        $this->assertThrows(fn () => $cast->get(new Expense, 'amount', null, []), UnexpectedValueException::class, 'The amount is missing.');
+    }
+
+    public function test_money_cast_rejects_an_unknown_option(): void
+    {
+        $this->assertThrows(fn () => new MoneyCast('plian'), InvalidArgumentException::class);
+    }
+
+    public function test_casts_compare_decrypted_values_not_ciphertext(): void
+    {
+        $money = new MoneyCast;
+        $this->assertTrue($money->compare(new Expense, 'amount', LedgerCipher::encrypt('15000'), LedgerCipher::encrypt('15000')));
+        $this->assertTrue($money->compare(new Expense, 'amount', 15000, LedgerCipher::encrypt('15000')));
+        $this->assertFalse($money->compare(new Expense, 'amount', LedgerCipher::encrypt('15000'), LedgerCipher::encrypt('15001')));
+
+        $text = new EncryptedText;
+        $this->assertTrue($text->compare(new Expense, 'note', LedgerCipher::encrypt('Lunch'), LedgerCipher::encrypt('Lunch')));
+        $this->assertTrue($text->compare(new Expense, 'note', null, null));
+        $this->assertFalse($text->compare(new Expense, 'note', LedgerCipher::encrypt('Lunch'), LedgerCipher::encrypt('Dinner')));
+        $this->assertFalse($text->compare(new Expense, 'note', null, LedgerCipher::encrypt('Lunch')));
     }
 
     public function test_encrypted_text_cast_stores_ciphertext_and_nulls_empty_notes(): void
@@ -50,6 +74,8 @@ class EncryptedCastsTest extends TestCase
         $this->markTestSkipped('enabled in Task 2');
 
         $expense = Expense::factory()->create(['amount' => 15000, 'note' => 'Lunch']);
+        // The ownership scope hides every row when nobody is signed in.
+        $this->actingAs($expense->user);
         $category = Category::factory()->create(['name' => 'Therapy']);
         $blank = Expense::factory()->create(['note' => '']);
 
@@ -63,6 +89,11 @@ class EncryptedCastsTest extends TestCase
         $fresh = Expense::query()->findOrFail($expense->id);
         $this->assertSame(15000, $fresh->amount->centavos());
         $this->assertSame('Lunch', $fresh->note);
+
+        $fresh->amount = 15000;
+        $fresh->note = 'Lunch';
+        $this->assertFalse($fresh->isDirty(['amount', 'note']));
+
         $this->assertSame('Therapy', Category::query()->findOrFail($category->id)->name);
     }
 }

@@ -27,7 +27,7 @@ final class LedgerCipher
         return self::isEncrypted($stored) ? Crypt::decryptString($stored) : $stored;
     }
 
-    /** Plain is accepted only as digits (optionally a leading '-'): never read garbage as ₱0. */
+    /** Plain is accepted only as a canonical integer: never read garbage as ₱0. */
     public static function decryptAmount(string|int $stored): int
     {
         if (is_int($stored)) {
@@ -36,15 +36,20 @@ final class LedgerCipher
 
         $plain = self::decrypt($stored);
 
-        if (preg_match('/^-?\d+$/', $plain) !== 1) {
+        // filter_var alone accepts '-0', '+5' and surrounding spaces; the regex rejects those,
+        // and filter_var rejects overflow (and leading zeros).
+        $amount = preg_match('/^(0|-?[1-9]\d*)$/', $plain) === 1 ? filter_var($plain, FILTER_VALIDATE_INT) : false;
+
+        if ($amount === false) {
             throw new DecryptException('The stored amount is not an integer.');
         }
 
-        return (int) $plain;
+        return $amount;
     }
 
-    // Strict: base64 decoding to JSON with string iv/value/mac and a 16-byte iv
-    // (AES-256-CBC), so ordinary text like "Gym" is never mistaken for a payload.
+    // Base64 decoding to JSON with string iv/value/mac is a payload, so ordinary text
+    // like "Gym" is never mistaken for one. Nothing stricter on purpose: a corrupted iv
+    // or tag must reach the Encrypter and throw, not be read back as plain text.
     public static function isEncrypted(string $stored): bool
     {
         $json = base64_decode($stored, true);
@@ -63,13 +68,7 @@ final class LedgerCipher
             }
         }
 
-        if (isset($payload['tag']) && ! is_string($payload['tag'])) {
-            return false;
-        }
-
-        $iv = base64_decode($payload['iv'], true);
-
-        return $iv !== false && strlen($iv) === 16;
+        return true;
     }
 
     // Case-sensitive on purpose: "Food" and "food" may coexist in one account today.
