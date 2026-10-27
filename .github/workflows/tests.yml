@@ -241,8 +241,8 @@ jobs:
           docker logs api || true
 
   # The frontend goes live only after every check above is green. Vercel's own Git deploys are
-  # off (web/vercel.json), so this job is the only way a commit reaches production. Render's
-  # "After CI Checks Pass" waits for this job too, so a failed frontend deploy holds the API back.
+  # off (web/vercel.json), so this job is the only way a commit reaches production. deploy-api
+  # waits for it, so a failed frontend deploy holds the API back.
   deploy-web:
     needs: [api, web, docker]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -308,3 +308,48 @@ jobs:
         run: npx --yes vercel@63.0.2 deploy --prebuilt --prod --token="$VERCEL_TOKEN"
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+
+  # Render's own "After CI Checks Pass" never fired on a green push (2026-10-27), so its
+  # Auto-Deploy is Off and this job starts the deploy through the service's deploy hook. The hook
+  # only queues the deploy: a failed boot shows in Render's Events, not here.
+  deploy-api:
+    needs: [deploy-web]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    concurrency:
+      group: deploy-api
+      cancel-in-progress: false
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Only a push that touches api/ restarts the API, as Render's root directory did. An unknown
+      # `before` (a new branch, a force-push) deploys to be safe.
+      - name: Check for API changes
+        id: changed
+        env:
+          BEFORE: ${{ github.event.before }}
+        run: |
+          if git cat-file -e "$BEFORE^{commit}" 2>/dev/null && git diff --quiet "$BEFORE" HEAD -- api/; then
+            echo "::notice::Nothing under api/ changed, so the API was not redeployed"
+            echo "deploy=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "deploy=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Ends green with a notice while the secret is missing, like the Vercel gate. The hook URL is
+      # a secret (anyone holding it can deploy), so the response body isn't printed.
+      - name: Trigger the Render deploy
+        if: steps.changed.outputs.deploy == 'true'
+        env:
+          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$RENDER_DEPLOY_HOOK" ]; then
+            echo "::notice::RENDER_DEPLOY_HOOK is not set, so the API was not deployed"
+            exit 0
+          fi
+          curl --fail --silent --show-error --output /dev/null --request POST "$RENDER_DEPLOY_HOOK"
+          echo "Render deploy queued for $GITHUB_SHA"
