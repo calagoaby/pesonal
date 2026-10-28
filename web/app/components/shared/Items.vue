@@ -23,9 +23,11 @@ const {
     past_total_keys,
     row_errors,
     list_error,
-    has_half_item,
+    show_half_item,
 
     handleNameInput,
+    handleNameFocus,
+    handleNameBlur,
     openPrice,
     addItem,
     removeItem,
@@ -41,6 +43,8 @@ const {
             <span v-else>optional</span>
         </div>
 
+        <!-- size 9 = the length of the "Item name" placeholder, so an empty field is as wide as
+             its hint in browsers without field-sizing -->
         <template v-for="row in items" :key="row.key">
             <div class="item">
                 <input
@@ -53,6 +57,8 @@ const {
                     aria-label="Item name"
                     :data-item-key="row.key"
                     @input="handleNameInput(row.key, $event)"
+                    @focus="handleNameFocus(row.key)"
+                    @blur="handleNameBlur(row.key)"
                 >
                 <span class="leader" />
                 <button
@@ -77,7 +83,7 @@ const {
 
         <p v-if="is_over" class="error">{{ over_message }}</p>
         <p v-else-if="list_error" class="error">{{ list_error }}</p>
-        <p v-if="has_half_item" class="error">Each item needs a name and a price.</p>
+        <p v-if="show_half_item" class="error">Each item needs a name and a price.</p>
     </section>
 
     <SharedKeypad

@@ -15,7 +15,8 @@ export function useItems(items: Ref<ItemRow[]>, total: () => number, errors: () 
     const is_keypad_open = ref(false)
     /** The row the keypad is pricing. */
     const editing_key = ref<number | null>(null)
-
+    /** The row whose name input has focus. */
+    const focused_key = ref<number | null>(null)
 
     /** Computed */
     const items_total = computed(() => itemsTotal(items.value))
@@ -80,7 +81,10 @@ export function useItems(items: Ref<ItemRow[]>, total: () => number, errors: () 
     })
 
     const list_error = computed(() => errors().items?.[0] ?? '')
-    const has_half_item = computed(() => hasHalfItem(items.value))
+    // The row being typed into: its half-filled state is normal until the person moves on.
+    // Display only — the forms' own `can_save` still blocks on every half-filled row.
+    const active_key = computed(() => is_keypad_open.value ? editing_key.value : focused_key.value)
+    const show_half_item = computed(() => hasHalfItem(items.value.filter(row => row.key !== active_key.value)))
 
 
     /** Functions */
@@ -90,6 +94,16 @@ export function useItems(items: Ref<ItemRow[]>, total: () => number, errors: () 
 
     function handleNameInput(key: number, event: Event) {
         updateRow(key, { name: (event.target as HTMLInputElement).value })
+    }
+
+    function handleNameFocus(key: number) {
+        focused_key.value = key
+    }
+
+    function handleNameBlur(key: number) {
+        if (focused_key.value === key) {
+            focused_key.value = null
+        }
     }
 
     function openPrice(key: number) {
@@ -116,7 +130,7 @@ export function useItems(items: Ref<ItemRow[]>, total: () => number, errors: () 
 
     /** Which half of a half-filled row is missing, to mark it. */
     function missingPart(row: ItemRow): 'name' | 'price' | null {
-        if (!isHalfItem(row)) {
+        if (row.key === active_key.value || !isHalfItem(row)) {
             return null
         }
 
@@ -134,9 +148,11 @@ export function useItems(items: Ref<ItemRow[]>, total: () => number, errors: () 
         past_total_keys,
         row_errors,
         list_error,
-        has_half_item,
+        show_half_item,
 
         handleNameInput,
+        handleNameFocus,
+        handleNameBlur,
         openPrice,
         addItem,
         removeItem,
