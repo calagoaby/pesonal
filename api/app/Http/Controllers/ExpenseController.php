@@ -59,6 +59,7 @@ class ExpenseController extends Controller
             'date' => $validated['date'],
             'category_id' => $validated['category_id'],
             'note' => $request->input('note'), // recurring_id stays null — never from the body
+            'items' => array_values($validated['items'] ?? []),
         ]);
 
         return ExpenseResource::make($expense->load('category'))->response()->setStatusCode(201);
@@ -87,6 +88,11 @@ class ExpenseController extends Controller
         // must be distinguished from an absent key (which leaves the note untouched).
         if ($request->exists('note')) {
             $expense->note = $request->input('note');
+        }
+
+        // Absent leaves the list alone; [] clears it; a list replaces it.
+        if (array_key_exists('items', $validated)) {
+            $expense->items = array_values($validated['items']);
         }
 
         $expense->save();

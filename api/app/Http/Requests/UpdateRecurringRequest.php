@@ -2,21 +2,37 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Requests\Concerns\ValidatesItems;
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Validation\Rule;
 
 class UpdateRecurringRequest extends RecurringRequest
 {
+    use ValidatesItems;
+
     /** @return array<string, mixed> */
     public function rules(): array
     {
         // `sometimes` → only sent fields are validated. end_date present-and-null clears
         // it (open-ended). note and active are applied by the controller.
         return [
+            ...$this->itemsRules(),
             'amount' => ['sometimes', 'required', $this->centavosRule()],
             'category_id' => ['sometimes', 'required', 'integer', Rule::exists('categories', 'id')->where('user_id', $this->user()->id)],
             'day_of_month' => ['sometimes', 'required', 'integer', 'between:1,31'],
             'start_date' => ['sometimes', 'required', 'string', 'regex:/^\d{4}-\d{2}-\d{2}$/'],
             'end_date' => ['sometimes', 'nullable', 'string', 'regex:/^\d{4}-\d{2}-\d{2}$/'],
+        ];
+    }
+
+    /** @return array<int, callable(Validator): void> */
+    public function after(): array
+    {
+        return [
+            function (Validator $validator): void {
+                $existing = $this->route('recurring');
+                $this->itemsFitAmount($validator, $existing->amount->centavos(), $existing->items);
+            },
         ];
     }
 }

@@ -32,6 +32,7 @@ class RecurringController extends Controller
             'end_date' => $validated['end_date'] ?? null,
             'note' => $request->input('note'), // note ?? null
             'active' => $request->input('active') ?? true, // active ?? true
+            'items' => array_values($validated['items'] ?? []),
         ]);
 
         return RecurringResource::make($recurring->load('category'))->response()->setStatusCode(201);
@@ -65,6 +66,10 @@ class RecurringController extends Controller
         // active ?? existing: an explicit boolean toggles; null or absent leaves it unchanged.
         if ($request->input('active') !== null) {
             $recurring->active = (bool) $request->input('active');
+        }
+
+        if (array_key_exists('items', $validated)) {
+            $recurring->items = array_values($validated['items']);
         }
 
         $recurring->save();
