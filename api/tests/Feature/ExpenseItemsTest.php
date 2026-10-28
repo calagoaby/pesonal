@@ -169,4 +169,16 @@ class ExpenseItemsTest extends TestCase
 
         $this->patchJson("/api/expenses/{$expense->id}", ['items' => []])->assertNotFound();
     }
+
+    public function test_restoring_a_voided_expense_keeps_its_items(): void
+    {
+        $expense = Expense::factory()->create(['amount' => 5500, 'items' => $this->stored()]);
+        $this->deleteJson("/api/expenses/{$expense->id}")->assertNoContent();
+
+        $response = $this->postJson("/api/expenses/{$expense->id}/restore");
+
+        $response->assertOk();
+        $this->assertSame($this->stored(), $response->json('data.items'));
+        $this->assertSame($this->stored(), Expense::find($expense->id)->items);
+    }
 }

@@ -54,6 +54,7 @@ class MaterializeRecurring
                 'note' => $template->note,
                 'category_id' => $template->category_id,
                 'recurring_id' => $template->id,
+                'items' => $template->items,
             ]);
             // The scheduler runs with nobody signed in: each charge belongs to its order's owner.
             $expense->user_id = $template->user_id;

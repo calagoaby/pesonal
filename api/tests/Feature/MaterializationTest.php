@@ -258,4 +258,31 @@ class MaterializationTest extends TestCase
             $this->assertSame($order->user_id, $charge->user_id);
         }
     }
+
+    public function test_a_charge_copies_the_template_items(): void
+    {
+        $items = [['name' => 'Rice', 'amount' => 4500], ['name' => 'Adobo', 'amount' => 1000]];
+        $template = Recurring::factory()->create(['amount' => 5500, 'day_of_month' => 1, 'start_date' => '2026-01-01', 'items' => $items]);
+
+        $this->assertSame(1, $this->materialize(Carbon::create(2026, 6, 20)));
+
+        $expense = Expense::query()->where('recurring_id', $template->id)->sole();
+        $this->assertSame($items, $expense->items);
+        // Each write gets a fresh IV, so the copy is its own ciphertext.
+        $this->assertNotSame(
+            DB::table('recurring')->where('id', $template->id)->value('items'),
+            DB::table('expenses')->where('id', $expense->id)->value('items'),
+        );
+    }
+
+    public function test_editing_template_items_does_not_change_an_existing_charge(): void
+    {
+        $old = [['name' => 'Rice', 'amount' => 4500]];
+        $template = Recurring::factory()->create(['amount' => 5500, 'day_of_month' => 1, 'start_date' => '2026-01-01', 'items' => $old]);
+        $this->materialize(Carbon::create(2026, 6, 20));
+
+        $this->patchJson("/api/recurring/{$template->id}", ['items' => [['name' => 'Fish', 'amount' => 100]]])->assertOk();
+
+        $this->assertSame($old, Expense::query()->where('recurring_id', $template->id)->sole()->items);
+    }
 }
