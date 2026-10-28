@@ -24,6 +24,7 @@ export function useAddRecurring() {
             note: form.note.value.trim() || null,
             end_date: form.end_date.value,
             active: form.active.value,
+            items: itemsPayload(form.items.value),
         }))
 
         if (saved) {
@@ -44,6 +45,7 @@ export function useAddRecurring() {
         form.start_date.value = today
         form.end_date.value = null
         form.active.value = true
+        form.items.value = []
     }
 
 

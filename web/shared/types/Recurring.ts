@@ -1,4 +1,5 @@
 import type { CategoryRef } from './Category'
+import type { ExpenseItem } from './Expense'
 
 /** A template the backend materializes into real Expense rows. v1 recurs monthly. */
 export interface RecurringExpense {
@@ -14,6 +15,8 @@ export interface RecurringExpense {
     end_date: string | null
     /** false = paused: kept, but no longer materialized */
     active: boolean
+    /** Copied onto every charge this order materializes. */
+    items: ExpenseItem[]
     category: CategoryRef
     created_at: string
     updated_at: string
@@ -31,4 +34,6 @@ export type RecurringPayload = {
     note?: string | null
     end_date?: string | null
     active?: boolean
+    /** The whole list; `[]` clears it. */
+    items?: ExpenseItem[]
 }

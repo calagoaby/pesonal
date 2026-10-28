@@ -19,7 +19,8 @@ export function useItems(items: Ref<ItemRow[]>, total: () => number, errors: () 
 
     /** Computed */
     const items_total = computed(() => itemsTotal(items.value))
-    const is_over = computed(() => items_total.value > total())
+    // A zero total just means the amount isn't typed yet; Save is already blocked then.
+    const is_over = computed(() => total() > 0 && items_total.value > total())
     const can_add = computed(() => items.value.length < MAX_ITEMS)
     const counter = computed(() => `${formatAmountWithCurrency(items_total.value)} of ${formatAmountWithCurrency(total())}`)
 
@@ -47,7 +48,7 @@ export function useItems(items: Ref<ItemRow[]>, total: () => number, errors: () 
         for (const row of items.value) {
             sum += row.amount
 
-            if (sum > total() && row.amount > 0) {
+            if (total() > 0 && sum > total() && row.amount > 0) {
                 keys.add(row.key)
             }
         }

@@ -49,6 +49,7 @@ const {
                     :class="{ missing: missingPart(row) === 'name' }"
                     placeholder="Item name"
                     maxlength="40"
+                    :size="Math.max(row.name.length, 9)"
                     aria-label="Item name"
                     :data-item-key="row.key"
                     @input="handleNameInput(row.key, $event)"
@@ -116,8 +117,8 @@ const {
 }
 
 .name {
-    /* Hugs the typed name so the dotted leader fills the rest; browsers without
-       field-sizing keep the input's default width, which still leaves a leader. */
+    /* Hugs the typed name so the dotted leader fills the rest. `size` in the template is
+       the fallback for browsers without field-sizing (Firefox, iOS Safari). */
     field-sizing: content;
     flex: 0 1 auto;
     min-width: 4ch;

@@ -17,6 +17,7 @@
       length, so 29/30/31 must say so out loud or February silently surprises you.
     · ACTIVE toggle — pause without deleting. Paused orders stop materializing
       and drop out of the monthly commitment total on recurring.html.
+  ITEMS: optional, under the note — the same section as the expense form (see edit-expense.html for the over-total state). Saved with the template; every charge it materializes gets a copy. Same rule: less or equal to the amount, never more.
   END DATE is nullable in the contract → "No end" is a first-class choice, not blank.
   Token rule: var(--…) → use that token in the app; literal px → intentional one-off.
 */
@@ -67,6 +68,16 @@ body{font-family:var(--sans);background:#d8d1c2;min-height:100vh;padding:30px 16
 .field .note{text-transform:none;letter-spacing:0;font-family:var(--sans);font-size:var(--text-body)}
 .field .muted{color:var(--perforation);text-transform:none;letter-spacing:0;font-family:var(--sans);font-size:var(--text-body)}
 .clamp{font-family:var(--sans);font-size:var(--text-micro);color:var(--faded);text-align:right;padding:var(--space-xs) 2px 0;line-height:1.5}
+/* items — optional, under the note. A partial breakdown of the typed total, same section as the expense form; each charge gets a copy */
+.sechead{display:flex;justify-content:space-between;align-items:baseline;margin-top:var(--space-l);font-size:var(--text-label);letter-spacing:.08em;text-transform:uppercase;color:var(--faded)}
+.sechead .over{color:var(--stamp);font-variant-numeric:tabular-nums;letter-spacing:0}
+.item{display:flex;align-items:baseline;padding:6px 2px;font-size:var(--text-body)}
+.item .n{font-family:var(--sans)}
+.item .l{flex:1;min-width:var(--space-l);border-bottom:1.5px dotted var(--perforation);margin:0 var(--space-s);transform:translateY(-3px)}
+.item .p{font-variant-numeric:tabular-nums}
+.item .x{color:var(--faded);font-size:10px;margin-left:var(--space-s)}
+.additem{display:flex;align-items:center;gap:6px;padding:var(--space-s) 2px;font-size:var(--text-label);letter-spacing:.1em;text-transform:uppercase;color:var(--stamp)}
+.additem i{font-size:10px}
 /* toggle */
 .switchrow{display:flex;align-items:center;justify-content:space-between;padding:var(--space-m) 2px;border-bottom:1.5px dashed var(--perforation)}
 .switchrow .lbl{font-size:var(--text-label);letter-spacing:.08em;text-transform:uppercase;color:var(--faded)}
@@ -127,6 +138,10 @@ body{font-family:var(--sans);background:#d8d1c2;min-height:100vh;padding:30px 16
 <span class="lbl">Note</span>
 <span class="val"><span class="note">Apartment rent</span><i class="pi pi-pencil"></i></span>
 </div>
+<div class="sechead"><span>Items</span><span>optional</span></div>
+<div class="item"><span class="n">Rent</span><span class="l"></span><span class="p">₱12,000.00</span><i class="pi pi-times x" aria-label="Remove Rent"></i></div>
+<div class="item"><span class="n">Parking</span><span class="l"></span><span class="p">₱2,000.00</span><i class="pi pi-times x" aria-label="Remove Parking"></i></div>
+<div class="additem"><i class="pi pi-plus"></i>Add item</div>
 <div class="field">
 <span class="lbl">Every</span>
 <span class="val"><span>1st of the month</span><i class="pi pi-chevron-down"></i></span>

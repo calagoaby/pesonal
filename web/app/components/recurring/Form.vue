@@ -15,6 +15,7 @@ const {
     start_date,
     end_date,
     active,
+    items,
     errors
 } = useRecurringFormContext()
 
@@ -37,6 +38,8 @@ const is_end_picker_open = ref(false)
 
 /** Computed */
 const category = computed(() => categories.value.find(item => item.id === category_id.value) ?? null)
+// The Items section shows its own errors, worded for a row; listing them here too would repeat them.
+const field_errors = computed(() => Object.entries(errors.value).filter(([field]) => field !== 'items' && !field.startsWith('items.')))
 // 29+ can exceed a short month (February has 28); the picker warns on the same rule.
 const clamps = computed(() => day_of_month.value >= 29)
 </script>
@@ -73,6 +76,8 @@ const clamps = computed(() => day_of_month.value >= 29)
             <span class="label">Note</span>
             <input v-model="note" class="note-input" placeholder="Apartment rent" maxlength="40" aria-label="Note">
         </div>
+
+        <SharedItems v-model:items="items" :total="amount" :errors="errors" />
 
         <button class="field" @click="is_day_picker_open = true">
             <span class="label">Every</span>
@@ -114,7 +119,7 @@ const clamps = computed(() => day_of_month.value >= 29)
             />
         </div>
 
-        <p v-for="(messages, field) in errors" :key="field" class="field-error">
+        <p v-for="[field, messages] in field_errors" :key="field" class="field-error">
             {{ messages[0] }}
         </p>
 

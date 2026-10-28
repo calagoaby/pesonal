@@ -12,6 +12,7 @@ export function useEditRecurring(loaded: RecurringExpense) {
         start_date: loaded.start_date,
         end_date: loaded.end_date,
         active: loaded.active,
+        items: loaded.items,
     })
 
     // The row as the server last confirmed it — the audit line reads this. A save
@@ -39,6 +40,7 @@ export function useEditRecurring(loaded: RecurringExpense) {
                 start_date: form.start_date.value,
                 end_date: form.end_date.value,
                 active: form.active.value,
+                items: itemsPayload(form.items.value),
             })
         })
 
