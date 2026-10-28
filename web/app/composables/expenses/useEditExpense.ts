@@ -9,6 +9,7 @@ export function useEditExpense(loaded: Expense) {
         category_id: loaded.category.id,
         date: loaded.date,
         note: loaded.note ?? '',
+        items: loaded.items,
     })
 
     // The row as the server last confirmed it — the audit line reads this. A save
@@ -34,6 +35,9 @@ export function useEditExpense(loaded: Expense) {
                 date: form.date.value,
                 category_id: category,
                 note: form.note.value.trim() || null,
+                // Always sent, so removing every row sends `[]` and clears them —
+                // leaving the key out would keep the stored list.
+                items: itemsPayload(form.items.value),
             })
         })
 

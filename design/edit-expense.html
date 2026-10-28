@@ -17,6 +17,11 @@
   Void lives INSIDE the form, not on the list row: no swipe-to-reveal (invisible on
   mobile), no per-row ⋮ (clutters the receipt line). One rule for every list.
   The audit line at the foot uses created_at / updated_at from the contract.
+  ITEMS: same section as add-expense.html, seeded from the entry's `items`. Save always
+  sends the whole list (`[]` clears it). Over the total (cell 3) — also reached by
+  LOWERING the total under existing items: the header's "optional" becomes a red counter
+  "₱items of ₱total", every price past the total turns red, a line under the list says by
+  how much, and the stamp is disabled until it fits. Never computed: the total stays typed.
   Token rule: var(--…) → use that token in the app; literal px → intentional one-off.
 */
 :root{
@@ -41,7 +46,7 @@ body{font-family:var(--sans);background:#d8d1c2;min-height:100vh;padding:30px 16
 .cap{font-family:var(--mono);font-size:var(--text-micro);letter-spacing:.1em;text-transform:uppercase;color:#7c7567;margin-bottom:var(--space-s);text-align:center}
 .cap b{color:var(--ink)}
 .phone{background:#211e19;border-radius:42px;padding:10px;box-shadow:0 30px 60px rgba(33,30,25,.35)}
-.screen{position:relative;background:var(--desk);border-radius:32px;overflow:hidden;height:700px;display:flex;flex-direction:column}
+.screen{position:relative;background:var(--desk);border-radius:32px;overflow:hidden;height:760px;display:flex;flex-direction:column}
 .statusbar{display:flex;justify-content:space-between;align-items:center;padding:11px 22px 4px;font-size:13px;font-family:var(--mono);color:var(--ink)}
 .statusbar .icons{display:flex;gap:8px;align-items:center}
 .content{padding:var(--space-l) var(--space-l) 0;flex:1;overflow-y:auto}
@@ -64,6 +69,19 @@ body{font-family:var(--sans);background:#d8d1c2;min-height:100vh;padding:30px 16
 .field .val i{color:var(--faded);font-size:var(--text-label)}
 .field .dot{width:9px;height:9px;border-radius:2px;flex:none}
 .field .note{text-transform:none;letter-spacing:0;font-family:var(--sans);font-size:var(--text-body)}
+/* items — optional, under the note. A partial breakdown of the typed total: it may add up to less, never more */
+.sechead{display:flex;justify-content:space-between;align-items:baseline;margin-top:var(--space-l);font-size:var(--text-label);letter-spacing:.08em;text-transform:uppercase;color:var(--faded)}
+.sechead .over{color:var(--stamp);font-variant-numeric:tabular-nums;letter-spacing:0}
+.item{display:flex;align-items:baseline;padding:6px 2px;font-size:var(--text-body)}
+.item .n{font-family:var(--sans)}
+.item .l{flex:1;min-width:var(--space-l);border-bottom:1.5px dotted var(--perforation);margin:0 var(--space-s);transform:translateY(-3px)}
+.item .p{font-variant-numeric:tabular-nums}
+.item .p.past{color:var(--stamp)}
+.item .x{color:var(--faded);font-size:10px;margin-left:var(--space-s)}
+.additem{display:flex;align-items:center;gap:6px;padding:var(--space-s) 2px;font-size:var(--text-label);letter-spacing:.1em;text-transform:uppercase;color:var(--stamp)}
+.additem i{font-size:10px}
+.itemerr{font-family:var(--sans);font-size:var(--text-label);color:var(--stamp);margin-top:var(--space-s);line-height:1.5}
+.record.off{opacity:.4;box-shadow:none;cursor:default}
 /* void action — inside the form, below the fields */
 .voidrow{display:flex;align-items:center;justify-content:center;gap:var(--space-s);margin-top:var(--space-l);padding-top:var(--space-m);border-top:1.5px dashed var(--perforation);color:var(--stamp);font-size:var(--text-label);letter-spacing:.14em;text-transform:uppercase}
 .audit{text-align:center;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--perforation);margin-top:var(--space-l);line-height:1.7}
@@ -90,7 +108,7 @@ body{font-family:var(--sans);background:#d8d1c2;min-height:100vh;padding:30px 16
 <body>
 <div class="pagehead">
 <h1>Edit expense</h1>
-<p>Tap any row on the expenses roll. Same shell as Add — only the subtitle, the commit verb, and the Void action differ. Delete lives inside the form, never on the row.</p>
+<p>Tap any row on the expenses roll. Same shell as Add — only the subtitle, the commit verb, and the Void action differ. Delete lives inside the form, never on the row. Items sit under the note; cell 3 is what happens when they add up to more than the total.</p>
 </div>
 
 <div class="grid">
@@ -124,6 +142,10 @@ body{font-family:var(--sans);background:#d8d1c2;min-height:100vh;padding:30px 16
 <span class="lbl">Note</span>
 <span class="val"><span class="note">Lunch with team</span><i class="pi pi-pencil"></i></span>
 </div>
+<div class="sechead"><span>Items</span><span>optional</span></div>
+<div class="item"><span class="n">Kare-kare</span><span class="l"></span><span class="p">₱450.00</span><i class="pi pi-times x" aria-label="Remove Kare-kare"></i></div>
+<div class="item"><span class="n">Rice ×4</span><span class="l"></span><span class="p">₱120.00</span><i class="pi pi-times x" aria-label="Remove Rice ×4"></i></div>
+<div class="additem"><i class="pi pi-plus"></i>Add item</div>
 <div class="voidrow"><i class="pi pi-trash"></i>Void this entry</div>
 <div class="audit">Recorded Jun 17, 2026 · 10:03<br>Last changed Jun 17, 2026 · 10:03</div>
 </div>
@@ -164,6 +186,41 @@ body{font-family:var(--sans);background:#d8d1c2;min-height:100vh;padding:30px 16
 <div class="warn">Wed · Jun 17 · Food<br>This one does not come back.</div>
 <div class="acts"><button class="btn ghostb">Keep</button><button class="btn danger">Void it</button></div>
 </div></div>
+</div></div>
+</div>
+
+<div class="cell">
+<div class="cap"><b>3 · Items over the total</b> — the stamp waits</div>
+<div class="phone"><div class="screen">
+<div class="statusbar"><span>9:41</span><span class="icons"><i class="pi pi-wifi"></i><span>100%</span></span></div>
+<div class="content">
+<div class="modalbar">
+<span class="ttl">Edit entry</span>
+<a href="expenses.html" aria-label="Close"><i class="pi pi-times"></i></a>
+</div>
+<div class="torn"></div>
+<div class="roll">
+<div class="rhead"><div class="brand">Pesonal</div><div class="sub">· entry no. 1285 ·</div></div>
+<div class="perf"></div>
+<div class="amtlabel">Amount</div>
+<div class="amtinput"><span class="peso">₱</span><span>55.00</span></div>
+<div class="amthint">Tap to open the keypad</div>
+<div class="perf"></div>
+<div class="field"><span class="lbl">Category</span><span class="val"><span class="dot" style="background:var(--c-food)"></span><span>Food</span><i class="pi pi-chevron-down"></i></span></div>
+<div class="field"><span class="lbl">Date</span><span class="val"><span>Tue · Oct 27, 2026</span><i class="pi pi-calendar"></i></span></div>
+<div class="field"><span class="lbl">Note</span><span class="val"><span class="note">Lunch</span><i class="pi pi-pencil"></i></span></div>
+<div class="sechead"><span>Items</span><span class="over">₱65.00 of ₱55.00</span></div>
+<div class="item"><span class="n">Adobo</span><span class="l"></span><span class="p">₱45.00</span><i class="pi pi-times x" aria-label="Remove Adobo"></i></div>
+<div class="item"><span class="n">Rice</span><span class="l"></span><span class="p">₱10.00</span><i class="pi pi-times x" aria-label="Remove Rice"></i></div>
+<div class="item"><span class="n">Iced tea</span><span class="l"></span><span class="p past">₱10.00</span><i class="pi pi-times x" aria-label="Remove Iced tea"></i></div>
+<div class="additem"><i class="pi pi-plus"></i>Add item</div>
+<div class="itemerr">The items add up to ₱10.00 more than the total. Raise the total or trim an item.</div>
+</div>
+</div>
+<div class="commitbar">
+<a class="ghost" href="expenses.html">Cancel</a>
+<span class="record off" aria-disabled="true">Save changes</span>
+</div>
 </div></div>
 </div>
 

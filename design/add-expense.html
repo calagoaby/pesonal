@@ -15,6 +15,11 @@
   MODAL screen: no bottom nav — a close X and a stamp-red commit action instead.
   Reuses: torn-top receipt shell, header (merchant + subText), perf dividers,
   the same CATEGORY field + bottom sheet as the expenses roll.
+  ITEMS (optional, under Note): `items: [{ name, amount (centavos) }]`, max 20, order kept.
+  A row = name typed like the note (max 40) · dotted leader · price from the SAME keypad
+  as the total (sheet titled "Item price") · × removes it. "+ Add item" adds a blank row
+  and focuses its name; hidden at 20. A blank row is dropped on save; a row with only a
+  name or only a price disables the stamp. Over the total: see edit-expense.html, cell 3.
   Token rule: var(--…) → use that token in the app; literal px → intentional one-off.
 */
 :root{
@@ -62,6 +67,20 @@ body{font-family:var(--sans);background:#d8d1c2;min-height:100vh;display:flex;fl
 .field .dot{width:9px;height:9px;border-radius:2px;flex:none}
 .field .placeholder{color:var(--perforation);text-transform:none;letter-spacing:0;font-family:var(--sans);font-size:var(--text-body)}
 .quip{text-align:center;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--perforation);margin-top:var(--space-l)}
+/* items — optional, under the note. A partial breakdown of the typed total: it may add up to less, never more */
+.sechead{display:flex;justify-content:space-between;align-items:baseline;margin-top:var(--space-l);font-size:var(--text-label);letter-spacing:.08em;text-transform:uppercase;color:var(--faded)}
+.sechead .over{color:var(--stamp);font-variant-numeric:tabular-nums;letter-spacing:0}
+.item{display:flex;align-items:baseline;padding:6px 2px;font-size:var(--text-body)}
+.item .n{font-family:var(--sans)}
+.item .n.placeholder{color:var(--perforation)}
+.item .l{flex:1;min-width:var(--space-l);border-bottom:1.5px dotted var(--perforation);margin:0 var(--space-s);transform:translateY(-3px)}
+.item .p{font-variant-numeric:tabular-nums}
+.item .p.placeholder{color:var(--perforation)}
+.item .p.past{color:var(--stamp)}
+.item .x{color:var(--faded);font-size:10px;margin-left:var(--space-s)}
+.additem{display:flex;align-items:center;gap:6px;padding:var(--space-s) 2px;font-size:var(--text-label);letter-spacing:.1em;text-transform:uppercase;color:var(--stamp)}
+.additem i{font-size:10px}
+.itemerr{font-family:var(--sans);font-size:var(--text-label);color:var(--stamp);margin-top:var(--space-s);line-height:1.5}
 /* commit bar — the stamp */
 .commitbar{background:var(--paper);border-top:1.5px dashed var(--perforation);padding:var(--space-m) var(--space-l) var(--space-l);display:flex;align-items:center;gap:var(--space-m)}
 .ghost{flex:none;font-family:var(--mono);font-size:var(--text-label);letter-spacing:.1em;text-transform:uppercase;color:var(--faded);background:transparent;border:0;padding:var(--space-m);cursor:pointer}
@@ -86,7 +105,7 @@ body{font-family:var(--sans);background:#d8d1c2;min-height:100vh;display:flex;fl
 </style>
 </head>
 <body>
-<div class="label"><b>Add expense</b> — the FAB target. A blank receipt you fill in. Modal: no bottom nav, just close + the stamp. Tap <b>CATEGORY</b> to open the same sheet as the expenses roll.</div>
+<div class="label"><b>Add expense</b> — the FAB target. A blank receipt you fill in. Modal: no bottom nav, just close + the stamp. Tap <b>CATEGORY</b> to open the same sheet as the expenses roll. <b>ITEMS</b> under the note are optional: a partial list of what the total was made of.</div>
 <div class="phone">
 <div class="screen" id="screen">
 <div class="statusbar"><span>9:41</span><span class="icons"><i class="pi pi-wifi"></i><span>100%</span></span></div>
@@ -122,6 +141,12 @@ body{font-family:var(--sans);background:#d8d1c2;min-height:100vh;display:flex;fl
 <span class="lbl">Note</span>
 <span class="val"><span class="placeholder">Lunch with team</span><i class="pi pi-pencil"></i></span>
 </button>
+
+<div class="sechead"><span>Items</span><span>optional</span></div>
+<div class="item"><span class="n">Kare-kare</span><span class="l"></span><span class="p">₱450.00</span><i class="pi pi-times x" aria-label="Remove Kare-kare"></i></div>
+<div class="item"><span class="n">Rice ×4</span><span class="l"></span><span class="p">₱120.00</span><i class="pi pi-times x" aria-label="Remove Rice ×4"></i></div>
+<div class="item"><span class="n placeholder">Item name</span><span class="l"></span><span class="p placeholder">₱0.00</span><i class="pi pi-times x" aria-label="Remove item"></i></div>
+<div class="additem"><i class="pi pi-plus"></i>Add item</div>
 
 <div class="quip">* no take-backs, only edits *</div>
 </div>

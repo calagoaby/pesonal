@@ -21,6 +21,7 @@ export function useAddExpense() {
             date: form.date.value,
             category_id: category,
             note: form.note.value.trim() || null,
+            items: itemsPayload(form.items.value),
         }))
 
         if (saved) {
@@ -40,6 +41,7 @@ export function useAddExpense() {
         form.category_id.value = null
         form.date.value = todayIn(config.timezone)
         form.note.value = ''
+        form.items.value = []
     }
 
 

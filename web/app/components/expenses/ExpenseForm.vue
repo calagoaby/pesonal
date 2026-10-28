@@ -12,6 +12,7 @@ const {
     category_id,
     date,
     note,
+    items,
     errors
 } = useExpenseFormContext()
 
@@ -32,6 +33,8 @@ const is_date_picker_open = ref(false)
 
 /** Computed */
 const category = computed(() => categories.value.find(item => item.id === category_id.value) ?? null)
+// The Items section shows its own errors, worded for a row; listing them here too would repeat them.
+const field_errors = computed(() => Object.entries(errors.value).filter(([field]) => field !== 'items' && !field.startsWith('items.')))
 </script>
 
 <template>
@@ -75,7 +78,9 @@ const category = computed(() => categories.value.find(item => item.id === catego
             <input v-model="note" class="note-input" placeholder="Lunch with team" maxlength="40" aria-label="Note">
         </div>
 
-        <p v-for="(messages, field) in errors" :key="field" class="field-error">
+        <SharedItems v-model:items="items" :total="amount" :errors="errors" />
+
+        <p v-for="[field, messages] in field_errors" :key="field" class="field-error">
             {{ messages[0] }}
         </p>
 

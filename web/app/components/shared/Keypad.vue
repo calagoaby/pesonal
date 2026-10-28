@@ -8,6 +8,12 @@ const is_open = defineModel<boolean>('open', { required: true })
  */
 const amount = defineModel<number>('amount', { required: true })
 
+const props = withDefaults(defineProps<{
+    title?: string
+}>(), {
+    title: 'Amount'
+})
+
 /** ₱999,999.99 — beyond this the hero number wraps, and it's a personal tracker. */
 const MAX_CENTAVOS = 99_999_999
 
@@ -82,7 +88,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleKeydown))
 </script>
 
 <template>
-    <SharedSheet v-model:open="is_open" title="Amount">
+    <SharedSheet v-model:open="is_open" :title="props.title">
         <div class="amount">
             <span class="peso">₱</span>
             <span>{{ formatAmount(entry) }}</span>
