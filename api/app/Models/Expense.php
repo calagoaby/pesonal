@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Casts\EncryptedItems;
 use App\Casts\EncryptedText;
 use App\Casts\MoneyCast;
 use App\Models\Concerns\BelongsToUser;
@@ -25,8 +26,9 @@ use Illuminate\Support\Carbon;
  * @property Carbon $date
  * @property Money $amount
  * @property int $user_id
+ * @property list<array{name: string, amount: int}> $items
  */
-#[Fillable(['amount', 'date', 'note', 'category_id', 'recurring_id'])]
+#[Fillable(['amount', 'date', 'note', 'items', 'category_id', 'recurring_id'])]
 class Expense extends Model
 {
     use BelongsToUser;
@@ -41,6 +43,7 @@ class Expense extends Model
         return [
             'amount' => MoneyCast::class, // centavos, bound to the Money VO, stored encrypted
             'note' => EncryptedText::class,
+            'items' => EncryptedItems::class, // list of {name, amount in centavos}, stored encrypted; null when empty
             // The format normalizes the WRITE too: a bare 'date' cast persists via the
             // model's datetime format, and SQLite keeps '2026-09-15 00:00:00' verbatim,
             // which stats' daily grouping then never matches.

@@ -17,11 +17,23 @@ class RecurringTest extends TestCase
     use RefreshDatabase;
 
     private const SHAPE = [
-        'id', 'amount', 'note', 'day_of_month', 'start_date', 'end_date',
+        'id', 'amount', 'note', 'items', 'day_of_month', 'start_date', 'end_date',
         'active', 'category', 'created_at', 'updated_at',
     ];
 
     private const CATEGORY_REF = ['id', 'name', 'color', 'emoji'];
+
+    public function test_recurring_resource_always_emits_items(): void
+    {
+        $plain = Recurring::factory()->create();
+        $itemised = Recurring::factory()->create(['amount' => 5500, 'items' => [['name' => 'Rice', 'amount' => 1000], ['name' => 'Adobo', 'amount' => 4500]]]);
+
+        $this->assertSame([], $this->getJson("/api/recurring/{$plain->id}")->json('data.items'));
+        $this->assertSame(
+            [['name' => 'Rice', 'amount' => 1000], ['name' => 'Adobo', 'amount' => 4500]],
+            $this->getJson("/api/recurring/{$itemised->id}")->json('data.items'),
+        );
+    }
 
     public function test_index_is_a_bare_data_envelope_ordered_by_id_with_the_ten_key_shape(): void
     {

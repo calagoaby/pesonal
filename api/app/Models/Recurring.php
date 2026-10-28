@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Casts\EncryptedItems;
 use App\Casts\EncryptedText;
 use App\Casts\MoneyCast;
 use App\Models\Concerns\BelongsToUser;
@@ -25,8 +26,9 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $end_date
  * @property Money $amount
  * @property int $user_id
+ * @property list<array{name: string, amount: int}> $items
  */
-#[Fillable(['amount', 'note', 'day_of_month', 'start_date', 'end_date', 'active', 'category_id'])]
+#[Fillable(['amount', 'note', 'items', 'day_of_month', 'start_date', 'end_date', 'active', 'category_id'])]
 class Recurring extends Model
 {
     use BelongsToUser;
@@ -43,6 +45,7 @@ class Recurring extends Model
         return [
             'amount' => MoneyCast::class, // centavos, bound to the Money VO, stored encrypted
             'note' => EncryptedText::class,
+            'items' => EncryptedItems::class, // list of {name, amount in centavos}, stored encrypted; null when empty
             'day_of_month' => 'integer',
             // Format pins the stored string to YYYY-MM-DD — materialization compares these
             // as strings, and a bare 'date' cast would write a time component.

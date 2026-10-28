@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Casts\EncryptedItems;
 use App\Casts\EncryptedText;
 use App\Casts\MoneyCast;
 use App\Models\Category;
@@ -45,6 +46,77 @@ class EncryptedCastsTest extends TestCase
         $this->assertTrue($text->compare(new Expense, 'note', null, null));
         $this->assertFalse($text->compare(new Expense, 'note', LedgerCipher::encrypt('Lunch'), LedgerCipher::encrypt('Dinner')));
         $this->assertFalse($text->compare(new Expense, 'note', null, LedgerCipher::encrypt('Lunch')));
+    }
+
+    public function test_items_cast_stores_one_ciphertext_and_reads_the_list(): void
+    {
+        $cast = new EncryptedItems;
+        $list = [['name' => 'Adobo', 'amount' => 4500], ['name' => 'Rice', 'amount' => 1000]];
+
+        $stored = $cast->set(new Expense, 'items', $list, []);
+        $this->assertIsString($stored);
+        $this->assertTrue(LedgerCipher::isEncrypted($stored));
+        $this->assertNotSame($stored, $cast->set(new Expense, 'items', $list, []));
+
+        $this->assertSame($list, $cast->get(new Expense, 'items', $stored, []));
+    }
+
+    public function test_items_cast_stores_an_empty_list_as_null(): void
+    {
+        $cast = new EncryptedItems;
+
+        $this->assertNull($cast->set(new Expense, 'items', [], []));
+        $this->assertNull($cast->set(new Expense, 'items', null, []));
+        $this->assertSame([], $cast->get(new Expense, 'items', null, []));
+    }
+
+    public function test_items_cast_throws_on_a_value_that_is_not_a_list_of_items(): void
+    {
+        $cast = new EncryptedItems;
+
+        foreach (['not json', '{"name":"A","amount":1}', '[{"name":"A"}]', '[{"name":"A","amount":"1"}]', '[{"name":1,"amount":1}]', '[1]'] as $plain) {
+            $this->assertThrows(
+                fn () => $cast->get(new Expense, 'items', LedgerCipher::encrypt($plain), []),
+                UnexpectedValueException::class,
+            );
+        }
+    }
+
+    public function test_items_cast_compares_decoded_lists(): void
+    {
+        $cast = new EncryptedItems;
+        $a = LedgerCipher::encrypt('[{"name":"Adobo","amount":4500}]');
+        $b = LedgerCipher::encrypt('[{"name":"Adobo","amount":4500}]');
+        $c = LedgerCipher::encrypt('[{"name":"Adobo","amount":4501}]');
+
+        $this->assertTrue($cast->compare(new Expense, 'items', $a, $b));
+        $this->assertTrue($cast->compare(new Expense, 'items', null, null));
+        $this->assertFalse($cast->compare(new Expense, 'items', $a, $c));
+        $this->assertFalse($cast->compare(new Expense, 'items', null, $a));
+    }
+
+    public function test_reading_items_does_not_dirty_the_model(): void
+    {
+        $expense = Expense::factory()->create(['items' => [['name' => 'Adobo', 'amount' => 4500]]]);
+
+        $fresh = Expense::withoutGlobalScopes()->findOrFail($expense->id);
+        $this->assertSame([['name' => 'Adobo', 'amount' => 4500]], $fresh->items);
+        $this->assertFalse($fresh->isDirty('items'));
+
+        $fresh->items = [['name' => 'Adobo', 'amount' => 4500]];
+        $this->assertFalse($fresh->isDirty('items'));
+    }
+
+    public function test_items_are_ciphertext_in_the_table(): void
+    {
+        Expense::factory()->create(['items' => [['name' => 'Adobo', 'amount' => 4500]]]);
+        Expense::factory()->create();
+
+        $stored = DB::table('expenses')->orderBy('id')->pluck('items')->all();
+        $this->assertIsString($stored[0]);
+        $this->assertTrue(LedgerCipher::isEncrypted($stored[0]));
+        $this->assertStringNotContainsString('Adobo', $stored[0]);
+        $this->assertNull($stored[1]);
     }
 
     public function test_encrypted_text_cast_stores_ciphertext_and_nulls_empty_notes(): void

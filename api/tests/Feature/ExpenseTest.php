@@ -17,7 +17,7 @@ class ExpenseTest extends TestCase
     use ActsAsUser;
     use RefreshDatabase;
 
-    private const SHAPE = ['id', 'amount', 'date', 'note', 'category', 'recurring_id', 'created_at', 'updated_at'];
+    private const SHAPE = ['id', 'amount', 'date', 'note', 'items', 'category', 'recurring_id', 'created_at', 'updated_at'];
 
     private const CATEGORY_REF = ['id', 'name', 'color', 'emoji'];
 
@@ -31,6 +31,18 @@ class ExpenseTest extends TestCase
         $this->assertSame(['data', 'meta'], array_keys($response->json()));
         $this->assertSame(['current_page', 'per_page', 'total', 'last_page'], array_keys($response->json('meta')));
         $this->assertSame(20, $response->json('meta.per_page'));
+    }
+
+    public function test_expense_resource_always_emits_items(): void
+    {
+        $plain = Expense::factory()->create();
+        $itemised = Expense::factory()->create(['amount' => 5500, 'items' => [['name' => 'Rice', 'amount' => 1000], ['name' => 'Adobo', 'amount' => 4500]]]);
+
+        $this->assertSame([], $this->getJson("/api/expenses/{$plain->id}")->json('data.items'));
+        $this->assertSame(
+            [['name' => 'Rice', 'amount' => 1000], ['name' => 'Adobo', 'amount' => 4500]],
+            $this->getJson("/api/expenses/{$itemised->id}")->json('data.items'),
+        );
     }
 
     public function test_index_row_shape_carries_a_four_key_category_ref_and_a_calendar_date(): void
