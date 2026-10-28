@@ -28,9 +28,11 @@ final class EncryptedItems implements CastsAttributes, ComparesCastableAttribute
      */
     public function set(Model $model, string $key, mixed $value, array $attributes): ?string
     {
-        if (! is_array($value) || $value === []) {
+        if ($value === null || $value === []) {
             return null;
         }
+
+        $this->assertStorable($value);
 
         return LedgerCipher::encrypt(json_encode($value, JSON_THROW_ON_ERROR));
     }
@@ -40,6 +42,20 @@ final class EncryptedItems implements CastsAttributes, ComparesCastableAttribute
     public function compare(Model $model, string $key, mixed $firstValue, mixed $secondValue): bool
     {
         return $this->items($firstValue) === $this->items($secondValue);
+    }
+
+    // The same bar get() holds: a write it would refuse must fail here, not 500 the list later.
+    private function assertStorable(mixed $value): void
+    {
+        if (! is_array($value) || ! array_is_list($value)) {
+            throw new UnexpectedValueException('Items must be a list.');
+        }
+
+        foreach ($value as $item) {
+            if (! is_array($item) || ! is_string($item['name'] ?? null) || ! is_int($item['amount'] ?? null)) {
+                throw new UnexpectedValueException('An item must be a name and an amount.');
+            }
+        }
     }
 
     /** @return list<array{name: string, amount: int}> */

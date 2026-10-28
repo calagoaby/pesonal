@@ -138,6 +138,7 @@ class RecurringItemsTest extends TestCase
             'amount missing' => [[['name' => 'Rice']], 'items.0.amount'],
             'too many' => [array_fill(0, 21, $ok), 'items'],
             'not an array' => ['rice', 'items'],
+            'null' => [null, 'items'],
             'element not an object' => [['rice'], 'items.0'],
         ];
     }

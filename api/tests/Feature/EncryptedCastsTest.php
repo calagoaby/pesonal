@@ -82,6 +82,23 @@ class EncryptedCastsTest extends TestCase
         }
     }
 
+    public function test_items_cast_refuses_to_store_what_it_could_not_read_back(): void
+    {
+        $cast = new EncryptedItems;
+        $model = new Expense;
+
+        $this->assertNull($cast->set($model, 'items', null, []));
+
+        foreach (['rice', [['name' => 'Rice']], [['name' => 'Rice', 'amount' => '100']], ['rice'], ['a' => ['name' => 'Rice', 'amount' => 100]]] as $bad) {
+            try {
+                $cast->set($model, 'items', $bad, []);
+                $this->fail('set() accepted '.json_encode($bad));
+            } catch (UnexpectedValueException) {
+                $this->addToAssertionCount(1);
+            }
+        }
+    }
+
     public function test_items_cast_compares_decoded_lists(): void
     {
         $cast = new EncryptedItems;

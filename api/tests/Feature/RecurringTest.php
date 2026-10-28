@@ -35,7 +35,7 @@ class RecurringTest extends TestCase
         );
     }
 
-    public function test_index_is_a_bare_data_envelope_ordered_by_id_with_the_ten_key_shape(): void
+    public function test_index_is_a_bare_data_envelope_ordered_by_id_with_the_eleven_key_shape(): void
     {
         $category = Category::factory()->create();
         $first = Recurring::factory()->create(['category_id' => $category->id]);
