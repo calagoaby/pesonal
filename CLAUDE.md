@@ -12,14 +12,14 @@ Monorepo: `api/` (Laravel — intentionally swappable for another backend later)
 
 **Claude implements, the owner supervises.** He learned the frontend by building the dashboard and the app shell himself; from here he reviews rather than writes.
 
-**Work in small, checkable steps.** One screen — or one coherent slice of one — per turn, then stop and report. Never batch several screens into a single turn, and never run ahead to the next roadmap item without being asked. The owner's instructions are step-by-step by design.
+**Work in small, checkable steps — one commit per slice, no pause between them.** Each screen, or each coherent slice of one, is its own verified commit. When a slice is committed, report it in a line or two and **start the next task of the approved plan straight away**; don't ask first. Stop only when the plan is done, a check fails, or a step needs the owner (a dev-server restart, a sign-in, a decision). A new roadmap feature is not "the next task": it starts with its own design and approval.
 
 The loop:
 
 1. Claude posts a **design spec** (an HTML mockup) in `design/` if the screen doesn't have one.
 2. Claude **implements** the slice in `web/`, following the conventions below.
 3. Claude **verifies** the slice, then **commits it straight to `main`** in the format below. No feature branch, no PR, no waiting for approval. The owner reviews afterwards with `git log` / `git show`; anything he wants changed becomes a follow-up commit.
-4. Claude **stops and reports** what changed and why, naming the commit.
+4. Claude **reports** what changed and why, naming the commit, and moves on to the next task of the plan without waiting.
 
 **Claude commits; the owner pushes and runs the app.** Commits stay local: Claude never pushes unless the owner asks for it in that conversation. Claude does **not** start, stop or restart the dev servers (`composer run dev`) — the owner runs it in his own terminal. When a step needs one restarted — a new top-level dir, a dependency, a `nuxt.config.ts` or `.env` change — **stop and hand the owner the exact copy-pasteable command(s)** (he forgets them), then verify once he says it's done. Checks that don't touch the running servers are fine: `npx nuxt typecheck`, `php artisan test`, `curl` against `:3000` / `:8080`.
 
