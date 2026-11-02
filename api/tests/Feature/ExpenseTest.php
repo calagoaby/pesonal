@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Category;
 use App\Models\Expense;
 use App\Models\Recurring;
+use App\Models\User;
 use App\Support\Month;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -21,7 +22,7 @@ class ExpenseTest extends TestCase
 
     private const CATEGORY_REF = ['id', 'name', 'color', 'emoji'];
 
-    public function test_index_envelope_is_exactly_data_and_meta_with_the_four_meta_keys(): void
+    public function test_index_envelope_is_exactly_data_and_meta_with_the_five_meta_keys(): void
     {
         Expense::factory()->create();
 
@@ -29,7 +30,7 @@ class ExpenseTest extends TestCase
 
         $response->assertOk();
         $this->assertSame(['data', 'meta'], array_keys($response->json()));
-        $this->assertSame(['current_page', 'per_page', 'total', 'last_page'], array_keys($response->json('meta')));
+        $this->assertSame(['current_page', 'per_page', 'total', 'last_page', 'day_totals'], array_keys($response->json('meta')));
         $this->assertSame(20, $response->json('meta.per_page'));
     }
 
@@ -228,6 +229,67 @@ class ExpenseTest extends TestCase
         $response = $this->getJson('/api/expenses');
 
         $this->assertSame(2, $response->json('meta.total')); // not 350000
+    }
+
+    public function test_day_totals_count_the_whole_day_on_every_page_it_appears_on(): void
+    {
+        // Three rows on the 29th, one on the 28th; per_page=2 splits the 29th across pages 1 and 2.
+        Expense::factory()->create(['date' => '2026-10-29', 'amount' => 5500]);
+        Expense::factory()->create(['date' => '2026-10-29', 'amount' => 24500]);
+        Expense::factory()->create(['date' => '2026-10-29', 'amount' => 18000]);
+        Expense::factory()->create(['date' => '2026-10-28', 'amount' => 9000]);
+
+        $first = $this->getJson('/api/expenses?month=2026-10&per_page=2');
+        $second = $this->getJson('/api/expenses?month=2026-10&per_page=2&page=2');
+
+        $this->assertSame(['2026-10-29' => 48000], $first->json('meta.day_totals'));
+        $this->assertSame(['2026-10-29' => 48000, '2026-10-28' => 9000], $second->json('meta.day_totals'));
+    }
+
+    public function test_day_totals_follow_the_category_filter(): void
+    {
+        $food = Category::factory()->create(['name' => 'Food']);
+        $transport = Category::factory()->create(['name' => 'Transport']);
+        Expense::factory()->create(['date' => '2026-10-29', 'amount' => 5500, 'category_id' => $food->id]);
+        Expense::factory()->create(['date' => '2026-10-29', 'amount' => 24500, 'category_id' => $transport->id]);
+
+        $response = $this->getJson("/api/expenses?month=2026-10&category_id={$food->id}");
+
+        $this->assertSame(['2026-10-29' => 5500], $response->json('meta.day_totals'));
+    }
+
+    public function test_day_totals_skip_voided_rows(): void
+    {
+        Expense::factory()->create(['date' => '2026-10-29', 'amount' => 5500]);
+        Expense::factory()->create(['date' => '2026-10-29', 'amount' => 99900])->delete();
+
+        $this->assertSame(['2026-10-29' => 5500], $this->getJson('/api/expenses?month=2026-10')->json('meta.day_totals'));
+    }
+
+    public function test_day_totals_skip_another_users_rows_on_the_same_date(): void
+    {
+        Expense::factory()->create(['date' => '2026-10-29', 'amount' => 5500]);
+        Expense::factory()->create(['date' => '2026-10-29', 'amount' => 99900, 'user_id' => User::factory()->create()->id]);
+
+        $this->assertSame(['2026-10-29' => 5500], $this->getJson('/api/expenses?month=2026-10')->json('meta.day_totals'));
+    }
+
+    public function test_day_totals_work_without_a_month_filter(): void
+    {
+        Expense::factory()->create(['date' => '2026-09-30', 'amount' => 1000]);
+        Expense::factory()->create(['date' => '2026-10-01', 'amount' => 2000]);
+
+        $this->assertSame(
+            ['2026-10-01' => 2000, '2026-09-30' => 1000],
+            $this->getJson('/api/expenses')->json('meta.day_totals'),
+        );
+    }
+
+    public function test_day_totals_of_an_empty_page_is_a_json_object(): void
+    {
+        $response = $this->getJson('/api/expenses?month=2026-10');
+
+        $this->assertStringContainsString('"day_totals":{}', (string) $response->getContent());
     }
 
     public function test_show_returns_the_nested_shape_and_a_missing_id_404s(): void
