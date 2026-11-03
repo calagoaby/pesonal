@@ -128,6 +128,8 @@ function clearCategory() {
             <div v-for="daily_expense in daily_expenses" :key="daily_expense.date" class="daily-expenses">
                 <div class="date">
                     {{ formatDailyDate(daily_expense.date) }}
+                    <span class="rule" />
+                    <span class="day-total">{{ formatAmountWithCurrency(daily_expense.total) }}</span>
                 </div>
                 <div class="expenses">
                     <NuxtLink
@@ -250,10 +252,21 @@ function clearCategory() {
     margin: var(--space-l) 0 var(--space-xs);
 }
 
-.date::after, .date::before {
+.date::before {
     content: '';
+    width: var(--space-m);
     border-top: 1.5px dashed var(--perforation);
+}
+
+.rule {
     flex: 1;
+    border-top: 1.5px dashed var(--perforation);
+}
+
+.day-total {
+    color: var(--ink);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
 }
 
 .row {

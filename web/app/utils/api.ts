@@ -41,8 +41,8 @@ export async function apiGet<T>(path: string, query?: Query): Promise<T> {
     return response.data
 }
 
-export async function apiGetList<T>(path: string, query?: Query): Promise<{ items: T[], meta: ListMeta }> {
-    const response = await request<{ data: T[], meta: ListMeta }>(path, { query })
+export async function apiGetList<T, M extends ListMeta = ListMeta>(path: string, query?: Query): Promise<{ items: T[], meta: M }> {
+    const response = await request<{ data: T[], meta: M }>(path, { query })
 
     return { items: response.data, meta: response.meta }
 }

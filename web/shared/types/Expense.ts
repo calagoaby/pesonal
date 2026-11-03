@@ -1,3 +1,4 @@
+import type { ListMeta } from './Api'
 import type { CategoryRef } from './Category'
 
 /** What part of a total was spent on. Never adds up to more than the record's amount. */
@@ -35,4 +36,9 @@ export type ExpensePayload = {
     note?: string | null
     /** On PATCH: absent leaves them, `[]` clears them, an array replaces them. Never null. */
     items?: ExpenseItem[]
+}
+
+export interface ExpenseListMeta extends ListMeta {
+    /** Each date on this page -> that whole day's total in centavos, rows on other pages included. */
+    day_totals: Record<string, number>
 }

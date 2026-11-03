@@ -13,6 +13,8 @@ export async function useMonthExpense() {
     const page = ref(1)
     /** Pages 2+ only. Page 1 stays in useAsyncData so it still server-renders. */
     const appended = ref<Expense[]>([])
+    /** day_totals from pages 2+. */
+    const appended_totals = ref<Record<string, number>>({})
     const is_loading_more = ref(false)
     const load_more_error = ref('')
 
@@ -31,6 +33,8 @@ export async function useMonthExpense() {
     const expenses = computed(() => [...(data.value?.items ?? []), ...appended.value])
     const loaded_count = computed(() => expenses.value.length)
     const has_more = computed(() => !!meta.value && page.value < meta.value.last_page)
+    // Page 1 last: a refresh refetches only page 1, so its figures are the freshest.
+    const day_totals = computed(() => ({ ...appended_totals.value, ...meta.value?.day_totals }))
     /** Grouped over the whole list, so a day split across pages prints one header. */
     const daily_expenses = computed(() => groupByDate(expenses.value))
 
@@ -54,13 +58,14 @@ export async function useMonthExpense() {
 
         try {
             const next = page.value + 1
-            const { items } = await listExpenses({
+            const { items, meta: next_meta } = await listExpenses({
                 month: month.value,
                 category_id: category_id.value ?? undefined,
                 page: next,
             })
 
             appended.value = [...appended.value, ...items]
+            appended_totals.value = { ...appended_totals.value, ...next_meta.day_totals }
             page.value = next
         } catch (failure) {
             load_more_error.value = (failure as ApiRequestError).message
@@ -83,7 +88,12 @@ export async function useMonthExpense() {
             days.set(item.date, [item])
         }
 
-        return Array.from(days, ([date, day_items]) => ({ date, items: day_items }))
+        // A date the API left out (shouldn't happen) falls back to its loaded rows.
+        return Array.from(days, ([date, day_items]) => ({
+            date,
+            total: day_totals.value[date] ?? day_items.reduce((sum, item) => sum + item.amount, 0),
+            items: day_items,
+        }))
     }
 
 
@@ -92,6 +102,7 @@ export async function useMonthExpense() {
     watch([month, category_id], () => {
         page.value = 1
         appended.value = []
+        appended_totals.value = {}
         load_more_error.value = ''
     })
 

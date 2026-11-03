@@ -52,7 +52,10 @@ body{font-family:var(--sans);background:#d8d1c2;min-height:100vh;display:flex;fl
 .field .val{display:flex;align-items:center;gap:var(--space-s)}
 .field .val i{color:var(--faded);font-size:var(--text-label)}
 .daydiv{display:flex;align-items:center;gap:var(--space-s);font-family:var(--mono);font-size:var(--text-micro);letter-spacing:.1em;text-transform:uppercase;color:var(--faded);margin:var(--space-l) 0 var(--space-xs)}
-.daydiv::before,.daydiv::after{content:"";flex:1;border-top:1.5px dashed var(--perforation)}
+.daydiv::before{content:"";width:var(--space-m);border-top:1.5px dashed var(--perforation)}
+.daydiv .rule{flex:1;border-top:1.5px dashed var(--perforation)}
+/* The whole day under the current filter (meta.day_totals), rows below "pull for more" included */
+.daydiv .daytot{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
 .line{display:flex;align-items:baseline;padding:var(--space-xs) 0;color:var(--ink);text-decoration:none}
 .line .desc{font-size:var(--text-body)}
 .line .tag{font-family:var(--mono);font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--faded);margin-left:var(--space-s)}
@@ -103,14 +106,15 @@ body{font-family:var(--sans);background:#d8d1c2;min-height:100vh;display:flex;fl
 <span class="lbl">Category</span>
 <span class="val"><span id="catVal">All</span><i class="pi pi-chevron-down"></i></span>
 </button>
-<div class="daydiv">Wed Jun 17</div>
+<div class="daydiv">Wed Jun 17<span class="rule"></span><span class="daytot">₱1,070.00</span></div>
 <a class="line" href="edit-expense.html"><span class="desc">Lunch with team<span class="tag">Food</span></span><span class="lead"></span><span class="amt">₱680.00</span></a>
 <a class="line" href="edit-expense.html"><span class="desc">Grab to office<span class="tag">Transport</span></span><span class="lead"></span><span class="amt">₱240.00</span></a>
 <a class="line" href="edit-expense.html"><span class="desc">Kape sa umaga<span class="tag">Food</span></span><span class="lead"></span><span class="amt">₱150.00</span></a>
-<div class="daydiv">Tue Jun 16</div>
+<div class="daydiv">Tue Jun 16<span class="rule"></span><span class="daytot">₱2,450.00</span></div>
 <a class="line" href="edit-expense.html"><span class="desc">SM Groceries<span class="tag">Groceries</span></span><span class="lead"></span><span class="amt">₱2,150.00</span></a>
 <a class="line" href="edit-expense.html"><span class="desc">Load<span class="tag">Other</span></span><span class="lead"></span><span class="amt">₱300.00</span></a>
-<div class="daydiv">Mon Jun 15</div>
+<!-- Jun 15 has one more row (₱250.00) below "pull for more"; the total already counts it -->
+<div class="daydiv">Mon Jun 15<span class="rule"></span><span class="daytot">₱15,430.00</span></div>
 <a class="line" href="edit-expense.html"><span class="desc">Rent share<span class="tag">Housing</span></span><span class="lead"></span><span class="amt">₱15,000.00</span></a>
 <a class="line" href="edit-expense.html"><span class="desc">Milk tea run<span class="tag">Fun</span></span><span class="lead"></span><span class="amt">₱180.00</span></a>
 <div class="tearzone"><div class="more">✂ &nbsp; pull for more &nbsp; ✂</div></div>
